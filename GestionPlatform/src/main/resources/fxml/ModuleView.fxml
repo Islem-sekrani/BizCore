@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gestion.controllers.ModuleViewController"
+      styleClass="module-container" spacing="20">
+
+    <!-- Action Buttons Row -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button fx:id="btnAdd" text="➕  ADD NEW" styleClass="btn-primary" onAction="#handleAdd">
+            <padding>
+                <Insets top="10" bottom="10" left="20" right="20"/>
+            </padding>
+            <font>
+                <Font name="System Bold" size="12"/>
+            </font>
+        </Button>
+
+        <Button fx:id="btnExport" text="📤  EXPORT" styleClass="btn-secondary" onAction="#handleExport">
+            <padding>
+                <Insets top="10" bottom="10" left="20" right="20"/>
+            </padding>
+            <font>
+                <Font name="System Bold" size="12"/>
+            </font>
+        </Button>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Search Box -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="search-box">
+            <Label text="🔍">
+                <font>
+                    <Font size="16"/>
+                </font>
+            </Label>
+            <TextField fx:id="searchField" promptText="Search..." styleClass="search-field" prefWidth="250"/>
+        </HBox>
+
+        <!-- Results per page -->
+        <HBox spacing="10" alignment="CENTER">
+            <Label text="Résultats" styleClass="label-text">
+                <font>
+                    <Font size="12"/>
+                </font>
+            </Label>
+            <ComboBox fx:id="resultsComboBox" styleClass="combo-box" prefWidth="70"/>
+        </HBox>
+    </HBox>
+
+    <!-- Table Container with ALL columns -->
+    <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+        <TableView fx:id="dataTable" styleClass="data-table" VBox.vgrow="ALWAYS">
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+
+        <!-- Delete Selected Button -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <padding>
+                <Insets top="15" bottom="10"/>
+            </padding>
+            <Button fx:id="btnDelete" text="🗑  DELETE SELECTED RECORDS"
+                    styleClass="btn-danger" onAction="#handleDeleteSelected">
+                <padding>
+                    <Insets top="10" bottom="10" left="20" right="20"/>
+                </padding>
+                <font>
+                    <Font name="System Bold" size="12"/>
+                </font>
+            </Button>
+        </HBox>
+    </VBox>
+
+    <!-- Pagination Bar -->
+    <HBox spacing="15" alignment="CENTER" styleClass="pagination-bar">
+        <padding>
+            <Insets top="15" bottom="5"/>
+        </padding>
+
+        <Label text="PAGE" styleClass="pagination-label">
+            <font>
+                <Font size="11"/>
+            </font>
+        </Label>
+
+        <Button text="1" styleClass="pagination-btn, pagination-btn-active">
+            <font>
+                <Font name="System Bold" size="11"/>
+            </font>
+        </Button>
+        <Button text="2" styleClass="pagination-btn">
+            <font>
+                <Font size="11"/>
+            </font>
+        </Button>
+        <Button text="3" styleClass="pagination-btn">
+            <font>
+                <Font size="11"/>
+            </font>
+        </Button>
+        <Button text="4" styleClass="pagination-btn">
+            <font>
+                <Font size="11"/>
+            </font>
+        </Button>
+        <Button text="5" styleClass="pagination-btn">
+            <font>
+                <Font size="11"/>
+            </font>
+        </Button>
+        <Button text="6" styleClass="pagination-btn">
+            <font>
+                <Font size="11"/>
+            </font>
+        </Button>
+
+        <Button text="›" styleClass="pagination-arrow">
+            <font>
+                <Font size="14"/>
+            </font>
+        </Button>
+        <Button text="»" styleClass="pagination-arrow">
+            <font>
+                <Font size="14"/>
+            </font>
+        </Button>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Label fx:id="lblResults" text="Résultats 1 à 5 de 201" styleClass="results-label">
+            <font>
+                <Font size="12"/>
+            </font>
+        </Label>
+    </HBox>
+
+</VBox>
