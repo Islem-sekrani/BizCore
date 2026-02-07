@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" stylesheets="@styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.front.controllers.AdminController">
+   <left>
+      <VBox prefWidth="250.0" spacing="10.0" styleClass="sidebar" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Admin Dashboard" textFill="WHITE">
+               <style>
+                  -fx-font-size: 20px;
+                  -fx-font-weight: bold;
+               </style>
+               <VBox.margin>
+                  <Insets bottom="20.0" left="20.0" top="20.0" />
+               </VBox.margin>
+            </Label>
+            <Button fx:id="btnUsers" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sidebar-button" text="Gestion Utilisateurs" onAction="#handleModuleNavigation"/>
+            <Button fx:id="btnEvents" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sidebar-button" text="Gestion Événements" onAction="#handleModuleNavigation"/>
+            <Button fx:id="btnCoaching" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sidebar-button" text="Gestion Coaching" onAction="#handleModuleNavigation"/>
+            <Button fx:id="btnBlog" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sidebar-button" text="Gestion Blog" onAction="#handleModuleNavigation"/>
+            <Button fx:id="btnProducts" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sidebar-button" text="Produits &amp; Commandes" onAction="#handleModuleNavigation"/>
+            
+            <Region VBox.vgrow="ALWAYS" />
+            <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sidebar-button" text="Déconnexion" />
+         </children>
+         <padding>
+            <Insets bottom="20.0" top="10.0" />
+         </padding>
+      </VBox>
+   </left>
+   <center>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER_LEFT" styleClass="header">
+               <children>
+                  <Label fx:id="currentModuleLabel" text="Tableau de Bord" textFill="#1a2332">
+                     <style>
+                        -fx-font-size: 18px;
+                        -fx-font-weight: bold;
+                     </style>
+                  </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label text="Admin User" textFill="#7f8c8d" />
+               </children>
+            </HBox>
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" style="-fx-background-color: #F4F6F8;">
+                <children>
+                    <Label text="Sélectionnez un module dans la barre latérale" textFill="#7f8c8d"/>
+                </children>
+            </StackPane>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

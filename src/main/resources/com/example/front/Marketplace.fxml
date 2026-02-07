@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" stylesheets="@styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.front.controllers.MarketplaceController">
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <!-- Header -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="header">
+               <children>
+                  <Label text="MarketPlace" textFill="#1a2332">
+                     <style>
+                        -fx-font-size: 24px;
+                        -fx-font-weight: bold;
+                     </style>
+                  </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <TextField promptText="Rechercher un service..." styleClass="search-field" prefWidth="400.0" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="cartButton" mnemonicParsing="false" onAction="#handleCartButton" styleClass="button-outlined" text="Panier (0)" />
+                  <Button mnemonicParsing="false" styleClass="button-primary" text="Connexion" />
+               </children>
+               <padding>
+                  <Insets bottom="15.0" left="30.0" right="30.0" top="15.0" />
+               </padding>
+            </HBox>
+            
+            <!-- Hero Section -->
+            <VBox alignment="CENTER" spacing="15.0" styleClass="hero-section">
+               <children>
+                  <Label styleClass="hero-title" text="La Référence pour vos Produits Digitaux &amp; Services" />
+                  <Label styleClass="hero-subtitle" text="Achetez des formations, logiciels et demandez des services sur mesure. Vendez votre expertise." />
+                  <HBox alignment="CENTER" spacing="20.0">
+                     <children>
+                        <Button mnemonicParsing="false" styleClass="button-accent" text="Découvrir les offres" />
+                        <Button mnemonicParsing="false" styleClass="button-outlined" style="-fx-text-fill: white; -fx-border-color: white;" text="Déposer un service" />
+                     </children>
+                     <padding>
+                        <Insets top="20.0" />
+                     </padding>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <HBox spacing="0.0" BorderPane.alignment="CENTER">
+         <children>
+            <!-- Seller Form Sidebar -->
+            <VBox maxWidth="350.0" minWidth="300.0" prefWidth="320.0" spacing="15.0" styleClass="form-container" style="-fx-border-color: transparent #e0e0e0 transparent transparent; -fx-border-width: 0 1 0 0;">
+               <children>
+                  <Label styleClass="form-title" text="Publier un Service" />
+                  
+                  <VBox spacing="5.0">
+                     <children>
+                        <Label styleClass="form-label" text="Type de Service" />
+                        <ComboBox fx:id="serviceType" maxWidth="1.7976931348623157E308" styleClass="form-input" promptText="Sélectionner..." />
+                     </children>
+                  </VBox>
+                  
+                  <VBox spacing="5.0">
+                     <children>
+                        <Label styleClass="form-label" text="Titre de l'offre" />
+                        <TextField fx:id="serviceTitle" promptText="Ex: Création Site Web..." styleClass="form-input" />
+                     </children>
+                  </VBox>
+                  
+                  <VBox spacing="5.0">
+                     <children>
+                        <Label styleClass="form-label" text="Prix (TND)" />
+                        <TextField fx:id="servicePrice" promptText="0.00" styleClass="form-input" />
+                     </children>
+                  </VBox>
+                  
+                  <VBox spacing="5.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <Label styleClass="form-label" text="Description" />
+                        <TextArea fx:id="serviceDescription" promptText="Détails de votre offre..." styleClass="form-input" wrapText="true" VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+                  
+                  <Button mnemonicParsing="false" onAction="#handlePublishService" maxWidth="1.7976931348623157E308" styleClass="button-primary" text="Publier l'annonce" />
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+               <HBox.margin>
+                   <Insets />
+               </HBox.margin>
+            </VBox>
+            
+            <!-- Products Grid -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS">
+               <content>
+                  <VBox spacing="20.0" style="-fx-background-color: #F4F6F8;">
+                     <children>
+                        <Label text="Offres Récentes" textFill="#1a2332">
+                           <style>
+                              -fx-font-size: 20px;
+                              -fx-font-weight: bold;
+                           </style>
+                           <VBox.margin>
+                              <Insets left="30.0" top="20.0" />
+                           </VBox.margin>
+                        </Label>
+                        <FlowPane fx:id="productContainer" hgap="20.0" vgap="20.0" prefWrapLength="800.0" style="-fx-padding: 0 0 20 20;">
+                           <!-- Product Cards will be added here dynamically -->
+                        </FlowPane>
+                     </children>
+                     <padding>
+                         <Insets bottom="20.0" right="20.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </children>
+      </HBox>
+   </center>
+</BorderPane>

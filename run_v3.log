@@ -1,0 +1,384 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< com.example:front >--------------------------
+[INFO] Building front 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> javafx:0.0.8:run (default-cli) > process-classes @ front >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ front ---
+[INFO] Copying 16 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ front ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< javafx:0.0.8:run (default-cli) < process-classes @ front <<<
+[INFO] 
+[INFO] 
+[INFO] --- javafx:0.0.8:run (default-cli) @ front ---
+mvn : Exception in 
+Application start method
+Au caractère Ligne:1 : 1
++ mvn javafx:run 2>&1 | 
+Out-File -FilePath 
+run_v3.log -Encoding UTF8
++ ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (Excep  
+  tion in Application sta   
+ rt method:String) [], R    
+emoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+Exception in thread "main" j
+ava.lang.reflect.InvocationT
+argetException
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke0(Native Method)
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke(NativeMethodAcces
+sorImpl.java:77)
+	at java.base/jdk.internal.r
+eflect.DelegatingMethodAcces
+sorImpl.invoke(DelegatingMet
+hodAccessorImpl.java:43)
+	at java.base/java.lang.refl
+ect.Method.invoke(Method.jav
+a:568)
+	at java.base/sun.launcher.L
+auncherHelper$FXHelper.main(
+LauncherHelper.java:1091)
+Caused by: 
+java.lang.RuntimeException: 
+Exception in Application 
+start method
+	at javafx.graphics/com.sun.
+javafx.application.LauncherI
+mpl.launchApplication1(Launc
+herImpl.java:901)
+	at javafx.graphics/com.sun.
+javafx.application.LauncherI
+mpl.lambda$launchApplication
+$2(LauncherImpl.java:196)
+	at java.base/java.lang.Thre
+ad.run(Thread.java:842)
+Caused by: 
+javafx.fxml.LoadException: 
+/C:/Users/dhiaj_onolvpc/Desk
+top/front/target/classes/com
+/example/front/MainLayout.fx
+ml:32
+
+	at javafx.fxml/javafx.fxml.
+FXMLLoader.constructLoadExce
+ption(FXMLLoader.java:2714)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader.loadImpl(FXMLLoad
+er.java:2692)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader.loadImpl(FXMLLoad
+er.java:2555)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader.load(FXMLLoader.j
+ava:2523)
+	at com.example.front@1.0-SN
+APSHOT/com.example.front.Hel
+loApplication.start(HelloApp
+lication.java:15)
+	at javafx.graphics/com.sun.
+javafx.application.LauncherI
+mpl.lambda$launchApplication
+1$9(LauncherImpl.java:847)
+	at javafx.graphics/com.sun.
+javafx.application.PlatformI
+mpl.lambda$runAndWait$12(Pla
+tformImpl.java:484)
+	at javafx.graphics/com.sun.
+javafx.application.PlatformI
+mpl.lambda$runLater$10(Platf
+ormImpl.java:457)
+	at java.base/java.security.
+AccessController.doPrivilege
+d(AccessController.java:399)
+	at javafx.graphics/com.sun.
+javafx.application.PlatformI
+mpl.lambda$runLater$11(Platf
+ormImpl.java:456)
+	at javafx.graphics/com.sun.
+glass.ui.InvokeLaterDispatch
+er$Future.run(InvokeLaterDis
+patcher.java:96)
+	at javafx.graphics/com.sun.
+glass.ui.win.WinApplication.
+_runLoop(Native Method)
+	at javafx.graphics/com.sun.
+glass.ui.win.WinApplication.
+lambda$runLoop$3(WinApplicat
+ion.java:184)
+	... 1 more
+Caused by: 
+java.lang.RuntimeException: 
+java.lang.reflect.Invocation
+TargetException
+	at javafx.fxml/com.sun.java
+fx.fxml.BeanAdapter.coerce(B
+eanAdapter.java:511)
+	at javafx.fxml/com.sun.java
+fx.fxml.BeanAdapter.put(Bean
+Adapter.java:259)
+	at javafx.fxml/com.sun.java
+fx.fxml.BeanAdapter.put(Bean
+Adapter.java:54)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader$Element.applyProp
+erty(FXMLLoader.java:523)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader$Element.processVa
+lue(FXMLLoader.java:373)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader$Element.processPr
+opertyAttribute(FXMLLoader.j
+ava:335)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader$Element.processIn
+stancePropertyAttributes(FXM
+LLoader.java:245)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader$ValueElement.proc
+essEndElement(FXMLLoader.jav
+a:778)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader.processEndElement
+(FXMLLoader.java:2961)
+	at javafx.fxml/javafx.fxml.
+FXMLLoader.loadImpl(FXMLLoad
+er.java:2646)
+	... 12 more
+Caused by: java.lang.reflect
+.InvocationTargetException
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke0(Native Method)
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke(NativeMethodAcces
+sorImpl.java:77)
+	at java.base/jdk.internal.r
+eflect.DelegatingMethodAcces
+sorImpl.invoke(DelegatingMet
+hodAccessorImpl.java:43)
+	at java.base/java.lang.refl
+ect.Method.invoke(Method.jav
+a:568)
+	at com.sun.javafx.reflect.T
+rampoline.invoke(MethodUtil.
+java:77)
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke0(Native Method)
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke(NativeMethodAcces
+sorImpl.java:77)
+	at java.base/jdk.internal.r
+eflect.DelegatingMethodAcces
+sorImpl.invoke(DelegatingMet
+hodAccessorImpl.java:43)
+	at java.base/java.lang.refl
+ect.Method.invoke(Method.jav
+a:568)
+	at javafx.base/com.sun.java
+fx.reflect.MethodUtil.invoke
+(MethodUtil.java:275)
+	at javafx.fxml/com.sun.java
+fx.fxml.MethodHelper.invoke(
+MethodHelper.java:84)
+	at javafx.fxml/com.sun.java
+fx.fxml.ModuleHelper.invoke(
+ModuleHelper.java:100)
+	at javafx.fxml/com.sun.java
+fx.fxml.BeanAdapter.coerce(B
+eanAdapter.java:507)
+	... 21 more
+Caused by: java.lang.Illegal
+ArgumentException: Invalid 
+color specification
+	at javafx.graphics/javafx.s
+cene.paint.Color.web(Color.j
+ava:463)
+	at javafx.graphics/javafx.s
+cene.paint.Color.web(Color.j
+ava:646)
+	at javafx.graphics/javafx.s
+cene.paint.Color.valueOf(Col
+or.java:667)
+	at javafx.graphics/javafx.s
+cene.paint.Paint.valueOf(Pai
+nt.java:124)
+	... 34 more
+[ERROR] Command execution failed.
+org.apache.commons.exec.ExecuteException: Process exited with an error: 1 (Exit value: 1)
+    at org.apache.commons.exec.DefaultExecutor.executeInternal (DefaultExecutor.java:404)
+    at org.apache.commons.exec.DefaultExecutor.execute (DefaultExecutor.java:166)
+    at org.openjfx.JavaFXBaseMojo.executeCommandLine (JavaFXBaseMojo.java:567)
+    at org.openjfx.JavaFXBaseMojo.executeCommandLine (JavaFXBaseMojo.java:434)
+    at org.openjfx.JavaFXRunMojo.execute (JavaFXRunMojo.java:105)
+    at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo (DefaultBuildPluginManager.java:126)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:328)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:919)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:285)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:207)
+    at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 (Native Method)
+    at jdk.internal.reflect.NativeMethodAccessorImpl.invoke (NativeMethodAccessorImpl.java:77)
+    at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke (DelegatingMethodAccessorImpl.java:43)
+    at java.lang.reflect.Method.invoke (Method.java:568)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+org.apache.commons.exec.Exec
+uteException: Process 
+exited with an error: 1 
+(Exit value: 1)
+	at org.apache.commons.exec.
+DefaultExecutor.executeInter
+nal(DefaultExecutor.java:404
+)
+	at org.apache.commons.exec.
+DefaultExecutor.execute(Defa
+ultExecutor.java:166)
+	at org.openjfx.JavaFXBaseMo
+jo.executeCommandLine(JavaFX
+BaseMojo.java:567)
+	at org.openjfx.JavaFXBaseMo
+jo.executeCommandLine(JavaFX
+BaseMojo.java:434)
+	at org.openjfx.JavaFXRunMoj
+o.execute(JavaFXRunMojo.java
+:105)
+	at org.apache.maven.plugin.
+DefaultBuildPluginManager.ex
+ecuteMojo(DefaultBuildPlugin
+Manager.java:126)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor.doE
+xecute2(MojoExecutor.java:32
+8)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor.doE
+xecute(MojoExecutor.java:316
+)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor.exe
+cute(MojoExecutor.java:212)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor.exe
+cute(MojoExecutor.java:174)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor.acc
+ess$000(MojoExecutor.java:75
+)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor$1.r
+un(MojoExecutor.java:162)
+	at org.apache.maven.plugin.
+DefaultMojosExecutionStrateg
+y.execute(DefaultMojosExecut
+ionStrategy.java:39)
+	at org.apache.maven.lifecyc
+le.internal.MojoExecutor.exe
+cute(MojoExecutor.java:159)
+	at org.apache.maven.lifecyc
+le.internal.LifecycleModuleB
+uilder.buildProject(Lifecycl
+eModuleBuilder.java:105)
+	at org.apache.maven.lifecyc
+le.internal.LifecycleModuleB
+uilder.buildProject(Lifecycl
+eModuleBuilder.java:73)
+	at org.apache.maven.lifecyc
+le.internal.builder.singleth
+readed.SingleThreadedBuilder
+.build(SingleThreadedBuilder
+.java:53)
+	at org.apache.maven.lifecyc
+le.internal.LifecycleStarter
+.execute(LifecycleStarter.ja
+va:118)
+	at org.apache.maven.Default
+Maven.doExecute(DefaultMaven
+.java:261)
+	at org.apache.maven.Default
+Maven.doExecute(DefaultMaven
+.java:173)
+	at org.apache.maven.Default
+Maven.execute(DefaultMaven.j
+ava:101)
+	at org.apache.maven.cli.Mav
+enCli.execute(MavenCli.java:
+919)
+	at org.apache.maven.cli.Mav
+enCli.doMain(MavenCli.java:2
+85)
+	at org.apache.maven.cli.Mav
+enCli.main(MavenCli.java:207
+)
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke0(Native Method)
+	at java.base/jdk.internal.r
+eflect.NativeMethodAccessorI
+mpl.invoke(NativeMethodAcces
+sorImpl.java:77)
+	at java.base/jdk.internal.r
+eflect.DelegatingMethodAcces
+sorImpl.invoke(DelegatingMet
+hodAccessorImpl.java:43)
+	at java.base/java.lang.refl
+ect.Method.invoke(Method.jav
+a:568)
+	at org.codehaus.plexus.clas
+sworlds.launcher.Launcher.la
+unchEnhanced(Launcher.java:2
+55)
+	at org.codehaus.plexus.clas
+sworlds.launcher.Launcher.la
+unch(Launcher.java:201)
+	at org.codehaus.plexus.clas
+sworlds.launcher.Launcher.ma
+inWithExitCode(Launcher.java
+:361)
+	at org.codehaus.plexus.clas
+sworlds.launcher.Launcher.ma
+in(Launcher.java:314)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.660 s
+[INFO] Finished at: 2026-02-07T15:57:32+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.openjfx:javafx-maven-plugin:0.0.8:run (default-cli) on project front: Error: Command execution failed. Process exited with an error: 1 (Exit value: 1) -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

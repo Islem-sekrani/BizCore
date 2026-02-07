@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label text="Blog" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" />
+    <Label text="Lisez nos derniers articles." style="-fx-text-fill: #94A3B8;" />
+</VBox>
