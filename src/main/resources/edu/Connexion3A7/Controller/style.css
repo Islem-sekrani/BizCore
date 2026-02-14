@@ -1,0 +1,392 @@
+/* ============================
+   BIZCORE ADMIN PANEL THEME
+   ============================ */
+
+/* --- Root & Variables --- */
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -bc-dark: #2C3E50;
+    -bc-dark-lighter: #34495E;
+    -bc-teal: #2ECC9B;
+    -bc-teal-dark: #27AE7A;
+    -bc-bg: #F5F6FA;
+    -bc-white: #FFFFFF;
+    -bc-text-light: #BDC3C7;
+    -bc-text-dark: #2C3E50;
+    -bc-border: #E0E0E0;
+    -bc-danger: #E74C3C;
+    -bc-blue: #3498DB;
+}
+
+/* --- Sidebar --- */
+#sidebar {
+    -fx-background-color: -bc-dark;
+}
+
+#logoPane {
+    -fx-background-color: transparent;
+    -fx-padding: 20 0 20 0;
+    -fx-alignment: center;
+}
+
+#logoLabel {
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+#logoSubLabel {
+    -fx-text-fill: -bc-teal;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+}
+
+#sectionLabel {
+    -fx-text-fill: -bc-text-light;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 15 0 8 20;
+}
+
+/* --- Sidebar Nav Buttons --- */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -bc-text-light;
+    -fx-font-size: 13px;
+    -fx-padding: 12 20 12 20;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-width: 230;
+    -fx-max-width: 230;
+}
+
+.nav-button:hover {
+    -fx-background-color: -bc-dark-lighter;
+    -fx-text-fill: white;
+}
+
+.nav-button-active {
+    -fx-background-color: -bc-teal;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 20 12 20;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-width: 230;
+    -fx-max-width: 230;
+}
+
+.nav-button-active:hover {
+    -fx-background-color: -bc-teal-dark;
+}
+
+/* --- Admin Footer in Sidebar --- */
+#adminPane {
+    -fx-padding: 15 20 15 20;
+    -fx-border-color: -bc-dark-lighter transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+#adminNameLabel {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+#adminRoleLabel {
+    -fx-text-fill: -bc-text-light;
+    -fx-font-size: 11px;
+}
+
+/* --- Top Bar --- */
+#topBar {
+    -fx-background-color: -bc-white;
+    -fx-border-color: transparent transparent -bc-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 25 0 25;
+}
+
+#breadcrumbLabel {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bc-text-dark;
+}
+
+#homeIcon {
+    -fx-text-fill: -bc-teal;
+    -fx-font-size: 18px;
+}
+
+.top-icon-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #7F8C8D;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-padding: 8;
+}
+
+.top-icon-button:hover {
+    -fx-text-fill: -bc-text-dark;
+}
+
+/* --- Main Content Area --- */
+#contentArea {
+    -fx-background-color: -bc-bg;
+    -fx-padding: 20;
+}
+
+/* --- Form Card --- */
+#formCard {
+    -fx-background-color: -bc-white;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.06), 10, 0, 0, 2);
+    -fx-padding: 25;
+}
+
+#formTitle {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bc-text-dark;
+    -fx-padding: 0 0 15 0;
+}
+
+.form-label {
+    -fx-text-fill: #5D6D7E;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 0 2 0;
+}
+
+.form-field {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: -bc-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 13px;
+    -fx-pref-height: 36;
+}
+
+.form-field:focused {
+    -fx-border-color: -bc-teal;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.15), 6, 0, 0, 0);
+}
+
+.form-textarea {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: -bc-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-font-size: 13px;
+}
+
+.form-textarea:focused {
+    -fx-border-color: -bc-teal;
+    -fx-background-color: white;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    -fx-background-color: -bc-teal;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 30 10 30;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.3), 6, 0, 0, 2);
+}
+
+.btn-primary:hover {
+    -fx-background-color: -bc-teal-dark;
+}
+
+.btn-secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: #7F8C8D;
+    -fx-font-size: 13px;
+    -fx-padding: 10 30 10 30;
+    -fx-background-radius: 8;
+    -fx-border-color: -bc-border;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #F0F0F0;
+}
+
+.btn-danger {
+    -fx-background-color: -bc-danger;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 6 16 6 16;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #C0392B;
+}
+
+/* --- Book Button (User Dashboard) --- */
+.btn-book {
+    -fx-background-color: -bc-teal;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 28 10 28;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.3), 6, 0, 0, 2);
+}
+
+.btn-book:hover {
+    -fx-background-color: -bc-teal-dark;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.5), 10, 0, 0, 3);
+}
+
+/* --- Cancel Booking Button --- */
+.btn-cancel-book {
+    -fx-background-color: -bc-danger;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20 8 20;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.btn-cancel-book:hover {
+    -fx-background-color: #C0392B;
+}
+
+/* --- Booking Badge --- */
+.booking-badge {
+    -fx-background-color: #D5F5E3;
+    -fx-text-fill: #27AE60;
+    -fx-padding: 4 12 4 12;
+    -fx-background-radius: 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* --- Table --- */
+#coachTable {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+#coachTable .column-header-background {
+    -fx-background-color: -bc-bg;
+}
+
+#coachTable .column-header {
+    -fx-background-color: -bc-bg;
+    -fx-border-color: transparent transparent -bc-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+#coachTable .column-header .label {
+    -fx-text-fill: #5D6D7E;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+#coachTable .table-row-cell {
+    -fx-background-color: -bc-white;
+    -fx-border-color: transparent transparent #F0F0F0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+#coachTable .table-row-cell:hover {
+    -fx-background-color: #F8FFF8;
+}
+
+#coachTable .table-row-cell:selected {
+    -fx-background-color: rgba(46, 204, 155, 0.12);
+}
+
+#coachTable .table-cell {
+    -fx-text-fill: -bc-text-dark;
+    -fx-font-size: 12px;
+    -fx-padding: 8 6 8 6;
+}
+
+/* --- Table Card --- */
+#tableCard {
+    -fx-background-color: -bc-white;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.06), 10, 0, 0, 2);
+    -fx-padding: 20;
+}
+
+#tableTitle {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bc-text-dark;
+    -fx-padding: 0 0 10 0;
+}
+
+/* --- Profile Avatar Circle --- */
+.avatar-circle {
+    -fx-fill: -bc-teal;
+}
+
+/* --- ComboBox Styling --- */
+.form-combo {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: -bc-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 13px;
+    -fx-pref-height: 36;
+}
+
+.form-combo:focused {
+    -fx-border-color: -bc-teal;
+}
+
+/* --- Scrollbar styling --- */
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #CCD1D9;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+/* --- Status message --- */
+#statusLabel {
+    -fx-font-size: 12px;
+    -fx-padding: 8 0 0 0;
+}
+
+/* --- Gestion Nav Container Hover --- */
+#gestionContainer {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-transition: background-color 0.3s;
+}
+
+/* --- Profile Avatar (Top Bar) --- */
+#profileCircle {
+    -fx-fill: #BDC3C7;
+}
+
+#profileCircle:hover {
+    -fx-fill: -bc-teal;
+}
+
+/* --- Logo Image --- */
+#logoImage {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 6, 0, 0, 2);
+}

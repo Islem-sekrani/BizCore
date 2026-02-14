@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.Connexion3A7.Controller.AjouterCoach"
+            stylesheets="@style.css">
+
+<VBox spacing="20" style="-fx-background-color: #F5F6FA;">
+    <padding><Insets top="20" right="20" bottom="20" left="20" /></padding>
+
+    <!-- ==================== COACH PROFILES SECTION ==================== -->
+    <VBox id="tableCard" spacing="12">
+        <padding><Insets top="20" right="20" bottom="20" left="20" /></padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Label id="tableTitle" text="Profils des Coachs" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="profileCount" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" text="" />
+        </HBox>
+
+        <!-- Coach profile cards container (populated dynamically) -->
+        <VBox fx:id="profileCardsContainer" spacing="10">
+            <!-- Cards are added here by the controller -->
+        </VBox>
+
+        <Label fx:id="statusLabel" id="statusLabel" text="" />
+    </VBox>
+
+    <!-- ==================== ADD COACH FORM ==================== -->
+    <VBox id="formCard" spacing="10">
+        <padding><Insets top="20" right="20" bottom="20" left="20" /></padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Label id="formTitle" text="Ajouter un Coach" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="Retour" styleClass="btn-secondary" onAction="#handleRetour" />
+        </HBox>
+
+        <GridPane hgap="15" vgap="10">
+            <padding><Insets top="10" /></padding>
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50" />
+                <ColumnConstraints percentWidth="50" />
+            </columnConstraints>
+
+            <Label text="Nom" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="nom" styleClass="form-field" promptText="Nom du coach"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1" />
+
+            <Label text="Prenom" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <TextField fx:id="prenom" styleClass="form-field" promptText="Prenom du coach"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+            <Label text="Biographie" styleClass="form-label"
+                   GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" />
+            <TextArea fx:id="biographie" styleClass="form-textarea" promptText="Description du coach..."
+                      prefRowCount="2"
+                      GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2" />
+
+            <Label text="Experience (annees)" styleClass="form-label"
+                   GridPane.columnIndex="0" GridPane.rowIndex="4" />
+            <TextField fx:id="experience" styleClass="form-field" promptText="Ex: 5"
+                       GridPane.columnIndex="0" GridPane.rowIndex="5" />
+
+            <Label text="Tarif horaire" styleClass="form-label"
+                   GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <TextField fx:id="tarif" styleClass="form-field" promptText="Ex: 45.00"
+                       GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+            <Label text="Disponibilite" styleClass="form-label"
+                   GridPane.columnIndex="0" GridPane.rowIndex="6" />
+            <ComboBox fx:id="dispo" styleClass="form-combo" maxWidth="Infinity"
+                      GridPane.columnIndex="0" GridPane.rowIndex="7" />
+
+            <Label text="Certification" styleClass="form-label"
+                   GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <TextField fx:id="certif" styleClass="form-field" promptText="Ex: ICF, PCC..."
+                       GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+            <Label text="Note moyenne" styleClass="form-label"
+                   GridPane.columnIndex="0" GridPane.rowIndex="8" />
+            <TextField fx:id="note" styleClass="form-field" promptText="Ex: 4.5"
+                       GridPane.columnIndex="0" GridPane.rowIndex="9" />
+
+            <Label text="Domaine" styleClass="form-label"
+                   GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            <ComboBox fx:id="domaine" styleClass="form-combo" maxWidth="Infinity"
+                      GridPane.columnIndex="1" GridPane.rowIndex="9" />
+        </GridPane>
+
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <padding><Insets top="10" /></padding>
+            <Button text="Annuler" styleClass="btn-secondary" onAction="#handleRetour" />
+            <Button text="Valider" styleClass="btn-primary" onAction="#AjouterPersonneAction" />
+        </HBox>
+
+        <Label fx:id="formStatusLabel" id="statusLabel" text="" />
+    </VBox>
+
+</VBox>
+</ScrollPane>
