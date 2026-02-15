@@ -13,13 +13,15 @@ public class coach {
     private int experience;
     private float tarif;
     private String dispo;
-    private String certif;
+    private String numTel;
     private float note;
 
     public coach() {
     }
 
-    public coach(int id_coach, int id_user, String domaine, String nom, String prenom, String biographie, int experience, float tarif, String dispo, String certif, float note) {
+    public coach(int id_coach, int id_user, String domaine, String nom, String prenom,
+            String biographie, int experience, float tarif, String dispo,
+            String numTel, float note) {
         this.id_coach = id_coach;
         this.id_user = id_user;
         this.domaine = domaine;
@@ -29,7 +31,7 @@ public class coach {
         this.experience = experience;
         this.tarif = tarif;
         this.dispo = dispo;
-        this.certif = certif;
+        this.numTel = numTel;
         this.note = note;
     }
 
@@ -105,12 +107,12 @@ public class coach {
         this.dispo = dispo;
     }
 
-    public String getCertif() {
-        return certif;
+    public String getNumTel() {
+        return numTel;
     }
 
-    public void setCertif(String certif) {
-        this.certif = certif;
+    public void setNumTel(String numTel) {
+        this.numTel = numTel;
     }
 
     public float getNote() {
@@ -126,27 +128,37 @@ public class coach {
         return "coach{" +
                 "id_coach=" + id_coach +
                 ", id_user=" + id_user +
-                ", id_domaine=" + domaine +
+                ", domaine='" + domaine + '\'' +
                 ", nom='" + nom + '\'' +
                 ", prenom='" + prenom + '\'' +
                 ", biographie='" + biographie + '\'' +
                 ", experience=" + experience +
                 ", tarif=" + tarif +
                 ", dispo='" + dispo + '\'' +
-                ", certif='" + certif + '\'' +
+                ", numTel='" + numTel + '\'' +
                 ", note=" + note +
                 '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass())
+            return false;
         coach coach = (coach) o;
-        return id_coach == coach.id_coach && id_user == coach.id_user && domaine == coach.domaine && experience == coach.experience && Float.compare(tarif, coach.tarif) == 0 && Float.compare(note, coach.note) == 0 && Objects.equals(nom, coach.nom) && Objects.equals(prenom, coach.prenom) && Objects.equals(biographie, coach.biographie) && Objects.equals(dispo, coach.dispo) && Objects.equals(certif, coach.certif);
+        return id_coach == coach.id_coach && id_user == coach.id_user
+                && experience == coach.experience && Float.compare(tarif, coach.tarif) == 0
+                && Float.compare(note, coach.note) == 0
+                && Objects.equals(domaine, coach.domaine)
+                && Objects.equals(nom, coach.nom)
+                && Objects.equals(prenom, coach.prenom)
+                && Objects.equals(biographie, coach.biographie)
+                && Objects.equals(dispo, coach.dispo)
+                && Objects.equals(numTel, coach.numTel);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id_coach, id_user, domaine, nom, prenom, biographie, experience, tarif, dispo, certif, note);
+        return Objects.hash(id_coach, id_user, domaine, nom, prenom, biographie,
+                experience, tarif, dispo, numTel, note);
     }
 }

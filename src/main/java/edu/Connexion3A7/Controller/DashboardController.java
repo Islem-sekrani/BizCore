@@ -8,20 +8,25 @@ import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DashboardController {
 
@@ -55,9 +60,17 @@ public class DashboardController {
     @FXML
     private Button addCoachBtn;
 
-    // --- Table columns ---
+    // --- Domain stats ---
     @FXML
-    private TableColumn<coach, Integer> colId;
+    private HBox statsContainer;
+
+    // --- Search + Sort ---
+    @FXML
+    private TextField searchField;
+    @FXML
+    private ComboBox<String> sortOrder;
+
+    // --- Table columns ---
     @FXML
     private TableColumn<coach, String> colNom;
     @FXML
@@ -69,7 +82,7 @@ public class DashboardController {
     @FXML
     private TableColumn<coach, String> colDispo;
     @FXML
-    private TableColumn<coach, String> colCertif;
+    private TableColumn<coach, String> colNumTel;
     @FXML
     private TableColumn<coach, Float> colNote;
     @FXML
@@ -77,9 +90,10 @@ public class DashboardController {
 
     private final CoachService coachService = new CoachService();
 
-    /** The logged-in user's ID — passed from login controller */
+    /** Full unfiltered list — kept for search/sort */
+    private List<coach> allCoaches = List.of();
+
     private int loggedInUserId = 0;
-    private user loggedInUser;
 
     public void setLoggedInUserId(int userId) {
         this.loggedInUserId = userId;
@@ -90,7 +104,6 @@ public class DashboardController {
     }
 
     public void setLoggedInUser(user u) {
-        this.loggedInUser = u;
         if (u != null) {
             String initial = u.getEmail() != null && !u.getEmail().isEmpty()
                     ? String.valueOf(u.getEmail().charAt(0)).toUpperCase()
@@ -101,17 +114,17 @@ public class DashboardController {
 
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getId_coach()).asObject());
+        // Table columns
         colNom.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNom()));
         colPrenom.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPrenom()));
         colExperience
                 .setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getExperience()).asObject());
         colTarif.setCellValueFactory(data -> new SimpleFloatProperty(data.getValue().getTarif()).asObject());
         colDispo.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDispo()));
-        colCertif.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCertif()));
+        colNumTel.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNumTel()));
         colNote.setCellValueFactory(data -> new SimpleFloatProperty(data.getValue().getNote()).asObject());
 
-        // Actions column with Delete button
+        // Actions column
         colActions.setCellFactory(col -> new TableCell<>() {
             private final Button deleteBtn = new Button("Sup.");
             {
@@ -129,6 +142,15 @@ public class DashboardController {
             }
         });
 
+        // Sort ComboBox
+        sortOrder.setItems(FXCollections.observableArrayList(
+                "Nom (A → Z)", "Nom (Z → A)"));
+        sortOrder.getSelectionModel().selectFirst();
+        sortOrder.valueProperty().addListener((obs, oldVal, newVal) -> filterAndSort());
+
+        // Search listener
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterAndSort());
+
         // Sidebar hover
         gestionContainer.setOnMouseEntered(
                 e -> gestionContainer.setStyle("-fx-background-color: rgba(52,73,94,0.5); -fx-background-radius: 8;"));
@@ -139,6 +161,9 @@ public class DashboardController {
         refreshTable();
     }
 
+    /**
+     * Reload all data from DB, refresh stats, and apply current filter/sort.
+     */
     public void refreshTable() {
         if (!MyConnection.getInstance().isConnected()) {
             statusLabel.setText("Base de donnees non disponible. Verifiez MySQL.");
@@ -148,26 +173,105 @@ public class DashboardController {
         }
 
         try {
-            List<coach> coaches = coachService.getData();
-            ObservableList<coach> data = FXCollections.observableArrayList(coaches);
-            coachTable.setItems(data);
-            statusLabel.setText(coaches.size() + " coach(s) trouve(s)");
-            statusLabel.setStyle("-fx-text-fill: #27AE7A;");
-
-            if (!coaches.isEmpty()) {
-                coach first = coaches.get(0);
-                String initials = "";
-                if (first.getNom() != null && !first.getNom().isEmpty())
-                    initials += first.getNom().charAt(0);
-                if (first.getPrenom() != null && !first.getPrenom().isEmpty())
-                    initials += first.getPrenom().charAt(0);
-                profileInitials.setText(initials.toUpperCase());
-            }
+            allCoaches = coachService.getData();
+            filterAndSort();
+            loadDomainStats();
         } catch (SQLException e) {
             showErrorAlert("Erreur chargement", e.getMessage());
             statusLabel.setText("Erreur: " + e.getMessage());
             statusLabel.setStyle("-fx-text-fill: #E74C3C;");
             coachTable.setItems(FXCollections.observableArrayList());
+        }
+    }
+
+    /**
+     * Filter allCoaches by search text and sort by selected order.
+     */
+    private void filterAndSort() {
+        String query = searchField.getText() != null ? searchField.getText().trim().toLowerCase() : "";
+        String order = sortOrder.getValue();
+
+        List<coach> filtered = allCoaches.stream()
+                .filter(c -> {
+                    if (query.isEmpty())
+                        return true;
+                    String fullName = ((c.getNom() != null ? c.getNom() : "") + " "
+                            + (c.getPrenom() != null ? c.getPrenom() : "")).toLowerCase();
+                    return fullName.contains(query);
+                })
+                .sorted(getComparator(order))
+                .collect(Collectors.toList());
+
+        coachTable.setItems(FXCollections.observableArrayList(filtered));
+        statusLabel.setText(filtered.size() + " coach(s) trouve(s)");
+        statusLabel.setStyle("-fx-text-fill: #27AE7A;");
+    }
+
+    private Comparator<coach> getComparator(String order) {
+        if ("Nom (Z → A)".equals(order)) {
+            return (a, b) -> {
+                String na = a.getNom() != null ? a.getNom() : "";
+                String nb = b.getNom() != null ? b.getNom() : "";
+                return nb.compareToIgnoreCase(na);
+            };
+        }
+        // Default: A → Z
+        return (a, b) -> {
+            String na = a.getNom() != null ? a.getNom() : "";
+            String nb = b.getNom() != null ? b.getNom() : "";
+            return na.compareToIgnoreCase(nb);
+        };
+    }
+
+    /**
+     * Build domain stat cards from DB data.
+     */
+    private void loadDomainStats() {
+        statsContainer.getChildren().clear();
+
+        try {
+            Map<String, Integer> stats = coachService.getCoachCountByDomaine();
+
+            String[] bgColors = { "#EBF5FB", "#FDEDEC", "#E8F8F5", "#F5EEF8", "#FEF9E7", "#EAFAF1" };
+            String[] fgColors = { "#2980B9", "#E74C3C", "#1ABC9C", "#8E44AD", "#F39C12", "#27AE60" };
+            int colorIdx = 0;
+
+            for (Map.Entry<String, Integer> entry : stats.entrySet()) {
+                VBox card = new VBox(4);
+                card.setPadding(new Insets(12, 18, 12, 18));
+                card.setAlignment(Pos.CENTER);
+                String bg = bgColors[colorIdx % bgColors.length];
+                String fg = fgColors[colorIdx % fgColors.length];
+                card.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 10;");
+
+                Label countLabel = new Label(String.valueOf(entry.getValue()));
+                countLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + fg + ";");
+
+                Label nameLabel = new Label(entry.getKey());
+                nameLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + fg + ";");
+
+                card.getChildren().addAll(countLabel, nameLabel);
+                statsContainer.getChildren().add(card);
+                colorIdx++;
+            }
+
+            // Total card
+            int total = stats.values().stream().mapToInt(Integer::intValue).sum();
+            VBox totalCard = new VBox(4);
+            totalCard.setPadding(new Insets(12, 18, 12, 18));
+            totalCard.setAlignment(Pos.CENTER);
+            totalCard.setStyle("-fx-background-color: #2C3E50; -fx-background-radius: 10;");
+
+            Label totalCount = new Label(String.valueOf(total));
+            totalCount.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            Label totalLabel = new Label("TOTAL");
+            totalLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #BDC3C7;");
+
+            totalCard.getChildren().addAll(totalCount, totalLabel);
+            statsContainer.getChildren().add(totalCard);
+        } catch (SQLException e) {
+            System.out.println("Erreur chargement stats domaine: " + e.getMessage());
         }
     }
 
@@ -212,7 +316,6 @@ public class DashboardController {
         });
     }
 
-    /** Show an error Alert dialog */
     private void showErrorAlert(String header, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Erreur");
@@ -242,7 +345,6 @@ public class DashboardController {
     void handleLogout(ActionEvent event) {
         try {
             loggedInUserId = 0;
-            loggedInUser = null;
             Parent root = FXMLLoader.load(
                     getClass().getResource("/edu/Connexion3A7/Controller/login.fxml"));
             contentArea.getScene().setRoot(root);

@@ -59,7 +59,7 @@
 
             <Label text="Biographie" styleClass="form-label"
                    GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" />
-            <TextArea fx:id="biographie" styleClass="form-textarea" promptText="Description du coach..."
+            <TextArea fx:id="biographie" styleClass="form-textarea" promptText="Description du coach (min 10 caracteres)..."
                       prefRowCount="2"
                       GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2" />
 
@@ -68,9 +68,9 @@
             <TextField fx:id="experience" styleClass="form-field" promptText="Ex: 5"
                        GridPane.columnIndex="0" GridPane.rowIndex="5" />
 
-            <Label text="Tarif horaire" styleClass="form-label"
+            <Label text="Tarif (DT/H)" styleClass="form-label"
                    GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <TextField fx:id="tarif" styleClass="form-field" promptText="Ex: 45.00"
+            <TextField fx:id="tarif" styleClass="form-field" promptText="Ex: 45.00 DT"
                        GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
             <Label text="Disponibilite" styleClass="form-label"
@@ -78,20 +78,15 @@
             <ComboBox fx:id="dispo" styleClass="form-combo" maxWidth="Infinity"
                       GridPane.columnIndex="0" GridPane.rowIndex="7" />
 
-            <Label text="Certification" styleClass="form-label"
+            <Label text="Numero de telephone" styleClass="form-label"
                    GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <TextField fx:id="certif" styleClass="form-field" promptText="Ex: ICF, PCC..."
+            <TextField fx:id="numTel" styleClass="form-field" promptText="8 chiffres (ex: 12345678)"
                        GridPane.columnIndex="1" GridPane.rowIndex="7" />
 
-            <Label text="Note moyenne" styleClass="form-label"
-                   GridPane.columnIndex="0" GridPane.rowIndex="8" />
-            <TextField fx:id="note" styleClass="form-field" promptText="Ex: 4.5"
-                       GridPane.columnIndex="0" GridPane.rowIndex="9" />
-
             <Label text="Domaine" styleClass="form-label"
-                   GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                   GridPane.columnIndex="0" GridPane.rowIndex="8" />
             <ComboBox fx:id="domaine" styleClass="form-combo" maxWidth="Infinity"
-                      GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                      GridPane.columnIndex="0" GridPane.rowIndex="9" />
         </GridPane>
 
         <HBox spacing="12" alignment="CENTER_RIGHT">

@@ -19,6 +19,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AjouterCoach {
@@ -45,9 +46,7 @@ public class AjouterCoach {
     @FXML
     private ComboBox<String> dispo;
     @FXML
-    private TextField certif;
-    @FXML
-    private TextField note;
+    private TextField numTel;
     @FXML
     private ComboBox<DomaineNom> domaine;
     @FXML
@@ -146,7 +145,7 @@ public class AjouterCoach {
         initials.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
         avatar.getChildren().addAll(circle, initials);
 
-        // Info
+        // Info — no IDs displayed
         VBox info = new VBox(3);
         HBox.setHgrow(info, Priority.ALWAYS);
 
@@ -156,13 +155,13 @@ public class AjouterCoach {
 
         Label detailLabel = new Label(
                 "Exp: " + c.getExperience() + " ans | Tarif: " + c.getTarif() +
-                        "/h | Note: " + c.getNote() + "/5");
+                        " DT/H | Note: " + c.getNote() + "/5");
         detailLabel.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 11px;");
 
         Label dispoLabel = new Label(
                 (c.getDispo() != null ? c.getDispo() : "N/A") +
-                        " | "
-                        + (c.getCertif() != null && !c.getCertif().isEmpty() ? c.getCertif() : "Pas de certification"));
+                        " | Tel: "
+                        + (c.getNumTel() != null && !c.getNumTel().isEmpty() ? c.getNumTel() : "N/A"));
         dispoLabel.setStyle("-fx-text-fill: #95A5A6; -fx-font-size: 11px;");
 
         info.getChildren().addAll(nameLabel, detailLabel, dispoLabel);
@@ -203,17 +202,104 @@ public class AjouterCoach {
         return initials.toUpperCase();
     }
 
+    // ==================== VALIDATION ====================
+
+    /**
+     * Validate all form fields. Returns a list of error messages.
+     * Empty list = valid.
+     */
+    private List<String> validateForm() {
+        List<String> errors = new ArrayList<>();
+
+        // nom: required, letters/spaces only, min 2
+        String nomVal = nom.getText() != null ? nom.getText().trim() : "";
+        if (nomVal.isEmpty()) {
+            errors.add("Le nom est obligatoire.");
+        } else if (nomVal.length() < 2) {
+            errors.add("Le nom doit contenir au moins 2 caracteres.");
+        } else if (!nomVal.matches("[a-zA-ZÀ-ÿ\\s]+")) {
+            errors.add("Le nom ne doit contenir que des lettres et espaces.");
+        }
+
+        // prenom: required, letters/spaces only, min 2
+        String prenomVal = prenom.getText() != null ? prenom.getText().trim() : "";
+        if (prenomVal.isEmpty()) {
+            errors.add("Le prenom est obligatoire.");
+        } else if (prenomVal.length() < 2) {
+            errors.add("Le prenom doit contenir au moins 2 caracteres.");
+        } else if (!prenomVal.matches("[a-zA-ZÀ-ÿ\\s]+")) {
+            errors.add("Le prenom ne doit contenir que des lettres et espaces.");
+        }
+
+        // biographie: required, min 10 chars
+        String bioVal = biographie.getText() != null ? biographie.getText().trim() : "";
+        if (bioVal.isEmpty()) {
+            errors.add("La biographie est obligatoire.");
+        } else if (bioVal.length() < 10) {
+            errors.add("La biographie doit contenir au moins 10 caracteres.");
+        }
+
+        // experience: required, integer >= 0
+        String expVal = experience.getText() != null ? experience.getText().trim() : "";
+        if (expVal.isEmpty()) {
+            errors.add("L'experience est obligatoire.");
+        } else {
+            try {
+                int exp = Integer.parseInt(expVal);
+                if (exp < 0) {
+                    errors.add("L'experience doit etre >= 0.");
+                }
+            } catch (NumberFormatException e) {
+                errors.add("L'experience doit etre un nombre entier valide.");
+            }
+        }
+
+        // tarif: required, decimal > 0
+        String tarifVal = tarif.getText() != null ? tarif.getText().trim() : "";
+        if (tarifVal.isEmpty()) {
+            errors.add("Le tarif horaire est obligatoire.");
+        } else {
+            try {
+                double t = Double.parseDouble(tarifVal);
+                if (t <= 0) {
+                    errors.add("Le tarif horaire doit etre > 0.");
+                }
+            } catch (NumberFormatException e) {
+                errors.add("Le tarif horaire doit etre un nombre valide.");
+            }
+        }
+
+        // disponibilite: ComboBox not null
+        if (dispo.getValue() == null || dispo.getValue().isEmpty()) {
+            errors.add("La disponibilite est obligatoire.");
+        }
+
+        // domaine: ComboBox not null
+        if (domaine.getValue() == null) {
+            errors.add("Le domaine est obligatoire.");
+        }
+
+        // numTel: required, exactly 8 digits, numeric only
+        String telVal = numTel.getText() != null ? numTel.getText().trim() : "";
+        if (telVal.isEmpty()) {
+            errors.add("Le numero de telephone est obligatoire.");
+        } else if (!telVal.matches("\\d{8}")) {
+            errors.add("Le numero de telephone doit contenir exactement 8 chiffres.");
+        }
+
+        return errors;
+    }
+
     // ==================== CRUD ====================
 
     @FXML
     void AjouterPersonneAction(ActionEvent event) {
-        if (nom.getText().isEmpty() || prenom.getText().isEmpty()) {
-            showErrorAlert("Validation", "Nom et Prenom sont obligatoires.");
-            return;
-        }
-
-        if (domaine.getValue() == null) {
-            showErrorAlert("Validation", "Veuillez selectionner un domaine.");
+        // Full validation
+        List<String> errors = validateForm();
+        if (!errors.isEmpty()) {
+            showErrorAlert("Erreurs de validation", String.join("\n", errors));
+            formStatusLabel.setText("Veuillez corriger les erreurs.");
+            formStatusLabel.setStyle("-fx-text-fill: #E74C3C;");
             return;
         }
 
@@ -223,27 +309,48 @@ public class AjouterCoach {
         }
 
         try {
+            String nomVal = nom.getText().trim();
+            String prenomVal = prenom.getText().trim();
+
+            // Duplicate check
+            if (editingCoach != null) {
+                if (coachService.isCoachDuplicateExcluding(nomVal, prenomVal, editingCoach.getId_coach())) {
+                    showErrorAlert("Coach deja existant",
+                            "Un coach avec le nom \"" + nomVal + " " + prenomVal + "\" existe deja.");
+                    return;
+                }
+            } else {
+                if (coachService.isCoachDuplicate(nomVal, prenomVal)) {
+                    showErrorAlert("Coach deja existant",
+                            "Un coach avec le nom \"" + nomVal + " " + prenomVal + "\" existe deja.");
+                    return;
+                }
+            }
+
             coach c;
             if (editingCoach != null) {
                 c = editingCoach;
             } else {
                 c = new coach();
-                // Use the REAL logged-in user ID (not hardcoded 1)
                 c.setId_user(loggedInUserId);
             }
 
-            c.setNom(nom.getText().trim());
-            c.setPrenom(prenom.getText().trim());
-            c.setBiographie(biographie.getText() != null ? biographie.getText().trim() : "");
-            c.setExperience(parseIntSafe(experience.getText()));
-            c.setTarif(parseFloatSafe(tarif.getText()));
-            c.setNote(parseFloatSafe(note.getText()));
-            c.setDispo(dispo.getValue() != null ? dispo.getValue() : "Disponible");
-            c.setCertif(certif.getText() != null ? certif.getText().trim() : "");
+            c.setNom(nomVal);
+            c.setPrenom(prenomVal);
+            c.setBiographie(biographie.getText().trim());
+            c.setExperience(Integer.parseInt(experience.getText().trim()));
+            c.setTarif(Float.parseFloat(tarif.getText().trim()));
+            c.setDispo(dispo.getValue());
+            c.setNumTel(numTel.getText().trim());
 
-            // Look up domaine ID from selected enum
+            // Note defaults to 0; users rate via their dashboard
+            if (editingCoach == null) {
+                c.setNote(0f);
+            }
+
+            // Domaine — store the enum name
             DomaineNom selectedDomaine = domaine.getValue();
-            c.setDomaine(selectedDomaine.name());   // "E_COMMERCE", "BRANDING", ...
+            c.setDomaine(selectedDomaine.name());
 
             if (editingCoach != null) {
                 coachService.updateCoach(c);
@@ -271,20 +378,6 @@ public class AjouterCoach {
         }
     }
 
-    private int findDomaineIdByNom(DomaineNom nom) {
-        try {
-            List<DomaineCoaching> domaines = domaineService.getData();
-            for (DomaineCoaching d : domaines) {
-                if (d.getNomDomaine() == nom) {
-                    return d.getIdDomaine();
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("Erreur lookup domaine: " + e.getMessage());
-        }
-        return 1;
-    }
-
     private void handleModifyCoach(coach c) {
         editingCoach = c;
         nom.setText(c.getNom());
@@ -292,8 +385,7 @@ public class AjouterCoach {
         biographie.setText(c.getBiographie());
         experience.setText(String.valueOf(c.getExperience()));
         tarif.setText(String.valueOf(c.getTarif()));
-        note.setText(String.valueOf(c.getNote()));
-        certif.setText(c.getCertif());
+        numTel.setText(c.getNumTel());
 
         if (c.getDispo() != null) {
             dispo.getSelectionModel().select(c.getDispo());
@@ -305,7 +397,12 @@ public class AjouterCoach {
                 domaine.getSelectionModel().select(dc.getNomDomaine());
             }
         } catch (SQLException e) {
-            System.out.println("Erreur lookup domaine: " + e.getMessage());
+            try {
+                DomaineNom dn = DomaineNom.valueOf(c.getDomaine());
+                domaine.getSelectionModel().select(dn);
+            } catch (Exception ex) {
+                System.out.println("Erreur lookup domaine: " + e.getMessage());
+            }
         }
 
         formStatusLabel.setText("Mode modification: " + c.getNom() + " " + c.getPrenom());
@@ -347,8 +444,7 @@ public class AjouterCoach {
         biographie.clear();
         experience.clear();
         tarif.clear();
-        certif.clear();
-        note.clear();
+        numTel.clear();
         dispo.getSelectionModel().selectFirst();
         domaine.getSelectionModel().selectFirst();
         editingCoach = null;
@@ -370,21 +466,5 @@ public class AjouterCoach {
         alert.setHeaderText(header);
         alert.setContentText(content);
         alert.showAndWait();
-    }
-
-    private int parseIntSafe(String s) {
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    private float parseFloatSafe(String s) {
-        try {
-            return Float.parseFloat(s.trim());
-        } catch (Exception e) {
-            return 0f;
-        }
     }
 }

@@ -14,7 +14,7 @@ public class CoachService implements IService<coach> {
     public void addCoach(coach coach) throws SQLException {
         // Do NOT insert id_coach — let the DB auto-increment it
         String sql = "INSERT INTO coach " +
-                "(id_user,domaine, nom, prenom, biographie, experience_annees, tarif_horaire, disponibilite, certification, note_moyenne) "
+                "(id_user, domaine, nom, prenom, biographie, experience_annees, tarif_horaire, disponibilite, num_tel, note_moyenne) "
                 +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -28,7 +28,7 @@ public class CoachService implements IService<coach> {
         pst.setInt(6, coach.getExperience());
         pst.setDouble(7, coach.getTarif());
         pst.setString(8, coach.getDispo());
-        pst.setString(9, coach.getCertif());
+        pst.setString(9, coach.getNumTel());
         pst.setDouble(10, coach.getNote());
 
         pst.executeUpdate();
@@ -47,7 +47,7 @@ public class CoachService implements IService<coach> {
     @Override
     public void updateCoach(coach coach) throws SQLException {
         String sql = "UPDATE coach SET id_user = ?, domaine = ?, nom = ?, prenom = ?, biographie = ?, " +
-                "experience_annees = ?, tarif_horaire = ?, disponibilite = ?, certification = ?, note_moyenne = ? " +
+                "experience_annees = ?, tarif_horaire = ?, disponibilite = ?, num_tel = ?, note_moyenne = ? " +
                 "WHERE id_coach = ?";
         PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
         pst.setInt(1, coach.getId_user());
@@ -58,7 +58,7 @@ public class CoachService implements IService<coach> {
         pst.setInt(6, coach.getExperience());
         pst.setDouble(7, coach.getTarif());
         pst.setString(8, coach.getDispo());
-        pst.setString(9, coach.getCertif());
+        pst.setString(9, coach.getNumTel());
         pst.setDouble(10, coach.getNote());
         pst.setInt(11, coach.getId_coach());
         pst.executeUpdate();
@@ -83,11 +83,71 @@ public class CoachService implements IService<coach> {
             c.setExperience(rs.getInt("experience_annees"));
             c.setTarif(rs.getFloat("tarif_horaire"));
             c.setDispo(rs.getString("disponibilite"));
-            c.setCertif(rs.getString("certification"));
+            c.setNumTel(rs.getString("num_tel"));
             c.setNote(rs.getFloat("note_moyenne"));
             data.add(c);
         }
 
         return data;
+    }
+
+    /**
+     * Check if a coach with the same (nom, prenom) already exists.
+     * Used before INSERT to prevent duplicates.
+     */
+    public boolean isCoachDuplicate(String nom, String prenom) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM coach WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setString(1, nom.trim());
+        pst.setString(2, prenom.trim());
+        ResultSet rs = pst.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+        return false;
+    }
+
+    /**
+     * Check if a coach with the same (nom, prenom) already exists,
+     * excluding a specific coach ID. Used before UPDATE.
+     */
+    public boolean isCoachDuplicateExcluding(String nom, String prenom, int excludeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM coach WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?) AND id_coach != ?";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setString(1, nom.trim());
+        pst.setString(2, prenom.trim());
+        pst.setInt(3, excludeId);
+        ResultSet rs = pst.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+        return false;
+    }
+
+    /**
+     * Update the note_moyenne (rating) for a specific coach.
+     * Called by users from the user dashboard.
+     */
+    public void updateRating(int coachId, float newRating) throws SQLException {
+        String sql = "UPDATE coach SET note_moyenne = ? WHERE id_coach = ?";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setFloat(1, newRating);
+        pst.setInt(2, coachId);
+        pst.executeUpdate();
+    }
+
+    /**
+     * Returns coach count grouped by domaine.
+     * Used for domain-based statistics on the admin dashboard.
+     */
+    public java.util.Map<String, Integer> getCoachCountByDomaine() throws SQLException {
+        java.util.Map<String, Integer> stats = new java.util.LinkedHashMap<>();
+        String sql = "SELECT domaine, COUNT(*) AS cnt FROM coach GROUP BY domaine ORDER BY cnt DESC";
+        Statement st = MyConnection.getInstance().getCnx().createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        while (rs.next()) {
+            stats.put(rs.getString("domaine"), rs.getInt("cnt"));
+        }
+        return stats;
     }
 }
