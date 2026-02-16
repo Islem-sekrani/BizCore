@@ -1,6 +1,5 @@
 package com.gestion.controllers;
 
-import com.gestion.entities.Evenement;
 import com.gestion.models.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,7 +50,7 @@ public class ModuleViewController implements Initializable {
     public void setModuleType(String moduleType) {
         this.moduleType = moduleType;
         initializeTable();
-
+        loadSampleData();
     }
 
     private void initializeTable() {
@@ -175,7 +174,60 @@ public class ModuleViewController implements Initializable {
         };
     }
 
-
+    private void loadSampleData() {
+        dataList = FXCollections.observableArrayList();
+        
+        switch (moduleType) {
+            case "UTILISATEURS":
+                dataList.addAll(
+                    new User(1, "Jean", "Dupont", "jean.dupont@email.com", "Administrateur", getCurrentDateTime()),
+                    new User(2, "Marie", "Martin", "marie.martin@email.com", "Utilisateur", getCurrentDateTime()),
+                    new User(3, "Pierre", "Bernard", "pierre.bernard@email.com", "Modérateur", getCurrentDateTime()),
+                    new User(4, "Sophie", "Dubois", "sophie.dubois@email.com", "Utilisateur", getCurrentDateTime()),
+                    new User(5, "Luc", "Thomas", "luc.thomas@email.com", "Coach", getCurrentDateTime())
+                );
+                break;
+            case "EVENEMENTS":
+                dataList.addAll(
+                    new Event(1, "Conférence Tech 2024", "Conférence", "15 Mars 2024", "Paris", "Confirmé"),
+                    new Event(2, "Workshop IA", "Atelier", "20 Mars 2024", "Lyon", "En attente"),
+                    new Event(3, "Networking Event", "Networking", "25 Mars 2024", "Marseille", "Confirmé"),
+                    new Event(4, "Formation DevOps", "Formation", "01 Avril 2024", "Toulouse", "Annulé"),
+                    new Event(5, "Hackathon 2024", "Compétition", "10 Avril 2024", "Bordeaux", "Confirmé")
+                );
+                break;
+            case "COACHING":
+                dataList.addAll(
+                    new Coaching(1, "Dr. Sarah Johnson", "Développement Personnel", "Marc Leroy", "18 Fév 2024 14:00", "Actif"),
+                    new Coaching(2, "Jean-Paul Dubois", "Business Coaching", "Claire Martin", "20 Fév 2024 10:00", "Actif"),
+                    new Coaching(3, "Marie Lambert", "Coaching Carrière", "Thomas Bernard", "22 Fév 2024 16:00", "Planifié"),
+                    new Coaching(4, "Pierre Moreau", "Leadership", "Sophie Petit", "25 Fév 2024 09:00", "Actif"),
+                    new Coaching(5, "Anne Rousseau", "Gestion Stress", "Luc Durand", "28 Fév 2024 11:00", "Terminé")
+                );
+                break;
+            case "BLOG":
+                dataList.addAll(
+                    new Blog(1, "Les tendances IA en 2024", "Jean Tech", "Technologie", "05 Fév 2024", 1250),
+                    new Blog(2, "Guide du développeur moderne", "Marie Code", "Développement", "03 Fév 2024", 890),
+                    new Blog(3, "L'importance du coaching", "Sophie Well", "Bien-être", "01 Fév 2024", 645),
+                    new Blog(4, "Marketing digital efficace", "Pierre Biz", "Business", "28 Jan 2024", 1580),
+                    new Blog(5, "Réussir sa transformation", "Luc Change", "Management", "25 Jan 2024", 720)
+                );
+                break;
+            case "PRODUITS":
+                dataList.addAll(
+                    new Product(1, "Formation Java Avancé", "Formation", "299.99€", 45, 127),
+                    new Product(2, "Livre: Clean Code", "Livre", "39.99€", 120, 89),
+                    new Product(3, "Abonnement Premium", "Abonnement", "29.99€/mois", 999, 456),
+                    new Product(4, "Kit Développeur", "Kit", "149.99€", 30, 67),
+                    new Product(5, "Cours Python Débutant", "Formation", "199.99€", 80, 234)
+                );
+                break;
+        }
+        
+        updateTable();
+        updateResultsLabel();
+    }
 
     private void updateTable() {
         dataTable.setItems(dataList);
@@ -288,6 +340,5 @@ public class ModuleViewController implements Initializable {
                 setGraphic(checkBox);
             }
         }
-
     }
 }

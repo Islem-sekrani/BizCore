@@ -1,5 +1,7 @@
 package com.gestion.controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -8,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -23,16 +26,13 @@ public class MainDashboardController implements Initializable {
     @FXML private Label lblTitle;
     @FXML private Label lblUserName;
 
-    private String currentModule;
+    private String currentModule = "UTILISATEURS";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        lblUserName.setText("Admin User");
-
-        // Charger module par défaut
+        // Charger le module par défaut
         loadModule("UTILISATEURS");
-        updateActiveButton(btnUtilisateurs);
+        lblUserName.setText("Admin User");
     }
 
     @FXML
@@ -65,70 +65,44 @@ public class MainDashboardController implements Initializable {
         updateActiveButton(btnProduits);
     }
 
-    // 🔥 MÉTHODE CORRIGÉE
     private void loadModule(String moduleName) {
-
         try {
-
             currentModule = moduleName;
             lblTitle.setText("GESTION " + moduleName);
-
-            String fxmlPath;
-
-            switch (moduleName) {
-
-                case "UTILISATEURS":
-                    fxmlPath = "/fxml/UtilisateursView.fxml";
-                    break;
-
-                case "EVENEMENTS":
-                    fxmlPath = "/fxml/EvenementView.fxml";
-                    break;
-
-                case "COACHING":
-                    fxmlPath = "/fxml/CoachingView.fxml";
-                    break;
-
-                case "BLOG":
-                    fxmlPath = "/fxml/BlogView.fxml";
-                    break;
-
-
-
-                default:
-                    throw new RuntimeException("Module inconnu : " + moduleName);
-            }
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ModuleView.fxml"));
             Parent moduleView = loader.load();
-
+            
+            ModuleViewController controller = loader.getController();
+            controller.setModuleType(moduleName);
+            
             contentArea.getChildren().clear();
             contentArea.getChildren().add(moduleView);
-
+            
             AnchorPane.setTopAnchor(moduleView, 0.0);
             AnchorPane.setBottomAnchor(moduleView, 0.0);
             AnchorPane.setLeftAnchor(moduleView, 0.0);
             AnchorPane.setRightAnchor(moduleView, 0.0);
-
-        } catch (Exception e) {
+            
+        } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de charger le module : " + moduleName);
+            showAlert("Erreur", "Impossible de charger le module: " + moduleName);
         }
     }
 
     private void updateActiveButton(Button activeButton) {
-
+        // Retirer la classe active de tous les boutons
         btnUtilisateurs.getStyleClass().remove("active-menu-btn");
         btnEvenements.getStyleClass().remove("active-menu-btn");
         btnCoaching.getStyleClass().remove("active-menu-btn");
         btnBlog.getStyleClass().remove("active-menu-btn");
         btnProduits.getStyleClass().remove("active-menu-btn");
-
+        
+        // Ajouter la classe active au bouton cliqué
         activeButton.getStyleClass().add("active-menu-btn");
     }
 
     private void showAlert(String title, String message) {
-
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);

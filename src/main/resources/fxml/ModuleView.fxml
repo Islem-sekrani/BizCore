@@ -4,11 +4,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.gestion.controllers.ModuleViewController"
-      spacing="12">
 
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gestion.controllers.ModuleViewController"
+      styleClass="module-container" spacing="20">
 
     <!-- Action Buttons Row -->
     <HBox spacing="15" alignment="CENTER_LEFT">
