@@ -46,7 +46,7 @@
                 <Button fx:id="btnUtilisateurs" text="👤  UTILISATEURS" 
                         styleClass="menu-btn, active-menu-btn"
                         maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleUtilisateurs">
+                       >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
@@ -55,7 +55,7 @@
                 <Button fx:id="btnEvenements" text="📅  ÉVÉNEMENTS" 
                         styleClass="menu-btn"
                         maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleEvenements">
+                       >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
@@ -64,7 +64,7 @@
                 <Button fx:id="btnCoaching" text="🎯  COACHING" 
                         styleClass="menu-btn"
                         maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleCoaching">
+                       >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
@@ -73,7 +73,7 @@
                 <Button fx:id="btnBlog" text="📝  BLOG" 
                         styleClass="menu-btn"
                         maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleBlog">
+                       >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
@@ -82,7 +82,7 @@
                 <Button fx:id="btnProduits" text="🛍  PRODUITS/COMMANDES" 
                         styleClass="menu-btn"
                         maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleProduits">
+                       >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>

@@ -1,4 +1,4 @@
-package com.gestion.models;
+package com.gestion.entities;
 
 public class Product {
 
@@ -17,8 +17,8 @@ public class Product {
 
     // ✅ CONSTRUCTEUR COMPLET
     public Product(int idProduit, String nomProduit, String description,
-                   String prix, int stockDisponible,
-                   String categorie, String imageUrl, String statut) {
+            String prix, int stockDisponible,
+            String categorie, String imageUrl, String statut) {
 
         this.idProduit = idProduit;
         this.nomProduit = nomProduit;

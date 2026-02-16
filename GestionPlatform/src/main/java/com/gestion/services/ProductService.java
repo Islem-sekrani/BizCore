@@ -1,23 +1,21 @@
-package com.gestion.dao;
+package com.gestion.services;
 
-import com.gestion.models.Product;
-import com.gestion.utils.DatabaseConnection;
+import com.gestion.entities.Product;
+import com.gestion.interfaces.IProductService;
+import com.gestion.tools.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Access Object for Product operations
+ * Product Service Implementation
+ * Handles all product-related business logic and database operations
  */
-public class ProductDAO {
+public class ProductService implements IProductService {
 
-    /**
-     * Get all products from the database
-     * 
-     * @return List of all products
-     */
-    public static List<Product> getAllProducts() {
+    @Override
+    public List<Product> getAllProducts() {
         List<Product> products = new ArrayList<>();
         String query = "SELECT * FROM produit";
 
@@ -48,13 +46,8 @@ public class ProductDAO {
         return products;
     }
 
-    /**
-     * Add a new product to the database
-     * 
-     * @param product Product to add
-     * @return true if successful, false otherwise
-     */
-    public static boolean addProduct(Product product) {
+    @Override
+    public boolean addProduct(Product product) {
         String query = "INSERT INTO produit (nom_produit, description, prix, stock_disponible, categorie, image_url, statut) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -88,13 +81,8 @@ public class ProductDAO {
         return false;
     }
 
-    /**
-     * Update an existing product in the database
-     * 
-     * @param product Product to update
-     * @return true if successful, false otherwise
-     */
-    public static boolean updateProduct(Product product) {
+    @Override
+    public boolean updateProduct(Product product) {
         String query = "UPDATE produit SET nom_produit = ?, description = ?, prix = ?, stock_disponible = ?, categorie = ?, image_url = ?, statut = ? WHERE id_produit = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -124,13 +112,8 @@ public class ProductDAO {
         return false;
     }
 
-    /**
-     * Delete a product from the database
-     * 
-     * @param idProduit ID of the product to delete
-     * @return true if successful, false otherwise
-     */
-    public static boolean deleteProduct(int idProduit) {
+    @Override
+    public boolean deleteProduct(int idProduit) {
         String query = "DELETE FROM produit WHERE id_produit = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -153,13 +136,8 @@ public class ProductDAO {
         return false;
     }
 
-    /**
-     * Get a product by ID
-     * 
-     * @param idProduit ID of the product
-     * @return Product object or null if not found
-     */
-    public static Product getProductById(int idProduit) {
+    @Override
+    public Product getProductById(int idProduit) {
         String query = "SELECT * FROM produit WHERE id_produit = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();

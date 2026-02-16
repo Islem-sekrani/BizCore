@@ -6,12 +6,12 @@
 <?import javafx.scene.text.Font?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.gestion.controllers.ModuleViewController"
+      fx:controller="com.gestion.controllers.ProductViewController"
       styleClass="module-container" spacing="20">
 
     <!-- Action Buttons Row -->
     <HBox spacing="15" alignment="CENTER_LEFT">
-        <Button fx:id="btnAdd" text="➕  ADD NEW" styleClass="btn-primary" onAction="#handleAdd">
+        <Button fx:id="btnAdd" text="➕  ADD NEW" styleClass="btn-primary">
             <padding>
                 <Insets top="10" bottom="10" left="20" right="20"/>
             </padding>
@@ -20,7 +20,7 @@
             </font>
         </Button>
 
-        <Button fx:id="btnExport" text="📤  EXPORT" styleClass="btn-secondary" onAction="#handleExport">
+        <Button fx:id="btnExport" text="📤  EXPORT PDF" styleClass="btn-export">
             <padding>
                 <Insets top="10" bottom="10" left="20" right="20"/>
             </padding>
@@ -30,6 +30,16 @@
         </Button>
 
         <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- SORTING -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+             <Label text="Trier par:" styleClass="label-text">
+                <font>
+                    <Font size="12"/>
+                </font>
+            </Label>
+            <ComboBox fx:id="sortComboBox" styleClass="combo-box" prefWidth="180" promptText="-- Trier Produits --"/>
+        </HBox>
 
         <!-- Search Box -->
         <HBox spacing="10" alignment="CENTER_LEFT" styleClass="search-box">
@@ -41,15 +51,10 @@
             <TextField fx:id="searchField" promptText="Search..." styleClass="search-field" prefWidth="250"/>
         </HBox>
 
-        <!-- Results per page -->
-        <HBox spacing="10" alignment="CENTER">
-            <Label text="Résultats" styleClass="label-text">
-                <font>
-                    <Font size="12"/>
-                </font>
-            </Label>
-            <ComboBox fx:id="resultsComboBox" styleClass="combo-box" prefWidth="70"/>
-        </HBox>
+        <!-- Statistics Button -->
+        <Button fx:id="btnStats" text="📊" style="-fx-font-size: 16px; -fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #2d3748;">
+             <tooltip><Tooltip text="Voir Statistiques"/></tooltip>
+        </Button>
     </HBox>
 
     <!-- Table Container with ALL columns -->
@@ -66,7 +71,7 @@
                 <Insets top="15" bottom="10"/>
             </padding>
             <Button fx:id="btnDelete" text="🗑  DELETE SELECTED RECORDS"
-                    styleClass="btn-danger" onAction="#handleDeleteSelected">
+                    styleClass="btn-danger">
                 <padding>
                     <Insets top="10" bottom="10" left="20" right="20"/>
                 </padding>
