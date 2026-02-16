@@ -168,8 +168,6 @@ public class MainTest {
         try {
             // Ensure we have a domaine to use
             List<DomaineCoaching> domaines = domaineService.getData();
-            int domaineId = 0;
-
             if (domaines.isEmpty()) {
                 System.out.println("   Creation d'un domaine LEADERSHIP pour le test...");
                 DomaineCoaching tempDomaine = new DomaineCoaching();
@@ -177,10 +175,6 @@ public class MainTest {
                 tempDomaine.setDescription("Coaching en leadership");
                 domaineService.addDomaine(tempDomaine);
                 domaines = domaineService.getData();
-            }
-
-            if (!domaines.isEmpty()) {
-                domaineId = domaines.get(0).getIdDomaine();
             }
 
             // Test READ - List all coaches

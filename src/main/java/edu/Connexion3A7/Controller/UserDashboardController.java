@@ -141,7 +141,7 @@ public class UserDashboardController {
         infoGrid.setVgap(6);
         infoGrid.setPadding(new Insets(10, 0, 0, 0));
 
-        // Interactive star rating row (replaces static note display)
+        // Interactive star rating row
         Label ratingLabel = new Label("⭐ Note");
         ratingLabel.setStyle("-fx-text-fill: #95A5A6; -fx-font-size: 12px;");
         HBox starBox = buildInteractiveStarRating(c);
@@ -150,7 +150,20 @@ public class UserDashboardController {
 
         addInfoRow(infoGrid, 1, "📅 Experience", c.getExperience() + " ans");
         addInfoRow(infoGrid, 2, "💰 Tarif", String.format("%.0f DT/H", c.getTarif()));
-        addInfoRow(infoGrid, 3, "📋 Disponibilite", c.getDispo() != null ? c.getDispo() : "N/A");
+
+        // Show disponibilite with color coding
+        String dispoText = c.getDispo() != null ? c.getDispo() : "N/A";
+        Label dispoLbl = new Label("📋 Disponibilite");
+        dispoLbl.setStyle("-fx-text-fill: #95A5A6; -fx-font-size: 12px;");
+        Label dispoVal = new Label(dispoText);
+        if ("Indisponible".equalsIgnoreCase(dispoText)) {
+            dispoVal.setStyle("-fx-text-fill: #E74C3C; -fx-font-size: 12px; -fx-font-weight: bold;");
+        } else {
+            dispoVal.setStyle("-fx-text-fill: #27AE60; -fx-font-size: 12px; -fx-font-weight: bold;");
+        }
+        infoGrid.add(dispoLbl, 0, 3);
+        infoGrid.add(dispoVal, 1, 3);
+
         addInfoRow(infoGrid, 4, "📱 Telephone",
                 c.getNumTel() != null && !c.getNumTel().isEmpty() ? c.getNumTel() : "N/A");
 
@@ -177,6 +190,8 @@ public class UserDashboardController {
             System.out.println("Erreur check booking: " + e.getMessage());
         }
 
+        boolean isIndisponible = "Indisponible".equalsIgnoreCase(c.getDispo());
+
         if (booked) {
             Label bookedBadge = new Label("✅ Reservé");
             bookedBadge.setStyle("-fx-background-color: #D5F5E3; -fx-text-fill: #27AE60; " +
@@ -193,12 +208,19 @@ public class UserDashboardController {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Button bookBtn = new Button("Réserver");
-            bookBtn.getStyleClass().add("btn-book");
-            bookBtn.setStyle("-fx-font-size: 13px; -fx-padding: 8 28;");
-            bookBtn.setOnAction(e -> handleBookCoach(c));
-
-            buttonBox.getChildren().addAll(spacer, bookBtn);
+            if (isIndisponible) {
+                // Coach is unavailable — show disabled button with explanation
+                Label unavailBadge = new Label("🚫 Indisponible");
+                unavailBadge.setStyle("-fx-background-color: #FADBD8; -fx-text-fill: #E74C3C; " +
+                        "-fx-padding: 5 12; -fx-background-radius: 12; -fx-font-size: 12px; -fx-font-weight: bold;");
+                buttonBox.getChildren().addAll(spacer, unavailBadge);
+            } else {
+                Button bookBtn = new Button("Réserver");
+                bookBtn.getStyleClass().add("btn-book");
+                bookBtn.setStyle("-fx-font-size: 13px; -fx-padding: 8 28;");
+                bookBtn.setOnAction(e -> handleBookCoach(c));
+                buttonBox.getChildren().addAll(spacer, bookBtn);
+            }
         }
 
         card.getChildren().addAll(topRow, infoGrid, buttonBox);
@@ -214,8 +236,9 @@ public class UserDashboardController {
     }
 
     /**
-     * Build an interactive 5-star rating HBox for a coach card.
-     * Clicking a star updates the DB and refreshes the card.
+     * Build interactive 5-star rating HBox.
+     * Clicking a star calls addOrUpdateUserRating (stores in coach_rating table),
+     * which recalculates the average note_moyenne automatically.
      */
     private HBox buildInteractiveStarRating(coach c) {
         HBox box = new HBox(3);
@@ -224,7 +247,7 @@ public class UserDashboardController {
         int currentRating = Math.round(c.getNote());
         Label[] stars = new Label[5];
 
-        // Create star labels (no event handlers yet)
+        // Create star labels
         for (int i = 0; i < 5; i++) {
             Label star = new Label(i < currentRating ? "★" : "☆");
             star.setStyle(i < currentRating
@@ -234,13 +257,13 @@ public class UserDashboardController {
             box.getChildren().add(star);
         }
 
-        // Rating value label (must be declared before event handlers reference it)
-        Label ratingValueLabel = new Label(" " + currentRating + "/5");
+        // Rating value label
+        Label ratingValueLabel = new Label(String.format(" %.1f/5", c.getNote()));
         ratingValueLabel.setStyle(
                 "-fx-font-size: 12px; -fx-text-fill: #2C3E50; -fx-font-weight: bold; -fx-padding: 0 0 0 6;");
         box.getChildren().add(ratingValueLabel);
 
-        // Now assign event handlers (they can safely reference ratingValueLabel)
+        // Assign event handlers
         for (int i = 0; i < 5; i++) {
             final int starIndex = i + 1;
             final Label rvl = ratingValueLabel;
@@ -265,16 +288,27 @@ public class UserDashboardController {
             });
 
             stars[i].setOnMouseClicked(e -> {
+                if (loggedInUser == null) {
+                    showErrorAlert("Erreur", "Vous devez etre connecte pour noter un coach.");
+                    return;
+                }
                 try {
-                    coachService.updateRating(c.getId_coach(), (float) starIndex);
-                    c.setNote((float) starIndex);
+                    // Save rating per user — computes average automatically
+                    coachService.addOrUpdateUserRating(
+                            loggedInUser.getId_user(), c.getId_coach(), starIndex);
+
+                    // Refresh the note from DB (now it's the average)
+                    float newAvg = coachService.getAverageRating(c.getId_coach());
+                    c.setNote(newAvg);
+
+                    int rounded = Math.round(newAvg);
                     for (int j = 0; j < 5; j++) {
-                        stars[j].setText(j < starIndex ? "★" : "☆");
-                        stars[j].setStyle(j < starIndex
+                        stars[j].setText(j < rounded ? "★" : "☆");
+                        stars[j].setStyle(j < rounded
                                 ? "-fx-font-size: 18px; -fx-text-fill: #F1C40F; -fx-cursor: hand;"
                                 : "-fx-font-size: 18px; -fx-text-fill: #BDC3C7; -fx-cursor: hand;");
                     }
-                    rvl.setText(" " + starIndex + "/5");
+                    rvl.setText(String.format(" %.1f/5", newAvg));
                 } catch (SQLException ex) {
                     showErrorAlert("Erreur", "Impossible de mettre a jour la note: " + ex.getMessage());
                 }
@@ -296,6 +330,13 @@ public class UserDashboardController {
     private void handleBookCoach(coach c) {
         if (loggedInUser == null) {
             showErrorAlert("Erreur", "Utilisateur non connecte.");
+            return;
+        }
+
+        // Block booking if coach is Indisponible
+        if ("Indisponible".equalsIgnoreCase(c.getDispo())) {
+            showErrorAlert("Reservation impossible",
+                    "Vous ne pouvez pas réserver ce coach car il est indisponible.");
             return;
         }
 

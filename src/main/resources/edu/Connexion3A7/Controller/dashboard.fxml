@@ -132,6 +132,12 @@
                     </TableView>
 
                     <Label id="statusLabel" fx:id="statusLabel" text="" />
+
+                    <!-- Export CSV button (bottom right) -->
+                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                        <padding><Insets top="5" /></padding>
+                        <Button fx:id="exportCsvBtn" onAction="#handleExportCSV" styleClass="btn-primary" text="💾 Exporter CSV" />
+                    </HBox>
                 </VBox>
 
             </StackPane>

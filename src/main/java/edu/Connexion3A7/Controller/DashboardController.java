@@ -21,7 +21,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 
+import javafx.stage.FileChooser;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
@@ -69,6 +74,10 @@ public class DashboardController {
     private TextField searchField;
     @FXML
     private ComboBox<String> sortOrder;
+
+    // --- CSV Export ---
+    @FXML
+    private Button exportCsvBtn;
 
     // --- Table columns ---
     @FXML
@@ -351,5 +360,67 @@ public class DashboardController {
         } catch (IOException e) {
             showErrorAlert("Erreur déconnexion", e.getMessage());
         }
+    }
+
+    @FXML
+    void handleExportCSV(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer le fichier CSV");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Fichiers CSV", "*.csv"));
+        fileChooser.setInitialFileName("coachs_export.csv");
+
+        // Default to Downloads
+        File initialDir = new File(System.getProperty("user.home") + "/Downloads");
+        if (initialDir.exists()) {
+            fileChooser.setInitialDirectory(initialDir);
+        }
+
+        File file = fileChooser.showSaveDialog(contentArea.getScene().getWindow());
+        if (file == null) {
+            return; // user cancelled
+        }
+
+        // Export whatever is currently in the table (respects search/sort)
+        var items = coachTable.getItems();
+        try (PrintWriter pw = new PrintWriter(new FileWriter(file, java.nio.charset.StandardCharsets.UTF_8))) {
+            // Header
+            pw.println(
+                    "nom,prenom,domaine,biographie,experience_annees,tarif_horaire,disponibilite,num_tel,note_moyenne");
+
+            for (coach c : items) {
+                pw.println(
+                        escapeCsv(c.getNom()) + "," +
+                                escapeCsv(c.getPrenom()) + "," +
+                                escapeCsv(c.getDomaine()) + "," +
+                                escapeCsv(c.getBiographie()) + "," +
+                                c.getExperience() + "," +
+                                c.getTarif() + "," +
+                                escapeCsv(c.getDispo()) + "," +
+                                escapeCsv(c.getNumTel()) + "," +
+                                c.getNote());
+            }
+
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Export CSV");
+            info.setHeaderText("Export termine");
+            info.setContentText(items.size() + " coach(s) exporte(s) vers:\n" + file.getAbsolutePath());
+            info.showAndWait();
+        } catch (IOException e) {
+            showErrorAlert("Erreur export CSV", e.getMessage());
+        }
+    }
+
+    /**
+     * Escape a field for CSV: wrap in quotes if it contains comma, quote, or
+     * newline.
+     */
+    private String escapeCsv(String value) {
+        if (value == null)
+            return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 }

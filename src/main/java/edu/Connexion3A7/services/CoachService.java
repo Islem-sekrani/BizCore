@@ -125,15 +125,49 @@ public class CoachService implements IService<coach> {
     }
 
     /**
-     * Update the note_moyenne (rating) for a specific coach.
-     * Called by users from the user dashboard.
+     * Add or update a user's rating for a specific coach.
+     * Uses INSERT ... ON DUPLICATE KEY UPDATE for upsert behavior.
+     * Then recalculates note_moyenne as AVG of all ratings.
      */
-    public void updateRating(int coachId, float newRating) throws SQLException {
-        String sql = "UPDATE coach SET note_moyenne = ? WHERE id_coach = ?";
+    public void addOrUpdateUserRating(int userId, int coachId, int rating) throws SQLException {
+        // Upsert into coach_rating
+        String sql = "INSERT INTO coach_rating (id_user, id_coach, rating) VALUES (?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE rating = VALUES(rating)";
         PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
-        pst.setFloat(1, newRating);
+        pst.setInt(1, userId);
+        pst.setInt(2, coachId);
+        pst.setInt(3, rating);
+        pst.executeUpdate();
+
+        // Recalculate average
+        recalculateAverage(coachId);
+    }
+
+    /**
+     * Recalculate note_moyenne for a coach based on all ratings in coach_rating.
+     */
+    public void recalculateAverage(int coachId) throws SQLException {
+        String sql = "UPDATE coach SET note_moyenne = " +
+                "(SELECT COALESCE(AVG(rating), 0) FROM coach_rating WHERE id_coach = ?) " +
+                "WHERE id_coach = ?";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setInt(1, coachId);
         pst.setInt(2, coachId);
         pst.executeUpdate();
+    }
+
+    /**
+     * Get the current average rating for a coach from coach_rating table.
+     */
+    public float getAverageRating(int coachId) throws SQLException {
+        String sql = "SELECT COALESCE(AVG(rating), 0) AS avg_rating FROM coach_rating WHERE id_coach = ?";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setInt(1, coachId);
+        ResultSet rs = pst.executeQuery();
+        if (rs.next()) {
+            return rs.getFloat("avg_rating");
+        }
+        return 0f;
     }
 
     /**

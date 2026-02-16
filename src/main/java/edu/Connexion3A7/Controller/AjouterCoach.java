@@ -72,7 +72,7 @@ public class AjouterCoach {
     @FXML
     public void initialize() {
         dispo.setItems(FXCollections.observableArrayList(
-                "Disponible", "Indisponible", "Sur rendez-vous"));
+                "Disponible", "Indisponible"));
         dispo.getSelectionModel().selectFirst();
 
         // Populate domaine combo from enum
