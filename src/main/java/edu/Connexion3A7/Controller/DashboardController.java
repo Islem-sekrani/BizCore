@@ -133,7 +133,7 @@ public class DashboardController {
         colNumTel.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNumTel()));
         colNote.setCellValueFactory(data -> new SimpleFloatProperty(data.getValue().getNote()).asObject());
 
-        // Actions column
+        // Actions column — delete button per row
         colActions.setCellFactory(col -> new TableCell<>() {
             private final Button deleteBtn = new Button("Sup.");
             {
@@ -147,7 +147,11 @@ public class DashboardController {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : deleteBtn);
+                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(deleteBtn);
+                }
             }
         });
 
@@ -167,6 +171,7 @@ public class DashboardController {
                 e -> gestionContainer.setStyle("-fx-background-color: transparent;"));
 
         profileInitials.setText("A");
+        coachTable.setItems(FXCollections.observableArrayList()); // initial empty list
         refreshTable();
     }
 
@@ -177,7 +182,7 @@ public class DashboardController {
         if (!MyConnection.getInstance().isConnected()) {
             statusLabel.setText("Base de donnees non disponible. Verifiez MySQL.");
             statusLabel.setStyle("-fx-text-fill: #E74C3C;");
-            coachTable.setItems(FXCollections.observableArrayList());
+            coachTable.getItems().clear();
             return;
         }
 
@@ -189,7 +194,7 @@ public class DashboardController {
             showErrorAlert("Erreur chargement", e.getMessage());
             statusLabel.setText("Erreur: " + e.getMessage());
             statusLabel.setStyle("-fx-text-fill: #E74C3C;");
-            coachTable.setItems(FXCollections.observableArrayList());
+            coachTable.getItems().clear();
         }
     }
 
@@ -211,7 +216,7 @@ public class DashboardController {
                 .sorted(getComparator(order))
                 .collect(Collectors.toList());
 
-        coachTable.setItems(FXCollections.observableArrayList(filtered));
+        coachTable.getItems().setAll(filtered);
         statusLabel.setText(filtered.size() + " coach(s) trouve(s)");
         statusLabel.setStyle("-fx-text-fill: #27AE7A;");
     }
