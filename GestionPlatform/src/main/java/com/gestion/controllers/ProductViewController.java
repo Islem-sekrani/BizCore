@@ -66,7 +66,7 @@ public class ProductViewController {
             btnStats.setOnAction(e -> handleStatistics());
 
         if (searchField != null) {
-            searchField.textProperty().addListener((obs, oldVal, newVal) -> filterData(newVal));
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         }
     }
 
@@ -181,27 +181,42 @@ public class ProductViewController {
         }
     }
 
+    private void applyFilters() {
+        String searchText = (searchField != null) ? searchField.getText() : "";
+        filterData(searchText);
+    }
+
     private void filterData(String searchText) {
-        if (searchText == null || searchText.isEmpty()) {
-            filteredList.clear();
-            filteredList.addAll(dataList);
-        } else {
-            filteredList.clear();
-            for (Object item : dataList) {
-                if (item instanceof Product) {
-                    Product p = (Product) item;
+        filteredList.clear();
+
+        for (Object item : dataList) {
+            if (item instanceof Product) {
+                Product p = (Product) item;
+                boolean matches = true;
+
+                // Recherche unifiée dans tous les champs
+                if (searchText != null && !searchText.isEmpty()) {
                     String search = searchText.toLowerCase();
-                    if (p.getNomProduit().toLowerCase().contains(search) ||
+                    matches = p.getNomProduit().toLowerCase().contains(search) ||
                             p.getDescription().toLowerCase().contains(search) ||
                             p.getCategorie().toLowerCase().contains(search) ||
-                            p.getStatut().toLowerCase().contains(search)) {
-                        filteredList.add(item);
-                    }
+                            p.getStatut().toLowerCase().contains(search) ||
+                            p.getPrix().toLowerCase().contains(search) ||
+                            String.valueOf(p.getStockDisponible()).contains(search);
+                }
+
+                if (matches) {
+                    filteredList.add(item);
                 }
             }
         }
         updateTable();
         updateResultsLabel();
+
+        // Apply sorting if any is selected
+        if (sortComboBox != null && sortComboBox.getValue() != null) {
+            sortProducts(sortComboBox.getValue());
+        }
     }
 
     private void sortProducts(String sortOption) {

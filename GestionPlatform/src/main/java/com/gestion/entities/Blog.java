@@ -6,15 +6,15 @@ public class Blog {
     private String author;
     private String category;
     private String publishDate;
-    private int views;
+    private String status;
 
-    public Blog(int id, String title, String author, String category, String publishDate, int views) {
+    public Blog(int id, String title, String author, String category, String publishDate, String status) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.category = category;
         this.publishDate = publishDate;
-        this.views = views;
+        this.status = status;
     }
 
     public int getId() {
@@ -57,16 +57,16 @@ public class Blog {
         this.publishDate = publishDate;
     }
 
-    public int getViews() {
-        return views;
+    public String getStatus() {
+        return status;
     }
 
-    public void setViews(int views) {
-        this.views = views;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override
     public String toString() {
-        return title + " par " + author;
+        return title + " - " + author;
     }
 }

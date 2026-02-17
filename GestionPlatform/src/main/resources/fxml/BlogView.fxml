@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gestion.controllers.BlogViewController"
+      styleClass="module-container" spacing="20">
+
+    <!-- Action Buttons Row -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button fx:id="btnAdd" text="➕  AJOUTER ARTICLE" styleClass="btn-primary">
+            <padding>
+                <Insets top="10" bottom="10" left="20" right="20"/>
+            </padding>
+            <font>
+                <Font name="System Bold" size="12"/>
+            </font>
+        </Button>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Search Box -->
+        <HBox spacing="15" alignment="CENTER_LEFT">
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="search-box" HBox.hgrow="ALWAYS">
+                <Label text="🔍">
+                    <font>
+                        <Font size="16"/>
+                    </font>
+                </Label>
+                <TextField fx:id="searchField" promptText="Rechercher par titre, auteur, catégorie..." styleClass="search-field" prefWidth="400"/>
+            </HBox>
+        </HBox>
+    </HBox>
+
+    <!-- Table Container -->
+    <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+        <TableView fx:id="dataTable" styleClass="data-table" VBox.vgrow="ALWAYS">
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+
+        <!-- Results Label -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <padding>
+                <Insets top="15" bottom="10"/>
+            </padding>
+            <Label fx:id="lblResults" text="Chargement..." styleClass="results-label">
+                <font>
+                    <Font size="12"/>
+                </font>
+            </Label>
+        </HBox>
+    </VBox>
+
+</VBox>

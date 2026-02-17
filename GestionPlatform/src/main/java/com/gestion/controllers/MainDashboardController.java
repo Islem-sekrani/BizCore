@@ -64,8 +64,18 @@ public class MainDashboardController {
             // Update active button style
             updateActiveButton(activeButton);
 
-            // Load module FXML without controller
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ModuleView.fxml"));
+            // Determine which FXML file to load based on module name
+            String fxmlFile = switch (moduleName) {
+                case "UTILISATEURS" -> "/fxml/UsersView.fxml";
+                case "EVENEMENTS" -> "/fxml/EventsView.fxml";
+                case "COACHING" -> "/fxml/CoachingView.fxml";
+                case "BLOG" -> "/fxml/BlogView.fxml";
+                case "PRODUITS" -> "/fxml/ProductView.fxml";
+                default -> "/fxml/ProductView.fxml";
+            };
+
+            // Load module FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
             Parent moduleView = loader.load();
 
             // Clear and add to content area
@@ -81,7 +91,7 @@ public class MainDashboardController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showError("Erreur de chargement", "Impossible de charger le module: " + moduleName);
+            showError("Erreur de chargement", "Impossible de charger le module: " + moduleName + "\n" + e.getMessage());
         }
     }
 

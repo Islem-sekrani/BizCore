@@ -3,6 +3,7 @@ package com.gestion.controllers;
 import com.gestion.entities.Product;
 import com.gestion.interfaces.IProductService;
 import com.gestion.services.ProductService;
+import com.gestion.utils.ProductValidator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -63,8 +64,11 @@ public class ProductController {
         if (productService.addProduct(product)) {
             loadProducts();
             return true;
+        } else {
+            showErrorDialog("Erreur BD",
+                    "Impossible d'ajouter le produit dans la base de données. Vérifiez la connexion.");
+            return false;
         }
-        return false;
     }
 
     /**
@@ -74,8 +78,10 @@ public class ProductController {
         if (productService.updateProduct(product)) {
             loadProducts();
             return true;
+        } else {
+            showErrorDialog("Erreur BD", "Impossible de modifier le produit dans la base de données.");
+            return false;
         }
-        return false;
     }
 
     /**
@@ -85,8 +91,10 @@ public class ProductController {
         if (productService.deleteProduct(productId)) {
             loadProducts();
             return true;
+        } else {
+            showErrorDialog("Erreur BD", "Impossible de supprimer le produit.");
+            return false;
         }
-        return false;
     }
 
     /**
@@ -291,31 +299,74 @@ public class ProductController {
         Label lblNom = new Label("Nom du produit :");
         lblNom.setStyle("-fx-font-weight: bold;");
         TextField txtNom = new TextField(product != null ? product.getNomProduit() : "");
-        txtNom.setPromptText("Entrez le nom du produit");
+        txtNom.setPromptText("Ex: Formation");
         txtNom.setStyle("-fx-padding: 8px; -fx-font-size: 13px;");
+
+        // Validation en temps réel pour le nom
+        txtNom.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.isEmpty() || !ProductValidator.validateProductName(newVal).isValid()) {
+                txtNom.setStyle("-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                txtNom.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
+            }
+        });
 
         // Description
         Label lblDesc = new Label("Description :");
         lblDesc.setStyle("-fx-font-weight: bold;");
         TextArea txtDesc = new TextArea(product != null ? product.getDescription() : "");
-        txtDesc.setPromptText("Décrivez le produit en détail");
+        txtDesc.setPromptText("Décrivez le produit en détail...");
         txtDesc.setPrefHeight(100);
         txtDesc.setWrapText(true);
         txtDesc.setStyle("-fx-padding: 8px; -fx-font-size: 13px;");
+
+        // Validation en temps réel pour la description
+        txtDesc.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.isEmpty() || !ProductValidator.validateDescription(newVal).isValid()) {
+                txtDesc.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                txtDesc.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
+            }
+        });
 
         // Prix
         Label lblPrix = new Label("Prix :");
         lblPrix.setStyle("-fx-font-weight: bold;");
         TextField txtPrix = new TextField(product != null ? product.getPrix() : "");
-        txtPrix.setPromptText("Ex: 99.99€");
+        txtPrix.setPromptText("Ex: 25.99");
         txtPrix.setStyle("-fx-padding: 8px; -fx-font-size: 13px;");
+
+        // Validation en temps réel pour le prix
+        txtPrix.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.isEmpty() || !ProductValidator.validatePrice(newVal).isValid()) {
+                txtPrix.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                txtPrix.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
+            }
+        });
 
         // Stock
         Label lblStock = new Label("Stock disponible :");
         lblStock.setStyle("-fx-font-weight: bold;");
         TextField txtStock = new TextField(product != null ? String.valueOf(product.getStockDisponible()) : "");
-        txtStock.setPromptText("Quantité en stock");
+        txtStock.setPromptText("Ex: 10");
         txtStock.setStyle("-fx-padding: 8px; -fx-font-size: 13px;");
+
+        // Validation en temps réel pour le stock
+        txtStock.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.isEmpty() || !ProductValidator.validateStock(newVal).isValid()) {
+                txtStock.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                txtStock.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
+            }
+        });
 
         // Catégorie
         Label lblCat = new Label("Catégorie :");
@@ -327,6 +378,15 @@ public class ProductController {
         cmbCat.setStyle("-fx-font-size: 13px;");
         if (product != null)
             cmbCat.setValue(product.getCategorie());
+
+        // Validation en temps réel pour la catégorie
+        cmbCat.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isEmpty()) {
+                cmbCat.setStyle("-fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                cmbCat.setStyle("-fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
+            }
+        });
 
         // Image - Sélection de fichier local
         Label lblImage = new Label("Image du produit :");
@@ -386,15 +446,31 @@ public class ProductController {
                 try {
                     javafx.scene.image.Image image = new javafx.scene.image.Image(selectedFile.toURI().toString());
                     imagePreview.setImage(image);
+                    // Validation après sélection
+                    txtImagePath.setStyle(
+                            "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
                 } catch (Exception ex) {
                     showErrorDialog("Erreur", "Impossible de charger l'image : " + ex.getMessage());
+                    txtImagePath.setStyle(
+                            "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
                 }
+            }
+        });
+
+        // Validation initiale de l'image
+        txtImagePath.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                txtImagePath.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                txtImagePath.setStyle(
+                        "-fx-padding: 8px; -fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
             }
         });
 
         imageBox.getChildren().addAll(txtImagePath, btnChooseImage);
 
-        // Statut (automatique basé sur le stock)
+        // Statut
         Label lblStatut = new Label("Statut :");
         lblStatut.setStyle("-fx-font-weight: bold;");
         ComboBox<String> cmbStatut = new ComboBox<>(FXCollections.observableArrayList(
@@ -407,6 +483,15 @@ public class ProductController {
         } else {
             cmbStatut.setValue("Disponible");
         }
+
+        // Validation en temps réel pour le statut
+        cmbStatut.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isEmpty()) {
+                cmbStatut.setStyle("-fx-font-size: 13px; -fx-border-color: red; -fx-border-width: 2px;");
+            } else {
+                cmbStatut.setStyle("-fx-font-size: 13px; -fx-border-color: green; -fx-border-width: 2px;");
+            }
+        });
 
         // Ajout de tous les éléments au formulaire
         mainBox.getChildren().addAll(
@@ -424,49 +509,68 @@ public class ProductController {
         scrollPane.setContent(mainBox);
         dialogPane.setContent(scrollPane);
 
-        // Validation et conversion
+        // Récupération du bouton Enregistrer pour intercepter l'événement
+        Button btnSave = (Button) dialogPane.lookupButton(saveButtonType);
+
+        // Ajout d'un filtre d'événement pour empêcher la fermeture si validation échoue
+        btnSave.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            try {
+                // Récupération des valeurs
+                String nom = txtNom.getText();
+                String description = txtDesc.getText();
+                String prix = txtPrix.getText();
+                String stock = txtStock.getText();
+                String categorie = cmbCat.getValue();
+                String imagePath = txtImagePath.getText();
+                String statut = cmbStatut.getValue();
+
+                // Validation complète de tous les champs
+                java.util.List<String> errors = ProductValidator.validateAllFields(
+                        nom, description, prix, stock, categorie, imagePath, statut);
+
+                // Si des erreurs existent, les afficher et bloquer la fermeture
+                if (!errors.isEmpty()) {
+                    StringBuilder errorMessage = new StringBuilder("Veuillez corriger les erreurs suivantes :\n\n");
+                    for (String error : errors) {
+                        errorMessage.append(error).append("\n");
+                    }
+                    showErrorDialog("Erreurs de validation", errorMessage.toString());
+
+                    // EMPÊCHER LA FERMETURE DU DIALOGUE
+                    event.consume();
+                }
+            } catch (Exception e) {
+                showErrorDialog("Erreur", "Une erreur inattendue s'est produite : " + e.getMessage());
+                event.consume();
+            }
+        });
+
+        // Conversion du résultat (exécuté uniquement si la validation passe et
+        // l'événement n'est pas consommé)
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 try {
-                    // Validation des champs obligatoires
-                    if (txtNom.getText().trim().isEmpty()) {
-                        showErrorDialog("Erreur", "Le nom du produit est obligatoire.");
-                        return null;
-                    }
-                    if (txtPrix.getText().trim().isEmpty()) {
-                        showErrorDialog("Erreur", "Le prix est obligatoire.");
-                        return null;
-                    }
-                    if (txtStock.getText().trim().isEmpty()) {
-                        showErrorDialog("Erreur", "Le stock est obligatoire.");
-                        return null;
-                    }
-                    if (cmbCat.getValue() == null) {
-                        showErrorDialog("Erreur", "La catégorie est obligatoire.");
-                        return null;
-                    }
-
+                    // Si on est ici, c'est que le EventFilter a déjà validé les données
                     Product p = (product == null) ? new Product() : product;
+
+                    // Nettoyage final des données
                     p.setNomProduit(txtNom.getText().trim());
                     p.setDescription(txtDesc.getText().trim());
-                    p.setPrix(txtPrix.getText().trim());
 
-                    int stock = Integer.parseInt(txtStock.getText().trim());
-                    p.setStockDisponible(stock);
+                    // On enregistre le prix sans le symbole €, au cas où la BD soit stricte
+                    String prixNettoye = txtPrix.getText().trim().replace("€", "").replace(",", ".").trim();
+                    p.setPrix(prixNettoye);
 
+                    p.setStockDisponible(Integer.parseInt(txtStock.getText().trim()));
                     p.setCategorie(cmbCat.getValue());
                     p.setImageUrl(txtImagePath.getText().trim());
-
-                    // Statut manuel
-                    if (cmbStatut.getValue() == null) {
-                        showErrorDialog("Erreur", "Le statut est obligatoire.");
-                        return null;
-                    }
                     p.setStatut(cmbStatut.getValue());
 
                     return p;
-                } catch (NumberFormatException e) {
-                    showErrorDialog("Erreur de saisie", "Le stock doit être un nombre valide.");
+                } catch (Exception e) {
+                    System.err.println("ERREUR CRITIQUE lors de la création du produit: " + e.getMessage());
+                    e.printStackTrace();
+                    showErrorDialog("Erreur de conversion", "Les données saisies sont invalides malgré la validation.");
                     return null;
                 }
             }
