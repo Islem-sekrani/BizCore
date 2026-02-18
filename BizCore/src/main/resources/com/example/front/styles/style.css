@@ -1,0 +1,274 @@
+/* ===== LIGHT THEME WITH GRADIENT SIDEBAR ===== */
+.root {
+    /* Custom Variables */
+    -app-primary-bg: #FFFFFF;
+    /* Pure White for content */
+    -app-secondary-bg: #F8FAFC;
+    /* Section background */
+    -app-card-bg: #FFFFFF;
+    -app-accent: #14B8A6;
+    /* Teal Green */
+    -app-accent-hover: #0D9488;
+    -app-midnight: #0F172A;
+    /* Midnight Blue */
+    -app-text-primary: #0F172A;
+    -app-text-secondary: #64748B;
+    -app-border: #E2E8F0;
+
+    -fx-font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    -fx-background-color: -app-primary-bg;
+}
+
+/* Global resets */
+.scroll-pane,
+.scroll-pane>.viewport,
+.stack-pane,
+.vbox,
+.hbox,
+.border-pane {
+    -fx-background-color: transparent;
+}
+
+/* ===== SCROLL BAR ===== */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #CBD5E1;
+    -fx-background-radius: 10px;
+}
+
+/* ===== SIDEBAR (GRADIENT Midnight to Teal) ===== */
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, -app-midnight, #1e293b, -app-accent);
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.3), 15, 0, 0, 0);
+    -fx-padding: 40 20;
+}
+
+.app-logo {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 0 0 10 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 15 25;
+    -fx-cursor: hand;
+    -fx-background-radius: 12px;
+    -fx-graphic-text-gap: 18px;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+}
+
+.nav-button:hover SVGPath {
+    -fx-fill: white;
+}
+
+.nav-button.active,
+.nav-button:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-text-fill: white;
+    -fx-border-color: transparent transparent transparent white;
+    -fx-border-width: 0 0 0 4;
+}
+
+.nav-button.active SVGPath {
+    -fx-fill: white;
+}
+
+/* ===== HEADER ===== */
+.header {
+    -fx-background-color: -app-primary-bg;
+    -fx-padding: 25 50;
+    -fx-border-color: transparent transparent -app-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.search-field {
+    -fx-background-radius: 15px;
+    -fx-background-color: #F8FAFC;
+    -fx-text-fill: -app-text-primary;
+    -fx-prompt-text-fill: -app-text-secondary;
+    -fx-border-color: -app-border;
+    -fx-border-radius: 15px;
+    -fx-border-width: 1px;
+    -fx-padding: 12 25;
+    -fx-font-size: 15px;
+}
+
+/* ===== BUTTONS & ICONS ===== */
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 12;
+    -fx-background-radius: 14px;
+}
+
+.icon-button:hover {
+    -fx-background-color: #F1F5F9;
+}
+
+.cart-badge {
+    -fx-background-color: -app-midnight;
+    /* Contrast with teal */
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
+    -fx-background-radius: 12px;
+}
+
+.button-primary {
+    -fx-background-color: -app-accent;
+    -fx-text-fill: white;
+    -fx-background-radius: 10px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 15 35;
+    -fx-font-size: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(20, 184, 166, 0.2), 15, 0, 0, 5);
+}
+
+.button-primary:hover {
+    -fx-background-color: -app-accent-hover;
+    -fx-translate-y: -2;
+}
+
+.button-secondary {
+    -fx-background-color: -app-midnight;
+    -fx-text-fill: white;
+    -fx-background-radius: 10px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 15 35;
+    -fx-font-size: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.2), 15, 0, 0, 5);
+}
+
+.button-secondary:hover {
+    -fx-background-color: #1e293b;
+    -fx-translate-y: -2;
+}
+
+.button-outlined {
+    -fx-background-color: transparent;
+    -fx-border-color: -app-accent;
+    -fx-border-radius: 10px;
+    -fx-border-width: 2px;
+    -fx-text-fill: -app-accent;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-padding: 13 33;
+}
+
+.button-outlined:hover {
+    -fx-background-color: rgba(20, 184, 166, 0.05);
+}
+
+/* ===== FORM STYLING ===== */
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-color: -app-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 30, 0, 0, 10);
+    -fx-padding: 40;
+}
+
+.form-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -app-text-primary;
+}
+
+.form-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #475569;
+}
+
+.form-input {
+    -fx-background-radius: 10px;
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-padding: 12 15;
+    -fx-text-fill: -app-text-primary;
+}
+
+.form-input:focused {
+    -fx-background-color: white;
+    -fx-border-color: -app-accent;
+    -fx-effect: dropshadow(three-pass-box, rgba(20, 184, 166, 0.1), 10, 0, 0, 0);
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: -app-text-primary;
+}
+
+/* ===== CARDS & CONTENT (LIGHT) ===== */
+.content-area {
+    -fx-background-color: -app-primary-bg;
+}
+
+.product-card,
+.feature-card,
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-color: -app-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 20, 0, 0, 5);
+}
+
+.product-card:hover {
+    -fx-translate-y: -8;
+    -fx-border-color: -app-accent;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 30, 0, 0, 10);
+}
+
+.product-price {
+    -fx-text-fill: -app-midnight;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.hero-section {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 30px;
+    -fx-padding: 100 60;
+    -fx-border-color: -app-border;
+}
+
+.hero-title {
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -app-midnight;
+}
+
+.hero-subtitle {
+    -fx-font-size: 18px;
+    -fx-text-fill: -app-text-secondary;
+}
+
+/* Context Menu List Light */
+.context-menu {
+    -fx-background-color: white;
+    -fx-border-color: -app-border;
+    -fx-background-radius: 12px;
+}

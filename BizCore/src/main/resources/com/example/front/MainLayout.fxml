@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" stylesheets="@styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.front.controllers.MainController" style="-fx-background-color: -app-primary-bg;">
+   
+   <!-- Sidebar -->
+   <left>
+      <VBox prefWidth="260.0" styleClass="sidebar" BorderPane.alignment="CENTER">
+         <children>
+            <!-- Logo area centered -->
+            <VBox alignment="CENTER" spacing="10" style="-fx-padding: 0 0 40 0;">
+                <children>
+                    <Label styleClass="app-logo" text="BizCore" />
+                </children>
+            </VBox>
+            
+            <!-- Navigation items with icons -->
+            <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+                <Button fx:id="btnHome" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="nav-button" text="Accueil">
+                    <graphic>
+                         <SVGPath content="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" style="-fx-fill: -app-text-secondary;" scaleX="0.8" scaleY="0.8" />
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="btnProducts" maxWidth="Infinity" mnemonicParsing="false" onAction="#showOffers" styleClass="nav-button" text="Produits">
+                    <graphic>
+                         <SVGPath content="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" style="-fx-fill: -app-text-secondary;" scaleX="0.75" scaleY="0.75" />
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnEvents" maxWidth="Infinity" mnemonicParsing="false" onAction="#showEvents" styleClass="nav-button" text="Événements">
+                    <graphic>
+                         <SVGPath content="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" style="-fx-fill: -app-text-secondary;" scaleX="0.8" scaleY="0.8" />
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnCoaching" maxWidth="Infinity" mnemonicParsing="false" onAction="#showCoaching" styleClass="nav-button" text="Coaching">
+                    <graphic>
+                         <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z" style="-fx-fill: -app-text-secondary;" scaleX="0.8" scaleY="0.8" />
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnBlog" maxWidth="Infinity" mnemonicParsing="false" onAction="#showBlog" styleClass="nav-button" text="Blog">
+                    <graphic>
+                         <SVGPath content="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" style="-fx-fill: -app-text-secondary;" scaleX="0.8" scaleY="0.8" />
+                    </graphic>
+                </Button>
+            </VBox>
+            
+            <Region VBox.vgrow="ALWAYS" />
+            
+            <!-- Bottom menu -->
+            <VBox spacing="10" alignment="CENTER">
+                <Button maxWidth="Infinity" mnemonicParsing="false" styleClass="nav-button" text="About Us">
+                    <graphic>
+                         <SVGPath content="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z" style="-fx-fill: -app-text-secondary;" scaleX="0.8" scaleY="0.8" />
+                    </graphic>
+                </Button>
+                <Label text="© 2026 BizCore Inc." style="-fx-text-fill: -app-text-secondary; -fx-font-size: 11px; -fx-padding: 5 0 0 0;" />
+            </VBox>
+         </children>
+      </VBox>
+   </left>
+   
+   <!-- Main Content -->
+   <center>
+      <BorderPane style="-fx-background-color: -app-primary-bg;">
+         <top>
+            <!-- Header -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="header" BorderPane.alignment="CENTER">
+               <children>
+                  <!-- Search Bar -->
+                  <TextField prefWidth="450.0" promptText="Rechercher un service..." styleClass="search-field" />
+                  
+                  <Region HBox.hgrow="ALWAYS" />
+                  
+                  <!-- Cart Icon -->
+                  <Button mnemonicParsing="false" styleClass="icon-button">
+                      <graphic>
+                          <StackPane>
+                              <SVGPath content="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" style="-fx-fill: -app-text-secondary;" />
+                              <Label text="0" styleClass="cart-badge" StackPane.alignment="TOP_RIGHT" translateX="10" translateY="-10"/>
+                          </StackPane>
+                      </graphic>
+                  </Button>
+                  
+                  <!-- User Icon SVG -->
+                  <Button fx:id="userButton" mnemonicParsing="false" styleClass="icon-button" onMouseClicked="#showUserMenu">
+                       <graphic>
+                           <StackPane>
+                               <Circle radius="18" style="-fx-fill: -app-accent;" opacity="0.1" />
+                               <SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" style="-fx-fill: -app-accent;" scaleX="1.2" scaleY="1.2" />
+                           </StackPane>
+                       </graphic>
+                  </Button>
+
+               </children>
+            </HBox>
+         </top>
+         
+         <!-- Dynamic Content area with fixed dark background to avoid white flash -->
+         <center>
+            <StackPane fx:id="contentArea" styleClass="content-area" style="-fx-background-color: -app-primary-bg;" />
+         </center>
+      </BorderPane>
+   </center>
+</BorderPane>

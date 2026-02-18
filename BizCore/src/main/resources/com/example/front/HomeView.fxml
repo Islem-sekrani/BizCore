@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.layout.Region?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: -app-primary-bg; -fx-background: -app-primary-bg;" stylesheets="@styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.front.controllers.HomeController">
+    <content>
+        <VBox alignment="TOP_CENTER" spacing="0" style="-fx-background-color: -app-primary-bg;">
+           <children>
+              <!-- Hero Section -->
+              <VBox alignment="CENTER" spacing="40.0" styleClass="hero-section" minHeight="550.0">
+                 <children>
+                    <!-- Badge -->
+                    <Label text="PLATEFORME N°1 EN TUNISIE" style="-fx-text-fill: -app-accent; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 8 20; -fx-background-color: rgba(20, 184, 166, 0.1); -fx-background-radius: 20px; -fx-border-color: rgba(20, 184, 166, 0.3); -fx-border-radius: 20px;"/>
+                    
+                    <!-- Main Title -->
+                    <Label styleClass="hero-title" text="Propulsez votre Activité Digitale avec BizCore" textAlignment="CENTER" wrapText="true" maxWidth="900.0"/>
+                    
+                    <!-- Introduction Text -->
+                    <VBox alignment="CENTER" spacing="10.0" maxWidth="800.0">
+                       <children>
+                          <Label styleClass="hero-subtitle" text="L'écosystème complet pour l'achat, la vente et la gestion de services digitaux." textAlignment="CENTER" wrapText="true" />
+                          <Label styleClass="hero-subtitle" text="Formations, Logiciels, Consulting et plus encore." textAlignment="CENTER" wrapText="true" style="-fx-opacity: 0.8;"/>
+                       </children>
+                    </VBox>
+                    
+                    <!-- Call to Action Buttons -->
+                    <HBox alignment="CENTER" spacing="30.0" style="-fx-padding: 40 0 0 0;">
+                       <children>
+                          <Button mnemonicParsing="false" onAction="#handleDiscover" styleClass="button-primary" text="Explorer le Catalogue" />
+                          <Button mnemonicParsing="false" onAction="#handleSubmit" styleClass="button-secondary" text="🚀 Vendre un Service" />
+                       </children>
+                    </HBox>
+                 </children>
+                 <VBox.margin>
+                    <Insets bottom="50.0" left="40.0" right="40.0" top="30.0" />
+                 </VBox.margin>
+              </VBox>
+              
+              <!-- Features/Categories Stats -->
+              <HBox alignment="CENTER" spacing="60.0" style="-fx-padding: 0 0 80 0;">
+                 <children>
+                    <VBox alignment="CENTER" spacing="5">
+                       <Label text="2.5k+" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                       <Label text="Services Actifs" style="-fx-text-fill: -app-text-secondary;" />
+                    </VBox>
+                    <Region prefWidth="1" style="-fx-background-color: -app-border;" prefHeight="50" />
+                    <VBox alignment="CENTER" spacing="5">
+                       <Label text="1.2k+" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                       <Label text="Experts Certifiés" style="-fx-text-fill: -app-text-secondary;" />
+                    </VBox>
+                    <Region prefWidth="1" style="-fx-background-color: -app-border;" prefHeight="50" />
+                    <VBox alignment="CENTER" spacing="5">
+                       <Label text="98%" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                       <Label text="Satisfaction" style="-fx-text-fill: -app-text-secondary;" />
+                    </VBox>
+                 </children>
+              </HBox>
+
+              <!-- Categories Section -->
+              <VBox alignment="CENTER" spacing="60.0" style="-fx-padding: 80 60;">
+                 <children>
+                    <VBox alignment="CENTER" spacing="15.0">
+                       <children>
+                          <Label text="Explorez par Catégorie" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                          <Region prefHeight="4" prefWidth="80" style="-fx-background-color: -app-accent; -fx-background-radius: 2;" maxWidth="80"/>
+                       </children>
+                    </VBox>
+                    
+                    <HBox alignment="CENTER" spacing="35.0">
+                       <children>
+                          <!-- Category Card 1 -->
+                          <VBox alignment="CENTER" spacing="20.0" styleClass="feature-card" prefWidth="280.0" style="-fx-padding: 40 30;">
+                             <children>
+                                <StackPane style="-fx-background-color: rgba(20, 184, 166, 0.1); -fx-background-radius: 20;">
+                                   <children>
+                                      <Label text="📚" style="-fx-font-size: 40px; -fx-padding: 20;" />
+                                   </children>
+                                </StackPane>
+                                <Label text="E-Learning" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                                <Label text="Accédez à des formations d'experts pour booster vos compétences." textAlignment="CENTER" wrapText="true" style="-fx-text-fill: -app-text-secondary;" />
+                             </children>
+                          </VBox>
+                          
+                          <!-- Category Card 2 -->
+                          <VBox alignment="CENTER" spacing="20.0" styleClass="feature-card" prefWidth="280.0" style="-fx-padding: 40 30;">
+                             <children>
+                                <StackPane style="-fx-background-color: rgba(99, 102, 241, 0.1); -fx-background-radius: 20;">
+                                   <children>
+                                      <Label text="💻" style="-fx-font-size: 40px; -fx-padding: 20;" />
+                                   </children>
+                                </StackPane>
+                                <Label text="Software" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                                <Label text="Logiciels métiers et outils de productivité sur mesure." textAlignment="CENTER" wrapText="true" style="-fx-text-fill: -app-text-secondary;" />
+                             </children>
+                          </VBox>
+                          
+                          <!-- Category Card 3 -->
+                          <VBox alignment="CENTER" spacing="20.0" styleClass="feature-card" prefWidth="280.0" style="-fx-padding: 40 30;">
+                             <children>
+                                <StackPane style="-fx-background-color: rgba(236, 72, 153, 0.1); -fx-background-radius: 20;">
+                                   <children>
+                                      <Label text="📱" style="-fx-font-size: 40px; -fx-padding: 20;" />
+                                   </children>
+                                </StackPane>
+                                <Label text="Mobile Apps" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;" />
+                                <Label text="Développement d'applications natives iOS et Android." textAlignment="CENTER" wrapText="true" style="-fx-text-fill: -app-text-secondary;" />
+                             </children>
+                          </VBox>
+                       </children>
+                    </HBox>
+                 </children>
+              </VBox>
+              
+              <!-- Trust Section -->
+              <VBox alignment="CENTER" spacing="30.0" style="-fx-padding: 100 60; -fx-background-color: #F8FAFC; -fx-border-color: -app-border; -fx-border-width: 1 0 1 0;">
+                  <children>
+                      <Label text="Plus qu'une plateforme, une communauté." style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -app-text-primary;"/>
+                      <Button text="Rejoindre l'aventure BizCore" styleClass="button-primary" />
+                  </children>
+              </VBox>
+
+              <!-- Footer -->
+              <HBox alignment="CENTER" style="-fx-background-color: -app-primary-bg; -fx-padding: 60;">
+                  <children>
+                      <VBox spacing="10" alignment="CENTER">
+                          <Label text="BizCore Digital Marketplace" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: -app-accent;"/>
+                          <Label text="© 2026 Tous droits réservés." style="-fx-text-fill: -app-text-secondary;"/>
+                      </VBox>
+                  </children>
+              </HBox>
+           </children>
+        </VBox>
+    </content>
+</ScrollPane>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.front.controllers.ArticleDetailController">
+    <content>
+        <VBox spacing="20.0" style="-fx-padding: 30; -fx-background-color: #F5F5F5;">
+            <!-- Article Section -->
+            <VBox spacing="15.0" styleClass="form-container" style="-fx-padding: 30;">
+                <ImageView fx:id="articleImage" fitHeight="200.0" fitWidth="600.0" pickOnBounds="true" preserveRatio="true" />
+                
+                <Label fx:id="articleTitle" text="Titre de l'article" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1A2332;" wrapText="true"/>
+                
+                <HBox spacing="15.0">
+                    <Label fx:id="articleAuthor" text="Par Auteur" style="-fx-text-fill: #17BB9C; -fx-font-weight: bold;" />
+                    <Label fx:id="articleDate" text="Le 12/10/2023" style="-fx-text-fill: #999999;" />
+                </HBox>
+                
+                <Label fx:id="articleContent" text="Contenu de l'article..." wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #333333; -fx-line-spacing: 5px;" />
+            </VBox>
+
+            <!-- Comments Section -->
+            <VBox spacing="15.0">
+                <Label text="Commentaires" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1A2332;" />
+                
+                <!-- Comment Input -->
+                <VBox spacing="10.0" styleClass="form-container" style="-fx-padding: 15;">
+                    <Label text="Ajouter un commentaire" style="-fx-font-weight: bold;" />
+                    <TextArea fx:id="newCommentField" promptText="Votre commentaire..." prefRowCount="3" wrapText="true" styleClass="form-input" />
+                    <Button text="Publier" onAction="#handleAddComment" styleClass="button-accent" />
+                </VBox>
+                
+                <!-- Comments List -->
+                <VBox fx:id="commentsContainer" spacing="10.0">
+                    <!-- Comments will be added here dynamically -->
+                </VBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>
