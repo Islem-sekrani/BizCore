@@ -1,50 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.gestion.controllers.EvenementController"
-      spacing="12">
+      spacing="12"
+      style="-fx-background-color: white;">
 
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="15" right="15" bottom="15" left="15"/>
     </padding>
 
-    <Label text="Créer / Modifier un Événement"
-           style="-fx-font-size:18px; -fx-font-weight:bold;"/>
+    <!-- ===== TITLE (smaller) ===== -->
+    <Label text="Gestion des Événements"
+           style="-fx-font-size: 20px;
+                  -fx-font-weight: bold;
+                  -fx-text-fill: #1E8449;"/>
 
-    <TextField fx:id="txtTitre" promptText="Titre *"/>
-    <TextArea fx:id="txtDescription" promptText="Description détaillée" prefRowCount="4"/>
+    <!-- ===== TABLE (smaller height) ===== -->
+
+
+    <!-- ===== FORM TITLE ===== -->
+    <Label text="Créer / Modifier"
+           style="-fx-font-size: 16px;
+                  -fx-text-fill: #1E8449;
+                  -fx-font-weight: bold;"/>
+
+    <!-- FORM (compact) -->
+    <TextField fx:id="txtTitre" promptText="Titre"/>
+    <TextArea fx:id="txtDescription" promptText="Description" prefRowCount="2"/>
+
+    <HBox spacing="8">
+        <VBox spacing="3">
+            <Label text="Début"/>
+            <DatePicker fx:id="dpDateDebut"/>
+        </VBox>
+        <VBox spacing="3">
+            <Label text="Fin"/>
+            <DatePicker fx:id="dpDateFin"/>
+        </VBox>
+    </HBox>
+
     <TextField fx:id="txtLieu" promptText="Lieu"/>
-    <TextField fx:id="txtCapacite" promptText="Capacité maximale"/>
-    <TextField fx:id="txtPrix" promptText="Prix (DT)"/>
-    <TextField fx:id="txtImageUrl" promptText="Image URL"/>
+    <TextField fx:id="txtCapacite" promptText="Capacité"/>
+    <TextField fx:id="txtPrix" promptText="Prix"/>
+    <ComboBox fx:id="cbStatut" promptText="Statut"/>
 
-    <!-- NEW: Dates -->
-    <DatePicker fx:id="dpDateDebut" promptText="Date de début"/>
-    <DatePicker fx:id="dpDateFin" promptText="Date de fin"/>
-
-    <ComboBox fx:id="cbStatut" promptText="Statut">
-        <items>
-            <FXCollections fx:factory="observableArrayList">
-                <String fx:value="planifie"/>
-                <String fx:value="en_cours"/>
-                <String fx:value="termine"/>
-                <String fx:value="annule"/>
-            </FXCollections>
-        </items>
-    </ComboBox>
-
+    <!-- ===== BUTTONS ALWAYS VISIBLE ===== -->
     <HBox spacing="10">
-        <Button text="Ajouter" onAction="#ajouter"/>
-        <Button text="Modifier" onAction="#modifier"/>
-        <Button text="Supprimer" onAction="#supprimer"/>
-        <Button text="Annuler" onAction="#annuler"/>
+
+        <Button text="Ajouter" onAction="#ajouter"
+                style="-fx-background-color: #2ECC71;
+                       -fx-text-fill: white;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 5;"/>
+
+        <Button text="Modifier" onAction="#modifier"
+                style="-fx-background-color: #58D68D;
+                       -fx-text-fill: white;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 5;"/>
+
+
+        <Button text="Annuler" onAction="#annuler"
+                style="-fx-background-color: #ECF0F1;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 5;"/>
     </HBox>
 
 </VBox>

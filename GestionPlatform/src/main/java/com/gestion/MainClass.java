@@ -9,6 +9,8 @@ import com.gestion.entities.*;
 import com.gestion.services.ProductService;
 import com.gestion.interfaces.IProductService;
 import javafx.application.Application;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -19,6 +21,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -26,6 +30,8 @@ import javafx.util.Callback;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 // Imports supplémentaires pour PDF et UI
@@ -48,6 +54,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.File;
 
+
 /**
  * Classe principale de l'application GestionPlatform
  * Gère l'interface utilisateur et la logique métier
@@ -66,6 +73,7 @@ public class MainClass extends Application {
     @FXML private TableColumn<Evenement, String> colTitre, colDescription, colLieu, colStatut;
     @FXML private TableColumn<Evenement, Integer> colCapacite;
     @FXML private TableColumn<Evenement, Double> colPrix;
+
 
     // Services
 
@@ -276,6 +284,7 @@ public class MainClass extends Application {
     }
 
 
+
     /**
      * Initialiser la table selon le module
      */
@@ -306,8 +315,12 @@ public class MainClass extends Application {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
+                    setTextFill(Color.BLACK);
+
                 } else {
                     setGraphic(checkBox);
+                    setTextFill(Color.BLACK);
+
                 }
             }
         });
@@ -319,6 +332,7 @@ public class MainClass extends Application {
                 break;
             case "EVENEMENTS":
                 createEventColumns();
+                loadEventData();
                 break;
             case "COACHING":
                 createCoachingColumns();
@@ -351,12 +365,71 @@ public class MainClass extends Application {
     }
 
     private void createEventColumns() {
-        addColumn("ID", "id", 60);
-        addColumn("Titre", "title", 200);
-        addColumn("Type", "type", 120);
-        addColumn("Lieu", "location", 150);
-        addColumn("Statut", "status", 100);
+
+        // Titre
+        TableColumn<Object, String> colTitre = new TableColumn<>("Titre");
+        colTitre.setCellValueFactory(cellData ->
+                new SimpleStringProperty(((Evenement)cellData.getValue()).getTitre())
+        );
+        colTitre.setMinWidth(150);
+        dataTable.getColumns().add(colTitre);
+
+// Description
+        TableColumn<Object, String> colDescription = new TableColumn<>("Description");
+        colDescription.setCellValueFactory(cellData ->
+                new SimpleStringProperty(((Evenement)cellData.getValue()).getDescription())
+        );
+        colDescription.setMinWidth(200);
+        dataTable.getColumns().add(colDescription);
+
+// Lieu
+        TableColumn<Object, String> colLieu = new TableColumn<>("Lieu");
+        colLieu.setCellValueFactory(cellData ->
+                new SimpleStringProperty(((Evenement)cellData.getValue()).getLieu())
+        );
+        colLieu.setMinWidth(140);
+        dataTable.getColumns().add(colLieu);
+
+// Statut
+        TableColumn<Object, String> colStatut = new TableColumn<>("Statut");
+        colStatut.setCellValueFactory(cellData ->
+                new SimpleStringProperty(((Evenement)cellData.getValue()).getStatut())
+        );
+        colStatut.setMinWidth(100);
+        dataTable.getColumns().add(colStatut);
+
+        // Capacité (int)
+        TableColumn<Object, Integer> colCap = new TableColumn<>("Capacité");
+        colCap.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(((Evenement)cellData.getValue()).getCapacite()));
+        colCap.setMinWidth(80);
+        dataTable.getColumns().add(colCap);
+
+        // Prix (double)
+        TableColumn<Object, Double> colPrix = new TableColumn<>("Prix");
+        colPrix.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(((Evenement)cellData.getValue()).getPrix()));
+        colPrix.setMinWidth(80);
+        dataTable.getColumns().add(colPrix);
+
+        // --- Date fields ---
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        TableColumn<Object, String> colDebut = new TableColumn<>("Date Début");
+        colDebut.setCellValueFactory(cellData ->
+                new SimpleStringProperty(((Evenement)cellData.getValue()).getDateDebut().format(formatter))
+        );
+        colDebut.setMinWidth(120);
+        dataTable.getColumns().add(colDebut);
+
+        TableColumn<Object, String> colFin = new TableColumn<>("Date Fin");
+        colFin.setCellValueFactory(cellData ->
+                new SimpleStringProperty(((Evenement)cellData.getValue()).getDateFin().format(formatter))
+        );
+        colFin.setMinWidth(120);
+        dataTable.getColumns().add(colFin);
     }
+
+
+
 
     private void createCoachingColumns() {
         addColumn("ID", "id", 60);
@@ -393,6 +466,25 @@ public class MainClass extends Application {
         column.setMinWidth(width);
         dataTable.getColumns().add(column);
     }
+
+
+    private void loadEventData() {
+        if (!"EVENEMENTS".equals(currentModule)) return;
+
+        // ✅ Instantiate the service
+        EvenementService evenementService = new EvenementService();
+
+        // load from database
+        List<Evenement> events = evenementService.afficher();
+
+        // convert to ObservableList
+        dataList = FXCollections.observableArrayList(events);
+
+        // update the table
+        updateTable();
+        updateResultsLabel();
+    }
+
 
     /**
      * Créer les boutons d'action pour chaque ligne
@@ -508,114 +600,49 @@ public class MainClass extends Application {
     private void handleEdit(Object item) {
         if ("EVENEMENTS".equals(currentModule) && item instanceof Evenement) {
             showEvenementDialog((Evenement) item);
+            service.modifier((Evenement) item);
+
         } else if ("PRODUITS".equals(currentModule) && item instanceof Product) {
             showProductDialog((Product) item);
         } else {
             showDialog("Modifier", "Fonction de modification pour " + currentModule);
         }
     }
-
-
-
     /**
      * Afficher le dialogue d'événement avec design amélioré
      */
     private void showEvenementDialog(Evenement evenement) {
+
+
         try {
-            // Load FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/gestion/fxml/EvenementView.fxml"));
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/EvenementView.fxml")
+            );
+
             VBox root = loader.load();
 
-            // Get controller to access fields
+            // Récupérer le controller
             EvenementController controller = loader.getController();
 
-            // If editing, fill the form
+
+            // Si on passe un événement (mode modification)
             if (evenement != null) {
-                controller.getTxtTitre().setText(evenement.getTitre());
-                controller.getColDescription().setText(evenement.getDescription());
-                controller.getTxtLieu().setText(evenement.getLieu());
-                controller.getColCapacite().setText(String.valueOf(evenement.getCapacite()));
-                controller.getColPrix().setText(String.valueOf(evenement.getPrix()));
-                controller.txtImageUrl.setText(evenement.getImageUrl());
-                controller.dpDateDebut.setValue(evenement.getDateDebut().toLocalDate());
-                controller.dpDateFin.setValue(evenement.getDateFin().toLocalDate());
-                controller.getCbStatut().setValue(evenement.getStatut());
+                controller.remplirFormulaire(evenement);
             }
 
-            // Create Dialog
-            Dialog<Evenement> dialog = new Dialog<>();
-            dialog.setTitle(evenement == null ? "Nouveau Événement" : "Modifier Événement");
-            dialog.setHeaderText(null);
-            dialog.getDialogPane().setContent(root);
-            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            Stage stage = new Stage();
+            stage.setTitle(evenement == null ? "Ajouter Événement" : "Modifier Événement");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
 
-            // Customize OK button
-            Button btnOk = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
-            btnOk.setText(evenement == null ? "Ajouter" : "Enregistrer");
 
-            dialog.setResultConverter(dialogButton -> {
-                if (dialogButton == ButtonType.OK) {
-                    try {
-                        Evenement e = evenement == null ? new Evenement() : evenement;
-                        e.setTitre(controller.txtTitre.getText());
-                        e.setDescription(controller.txtDescription.getText());
-                        e.setLieu(controller.txtLieu.getText());
-                        e.setCapacite(Integer.parseInt(controller.txtCapacite.getText()));
-                        e.setPrix(Double.parseDouble(controller.txtPrix.getText()));
-                        e.setImageUrl(controller.txtImageUrl.getText());
-                        e.setStatut(controller.cbStatut.getValue());
-
-                        if (controller.dpDateDebut.getValue() == null || controller.dpDateFin.getValue() == null) {
-                            showDialog("Erreur", "Veuillez sélectionner les dates.");
-                            return null;
-                        }
-
-                        e.setDateDebut(controller.dpDateDebut.getValue().atStartOfDay());
-                        e.setDateFin(controller.dpDateFin.getValue().atStartOfDay());
-
-                        return e;
-
-                    } catch (Exception ex) {
-                        showDialog("Erreur", "Vérifiez les champs : " + ex.getMessage());
-                        return null;
-                    }
-                }
-                return null;
-            });
-
-            Optional<Evenement> result = dialog.showAndWait();
-            result.ifPresent(e -> {
-                try {
-                    if (evenement == null) {
-                        boolean success = service.ajouter(e);
-                        if (success) {
-                            updateTable();
-                            showDialog("Succès", "✅ Événement ajouté !");
-                        } else {
-                            showDialog("Erreur", "❌ Insertion échouée !");
-                        }
-                    } else {
-                        boolean success = service.modifier(e);
-                        if (success) {
-                            updateTable();
-                            showDialog("Succès", "✅ Événement modifié !");
-                        } else {
-                            showDialog("Erreur", "❌ Modification échouée !");
-                        }
-                    }
-                } catch (Exception ex) {
-                    showDialog("Erreur", ex.getMessage());
-                }
-            });
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            showDialog("Erreur", "Impossible de charger le formulaire : " + ex.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erreur : impossible de charger EvenementView.fxml");
         }
     }
-
-
-
 
 
     @FXML
@@ -629,9 +656,9 @@ public class MainClass extends Application {
             selected.setPrix(Double.parseDouble(txtPrix.getText()));
             selected.setStatut(cbStatut.getValue());
 
-            //service.modifier(selected);
+            service.modifier(selected);
             data.clear();
-            //data.addAll(service.afficher());
+            data.addAll(service.afficher());
             clearForm();
         }
     }
@@ -640,17 +667,35 @@ public class MainClass extends Application {
     private void annuler() {
         clearForm();
     }
-
+    private void refreshTable() {
+        data.clear();
+        data.addAll(service.afficher());
+        tableEvenements.setItems(data);
+    }
 
     @FXML
     private void supprimer() {
         Evenement selected = tableEvenements.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            //service.supprimer(selected);
-            data.remove(selected);
-            clearForm();
+        if (selected == null) {
+            showAlert("Sélectionnez un événement !", "Vérifiez les champs !");
+            return;
         }
+
+        // Confirm deletion (optional)
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'événement ?");
+        confirm.setContentText(selected.getTitre());
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+
+        // Remove from database
+        service.supprimer(selected.getIdEvenement());
+
+        // Refresh table and clear form
+        refreshTable();
+        clearForm();
     }
+
 
     private void clearForm() {
         txtTitre.clear();
@@ -730,36 +775,78 @@ public class MainClass extends Application {
 
 
     private void handleDeleteSelected() {
-        showDialog("Suppression", "Suppression de la sélection (à implémenter)");
+
+        // Activer la sélection multiple
+        dataTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        // Copier la sélection pour éviter les problèmes pendant la suppression
+        List<Object> itemsToDelete = new ArrayList<>(dataTable.getSelectionModel().getSelectedItems());
+
+        if (itemsToDelete.isEmpty()) {
+            showDialog("Erreur", "Aucun élément sélectionné !");
+            return;
+        }
+
+        // Confirmation
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Supprimer les éléments sélectionnés ?");
+        alert.setContentText("Êtes-vous sûr ?");
+        alert.initOwner(dataTable.getScene().getWindow());
+
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK)
+            return;
+
+        // Supprimer tous les éléments
+        for (Object item : itemsToDelete) {
+            if ("PRODUITS".equals(currentModule) && item instanceof Product) {
+                Product p = (Product) item;
+                productService.deleteProduct(p.getIdProduit());
+            } else if ("EVENEMENTS".equals(currentModule) && item instanceof Evenement) {
+                Evenement e = (Evenement) item;
+                service.supprimer(e.getIdEvenement());
+            }
+
+            // Retirer de la liste observable
+            dataList.remove(item);
+        }
+
+        // Rafraîchir TableView et labels
+        updateTable();
+        updateResultsLabel();
+
+        // Vider la sélection
+        dataTable.getSelectionModel().clearSelection();
+
+        // Message succès
+        showDialog("Succès", "✅ Tous les éléments sélectionnés ont été supprimés !");
     }
 
     private void handleDelete(Object item) {
-        if (item == null)
-            return;
+        if (item == null) return;
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
-        alert.setHeaderText("Supprimer l'élément");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer cet élément?");
+        alert.setHeaderText("Supprimer l'élément ?");
+        alert.setContentText("Êtes-vous sûr ?");
         alert.initOwner(dataTable.getScene().getWindow());
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            if ("PRODUITS".equals(currentModule) && item instanceof Product) {
-                Product product = (Product) item;
-                if (productService.deleteProduct(product.getIdProduit())) {
-                    dataList.remove(item);
-                    updateTable();
-                    updateResultsLabel();
-                    showDialog("Succès", "✅ Produit supprimé avec succès!");
-                } else {
-                    showDialog("Erreur", "❌ Erreur lors de la suppression du produit");
-                }
-            } else {
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK)
+            return;
+
+        if ("PRODUITS".equals(currentModule) && item instanceof Product) {
+            Product p = (Product) item;
+            if (productService.deleteProduct(p.getIdProduit())) {
                 dataList.remove(item);
                 updateTable();
-                updateResultsLabel();
-                showDialog("Succès", "Élément supprimé avec succès");
+                showDialog("Succès", "Produit supprimé !");
+            }
+        } else if ("EVENEMENTS".equals(currentModule) && item instanceof Evenement) {
+            Evenement e = (Evenement) item;
+            if (service.supprimer(e.getIdEvenement())) {
+                dataList.remove(item);
+                updateTable();
+                showDialog("Succès", "Événement supprimé !");
             }
         }
     }

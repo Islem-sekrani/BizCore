@@ -12,7 +12,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="GestionPlatform" options="--add-exports javafx.controls/com.sun.javafx.charts=com.gestion" />
+      <module name="GestionPlatform" options="" />
     </option>
   </component>
 </project>

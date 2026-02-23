@@ -55,7 +55,6 @@ public class EvenementService {
 
     // 🔹 AFFICHER
     public List<Evenement> afficher() {
-
         List<Evenement> list = new ArrayList<>();
         String sql = "SELECT * FROM evenement";
 
@@ -63,7 +62,6 @@ public class EvenementService {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-
                 Evenement e = new Evenement();
                 e.setIdEvenement(rs.getInt("id_evenement"));
                 e.setTitre(rs.getString("titre"));
@@ -81,12 +79,13 @@ public class EvenementService {
                 list.add(e);
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
 
         return list;
     }
+
 
     // 🔹 MODIFIER
     public void modifier(Evenement e) {
@@ -120,16 +119,27 @@ public class EvenementService {
     }
 
     // 🔹 SUPPRIMER
-    public void supprimer(int id) {
+    public boolean supprimer(int id) {
 
         String sql = "DELETE FROM evenement WHERE id_evenement=?";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
-            ps.executeUpdate();
-            System.out.println("Evenement supprimé !");
+
+            int rows = ps.executeUpdate(); // renvoie le nombre de lignes affectées
+            if (rows > 0) {
+                System.out.println("Événement supprimé !");
+                return true; // suppression réussie
+            } else {
+                System.out.println("Aucun événement trouvé avec cet ID !");
+                return false; // aucun enregistrement supprimé
+            }
+
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return false; // erreur SQL
         }
     }
+
+
 }

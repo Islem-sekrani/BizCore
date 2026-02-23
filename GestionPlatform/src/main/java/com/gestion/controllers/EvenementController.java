@@ -2,246 +2,186 @@ package com.gestion.controllers;
 
 import com.gestion.entities.Evenement;
 import com.gestion.services.EvenementService;
-import com.google.protobuf.BoolValue;
-import com.sun.javafx.charts.Legend;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class EvenementController {
 
-    public Legend.LegendItem txtImageUrl;
-    public BoolValue.Builder dpDateDebut;
-    public BoolValue.Builder dpDateFin;
     private EvenementService service = new EvenementService();
     private ObservableList<Evenement> data = FXCollections.observableArrayList();
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private Evenement evenementEnCours;
+    @FXML private TableView<Evenement> tableEvenements;
+    @FXML private TableColumn<Evenement, String> colTitre, colDescription, colLieu, colStatut, colDateDebut, colDateFin;
+    @FXML private TableColumn<Evenement, Integer> colCapacite;
+    @FXML private TableColumn<Evenement, Double> colPrix;
 
     @FXML private TextField txtTitre, txtLieu, txtCapacite, txtPrix;
     @FXML private TextArea txtDescription;
     @FXML private ComboBox<String> cbStatut;
-
-    @FXML private TableView<Evenement> tableEvenements;
-    @FXML private TableColumn<Evenement, String> colTitre, colDescription, colLieu, colStatut;
-    @FXML private TableColumn<Evenement, Integer> colCapacite;
-    @FXML private TableColumn<Evenement, Double> colPrix;
+    @FXML private DatePicker dpDateDebut, dpDateFin;
 
     @FXML
-    public void initialize() {
-
-        colTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-        colLieu.setCellValueFactory(new PropertyValueFactory<>("lieu"));
-        colCapacite.setCellValueFactory(new PropertyValueFactory<>("capacite"));
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
-        colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
-
-        //data.addAll(service.afficher());
+    private void refreshTable() {
+        data.clear();
+        data.addAll(service.afficher());
         tableEvenements.setItems(data);
+    }
 
-        tableEvenements.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            if (newSel != null) {
-                txtTitre.setText(newSel.getTitre());
-                txtDescription.setText(newSel.getDescription());
-                txtLieu.setText(newSel.getLieu());
-                txtCapacite.setText(String.valueOf(newSel.getCapacite()));
-                txtPrix.setText(String.valueOf(newSel.getPrix()));
-                cbStatut.setValue(newSel.getStatut());
-            }
-        });
+    private void clearForm() {
+        txtTitre.clear(); txtDescription.clear(); txtLieu.clear();
+        txtCapacite.clear(); txtPrix.clear(); cbStatut.setValue(null);
+        dpDateDebut.setValue(null); dpDateFin.setValue(null);
+        tableEvenements.getSelectionModel().clearSelection();
+    }
+
+    private boolean champsValides() {
+        try {
+            if (txtTitre.getText().isEmpty() || txtDescription.getText().isEmpty() || txtLieu.getText().isEmpty()) return false;
+            Integer.parseInt(txtCapacite.getText());
+            Double.parseDouble(txtPrix.getText());
+            if (cbStatut.getValue() == null || dpDateDebut.getValue() == null || dpDateFin.getValue() == null) return false;
+        } catch (Exception e) { return false; }
+        return true;
+    }
+
+    private void showAlert(String message) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setContentText(message);
+        a.showAndWait();
+    }
+
+    public void remplirFormulaire(Evenement e) {
+        evenementEnCours = e;
+        txtTitre.setText(e.getTitre());
+        txtDescription.setText(e.getDescription());
+        txtLieu.setText(e.getLieu());
+        txtCapacite.setText(String.valueOf(e.getCapacite()));
+        txtPrix.setText(String.valueOf(e.getPrix()));
+        cbStatut.setValue(e.getStatut());
+        dpDateDebut.setValue(e.getDateDebut().toLocalDate());
+        dpDateFin.setValue(e.getDateFin().toLocalDate());
     }
 
     @FXML
+
     private void ajouter() {
         try {
-            Evenement e = new Evenement(
-                    txtTitre.getText(),
-                    txtDescription.getText(),
-                    txtLieu.getText(),
-                    Integer.parseInt(txtCapacite.getText()),
-                    Double.parseDouble(txtPrix.getText()),
-                    cbStatut.getValue()
-            );
+            // ✅ Contrôle des champs obligatoires
+            if (txtTitre.getText().isEmpty() || txtDescription.getText().isEmpty()
+                    || txtLieu.getText().isEmpty() || txtCapacite.getText().isEmpty()
+                    || txtPrix.getText().isEmpty()
+                    || dpDateDebut.getValue() == null || dpDateFin.getValue() == null) {
 
+                showAlert("Erreur", "Veuillez remplir tous les champs !");
+                return;
+            }
+
+            // ✅ Vérifier que la capacité et le prix sont corrects
+            int capacite;
+            double prix;
+            try {
+                capacite = Integer.parseInt(txtCapacite.getText());
+                prix = Double.parseDouble(txtPrix.getText());
+            } catch (NumberFormatException nfe) {
+                showAlert("Erreur", "Capacité ou prix invalide !");
+                return;
+            }
+
+            // ✅ Créer l'événement
+            Evenement e = new Evenement();
+            e.setTitre(txtTitre.getText());
+            e.setDescription(txtDescription.getText());
+            e.setLieu(txtLieu.getText());
+            e.setCapacite(capacite);
+            e.setPrix(prix);
+            e.setStatut(cbStatut.getValue());
+            e.setDateDebut(dpDateDebut.getValue().atStartOfDay());
+            e.setDateFin(dpDateFin.getValue().atStartOfDay());
+            e.setImageUrl("");
+            e.setIdOrganisateur(1);
+            e.setIdCategorie(1);
+
+            // ✅ Ajouter via le service
             service.ajouter(e);
-            data.clear();
-            //data.addAll(service.afficher());
-            clearForm();
+
+            Alert success = new Alert(Alert.AlertType.INFORMATION);
+            success.setTitle("Succès");
+            success.setHeaderText(null);
+            success.setContentText("✅ Événement ajouter avec succès !");
+            success.showAndWait();
+
+            // ✅ Fermer la fenêtre après ajout
+            Stage stage = (Stage) txtTitre.getScene().getWindow();
+            stage.close();
+            refreshTable();
 
         } catch (Exception ex) {
-            showAlert("Erreur", "Vérifiez les champs !");
         }
     }
+
+    // Méthode utilitaire pour afficher une alerte simple
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 
     @FXML
     private void modifier() {
-        Evenement selected = tableEvenements.getSelectionModel().getSelectedItem();
-        if (selected != null) {
 
-            selected.setDescription(txtDescription.getText());
-            selected.setLieu(txtLieu.getText());
-            selected.setCapacite(Integer.parseInt(txtCapacite.getText()));
-            selected.setPrix(Double.parseDouble(txtPrix.getText()));
-            selected.setStatut(cbStatut.getValue());
-
-            //service.modifier(selected);
-            data.clear();
-            //data.addAll(service.afficher());
-            clearForm();
+        if (evenementEnCours == null) {
+            showAlert("Aucun événement chargé !");
+            return;
         }
-    }
-
-    @FXML
-    private void annuler() {
-        clearForm();
-    }
 
 
-    public TableColumn<Evenement, Double> getColPrix() {
-        return colPrix;
-    }
+        evenementEnCours.setTitre(txtTitre.getText());
+        evenementEnCours.setDescription(txtDescription.getText());
+        evenementEnCours.setLieu(txtLieu.getText());
+        evenementEnCours.setCapacite(Integer.parseInt(txtCapacite.getText()));
+        evenementEnCours.setPrix(Double.parseDouble(txtPrix.getText()));
+        evenementEnCours.setStatut(cbStatut.getValue());
+        evenementEnCours.setDateDebut(dpDateDebut.getValue().atStartOfDay());
+        evenementEnCours.setDateFin(dpDateFin.getValue().atStartOfDay());
 
-    public void setColPrix(TableColumn<Evenement, Double> colPrix) {
-        this.colPrix = colPrix;
-    }
+        service.modifier(evenementEnCours);
 
-    public TableColumn<Evenement, Integer> getColCapacite() {
-        return colCapacite;
-    }
+        Alert success = new Alert(Alert.AlertType.INFORMATION);
+        success.setTitle("Succès");
+        success.setHeaderText(null);
+        success.setContentText("✅ Événement mofifier avec succès !");
+        success.showAndWait();
 
-    public void setColCapacite(TableColumn<Evenement, Integer> colCapacite) {
-        this.colCapacite = colCapacite;
-    }
+        // ✅ Fermer la fenêtre après ajout
+        Stage stage = (Stage) txtTitre.getScene().getWindow();
+        stage.close();
+        refreshTable();
 
-    public TableColumn<Evenement, String> getColStatut() {
-        return colStatut;
-    }
-
-    public void setColStatut(TableColumn<Evenement, String> colStatut) {
-        this.colStatut = colStatut;
-    }
-
-    public TableColumn<Evenement, String> getColLieu() {
-        return colLieu;
-    }
-
-    public void setColLieu(TableColumn<Evenement, String> colLieu) {
-        this.colLieu = colLieu;
-    }
-
-    public TableColumn<Evenement, String> getColDescription() {
-        return colDescription;
-    }
-
-    public void setColDescription(TableColumn<Evenement, String> colDescription) {
-        this.colDescription = colDescription;
-    }
-
-    public TableColumn<Evenement, String> getColTitre() {
-        return colTitre;
-    }
-
-    public void setColTitre(TableColumn<Evenement, String> colTitre) {
-        this.colTitre = colTitre;
-    }
-
-    public TableView<Evenement> getTableEvenements() {
-        return tableEvenements;
-    }
-
-    public void setTableEvenements(TableView<Evenement> tableEvenements) {
-        this.tableEvenements = tableEvenements;
-    }
-
-    public ComboBox<String> getCbStatut() {
-        return cbStatut;
-    }
-
-    public void setCbStatut(ComboBox<String> cbStatut) {
-        this.cbStatut = cbStatut;
-    }
-
-    public TextArea getTxtDescription() {
-        return txtDescription;
-    }
-
-    public void setTxtDescription(TextArea txtDescription) {
-        this.txtDescription = txtDescription;
-    }
-
-    public TextField getTxtPrix() {
-        return txtPrix;
-    }
-
-    public void setTxtPrix(TextField txtPrix) {
-        this.txtPrix = txtPrix;
-    }
-
-    public TextField getTxtCapacite() {
-        return txtCapacite;
-    }
-
-    public void setTxtCapacite(TextField txtCapacite) {
-        this.txtCapacite = txtCapacite;
-    }
-
-    public TextField getTxtLieu() {
-        return txtLieu;
-    }
-
-    public void setTxtLieu(TextField txtLieu) {
-        this.txtLieu = txtLieu;
-    }
-
-    public TextField getTxtTitre() {
-        return txtTitre;
-    }
-
-    public void setTxtTitre(TextField txtTitre) {
-        this.txtTitre = txtTitre;
-    }
-
-    public ObservableList<Evenement> getData() {
-        return data;
-    }
-
-    public void setData(ObservableList<Evenement> data) {
-        this.data = data;
-    }
-
-    public EvenementService getService() {
-        return service;
-    }
-
-    public void setService(EvenementService service) {
-        this.service = service;
     }
 
     @FXML
     private void supprimer() {
         Evenement selected = tableEvenements.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            //service.supprimer(selected);
-            data.remove(selected);
-            clearForm();
-        }
+        if (selected == null) { showAlert("Sélectionnez un événement !"); return; }
+        service.supprimer(selected.getIdEvenement());
+        refreshTable(); clearForm();
     }
 
-    private void clearForm() {
-        txtTitre.clear();
-        txtDescription.clear();
-        txtLieu.clear();
-        txtCapacite.clear();
-        txtPrix.clear();
-        cbStatut.setValue(null);
-        tableEvenements.getSelectionModel().clearSelection();
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
+    @FXML
+    private void annuler() {
+        clearForm();
     }
 }

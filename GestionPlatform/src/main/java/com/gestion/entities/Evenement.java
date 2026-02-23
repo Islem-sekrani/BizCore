@@ -39,6 +39,9 @@ public class Evenement {
         this.idCategorie = idCategorie;
     }
 
+    public Evenement(String text, String text1, String text2, int i, double v, String value, LocalDateTime localDateTime, LocalDateTime localDateTime1) {
+    }
+
     // 🔹 Getters & Setters
 
     public int getIdEvenement() { return idEvenement; }
