@@ -1,13 +1,16 @@
 package com.gestion;
 
 import com.gestion.controllers.EvenementController;
+import com.gestion.controllers.MainDashboardController;
 import com.gestion.entities.Evenement;
+import com.gestion.interfaces.IUserService;
 import com.gestion.services.EvenementService;
 import com.gestion.interfaces.IProductService;
 
 import com.gestion.entities.*;
 import com.gestion.services.ProductService;
-import com.gestion.interfaces.IProductService;
+
+import com.gestion.services.UserService;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
@@ -28,10 +31,13 @@ import javafx.util.Callback;
 
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 // Imports supplémentaires pour PDF et UI
@@ -55,6 +61,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
 
 
+
 /**
  * Classe principale de l'application GestionPlatform
  * Gère l'interface utilisateur et la logique métier
@@ -62,7 +69,7 @@ import java.io.File;
  */
 public class MainClass extends Application {
 
-    private EvenementService service = new EvenementService();
+
     private ObservableList<Evenement> data = FXCollections.observableArrayList();
 
     @FXML private TextField txtTitre, txtLieu, txtCapacite, txtPrix;
@@ -77,11 +84,14 @@ public class MainClass extends Application {
 
     // Services
 
+    private IUserService userService; //new
+    private EvenementService service = new EvenementService();
     private IProductService productService;
 
     // UI Components (Main Dashboard)
     private Label lblTitle;
     private Label lblUserName;
+    private Label lblUserRole;
     private AnchorPane contentArea;
 
     // UI Components (Module View)
@@ -98,33 +108,275 @@ public class MainClass extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Initialiser les services
+            // Init services
             productService = new ProductService();
+            userService = new UserService();
+            this.primaryStageRef = primaryStage;
+            // 👉 show login instead of dashboard
+            showLogin(primaryStage);
 
-            // Charger le FXML principal
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainDashboard.fxml"));
-            // Ne pas définir de contrôleur via le loader
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("❌ Startup error: " + e.getMessage());
+        }
+    }
+
+    // Show login on the primary stage
+    public static User currentUser; // session user
+    private Stage primaryStageRef;
+
+    public void showLogin(Stage stage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent root = loader.load();
 
-            // Configurer la scène
+            // get nodes by fx:id
+            TextField txtEmail = (TextField) root.lookup("#txtEmail");
+            PasswordField txtPassword = (PasswordField) root.lookup("#txtPassword");
+            Button btnLogin = (Button) root.lookup("#btnLogin");
+            Button btnCancel = (Button) root.lookup("#btnCancel");
+            Label lblMessage = (Label) root.lookup("#lblMessage");
+            Button btnSignup = (Button) root.lookup("#btnSignup");
+
+            btnLogin.setOnAction(e -> {
+                String email = txtEmail.getText().trim();
+                String password = txtPassword.getText();
+
+                if (email.isEmpty() || password.isEmpty()) {
+                    lblMessage.setText("Enter email and password");
+                    return;
+                }
+
+                User user = userService.getUserByEmail(email);
+
+                if (user == null) {
+                    lblMessage.setText("User not found");
+                    return;
+                }
+
+                if (!user.getPassword().equals(password)) {
+                    lblMessage.setText("Wrong password");
+                    return;
+                }
+
+                // ✅ SUCCESS LOGIN
+                currentUser = user;
+
+                // update last connection + statut in DB (single call)
+                Timestamp now = Timestamp.from(Instant.now());
+                userService.updateLastConnection(currentUser.getIdUser(), now);
+
+                // update the in-memory user object too
+                currentUser.setDerniereConnexion(now);
+                currentUser.setStatut("connecte");
+
+
+                // update statut in DB
+                user.setStatut("connecte");
+                userService.updateUser(user);
+
+                // open dashboard
+                openDashboard(stage);
+            });
+
+            btnCancel.setOnAction(e -> stage.close());
+
+            if (btnSignup != null) {
+                btnSignup.setOnAction(e -> showSignupDialog());
+            }
+
+            Scene scene = new Scene(root, 400, 300);
+            scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            stage.setScene(scene);
+            stage.setTitle("Login");
+            stage.show();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }//new
+
+    private void showSignupDialog() {
+
+        Dialog<User> dialog = new Dialog<>();
+        dialog.setTitle("Create account");
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+
+        ButtonType createBtn = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        pane.getButtonTypes().addAll(createBtn, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        TextField txtNom = new TextField();
+        txtNom.setPromptText("Nom");
+
+        TextField txtPrenom = new TextField();
+        txtPrenom.setPromptText("Prénom");
+
+        TextField txtEmail = new TextField();
+        txtEmail.setPromptText("Email");
+
+        PasswordField txtPassword = new PasswordField();
+        txtPassword.setPromptText("Password");
+
+        grid.add(new Label("Nom:"), 0, 0);
+        grid.add(txtNom, 1, 0);
+
+        grid.add(new Label("Prénom:"), 0, 1);
+        grid.add(txtPrenom, 1, 1);
+
+        grid.add(new Label("Email:"), 0, 2);
+        grid.add(txtEmail, 1, 2);
+
+        grid.add(new Label("Password:"), 0, 3);
+        grid.add(txtPassword, 1, 3);
+
+        pane.setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == createBtn) {
+
+                if (txtNom.getText().isEmpty() ||
+                        txtPrenom.getText().isEmpty() ||
+                        txtEmail.getText().isEmpty() ||
+                        txtPassword.getText().isEmpty()) {
+
+                    showDialog("Validation", "All fields are required!");
+                    return null;
+                }
+
+                // 🔥 check if DB is empty
+                int roleId;
+                try {
+                    boolean empty = userService.getAllUsers().isEmpty();
+                    roleId = empty ? 1 : 2; // 1 = Admin, 2 = User
+                } catch (Exception e) {
+                    roleId = 2; // fallback safety
+                }
+
+                // create user
+                User u = new User(
+                        txtNom.getText(),
+                        txtPrenom.getText(),
+                        txtEmail.getText(),
+                        txtPassword.getText(),
+                        roleId
+                );
+
+                return u;
+            }
+            return null;
+        });
+
+        Optional<User> result = dialog.showAndWait();
+
+        result.ifPresent(u -> {
+
+            boolean success = userService.addUser(u);
+
+            if (success) {
+
+                // 🔐 set current session user
+                currentUser = u;
+
+                // update last connection + statut
+                Timestamp now = Timestamp.from(Instant.now());
+                userService.updateLastConnection(currentUser.getIdUser(), now);
+
+                currentUser.setDerniereConnexion(now);
+                currentUser.setStatut("connecte");
+
+                // optional message
+                showDialog("Success", "Account created successfully!");
+
+                // 🚀 open dashboard directly
+                openDashboard(primaryStageRef);
+            } else {
+                showDialog("Error", "Error creating account (email may already exist)");
+            }
+        });
+    }//new
+
+    private void openDashboard(Stage primaryStage) {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/MainDashboard.fxml")
+            );
+
+            Parent root = loader.load();
+
+            // 🔥 GET CONTROLLER
+            MainDashboardController controller = loader.getController();
+
+            // 🔥 Pass current user if needed
+            controller.setCurrentUser(currentUser); // if you have this method
+
+            // 🔥 Now call loadModule from controller
+            controller.loadModule("DASHBOARD");
+
             Scene scene = new Scene(root, 1400, 800);
 
-            // Initialiser les composants du Dashboard via le namespace
-            initializeDashboard(loader.getNamespace(), root);
-
-            // Charger le module par défaut
-            loadModule("PRODUITS");
-
-            primaryStage.setTitle("Admin Panel - Gestion Platform");
+            primaryStage.setTitle("Admin Panel");
             primaryStage.setScene(scene);
             primaryStage.setMaximized(true);
             primaryStage.show();
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("❌ Erreur fatale lors du démarrage de l'application: " + e.getMessage());
         }
     }
+
+    public void logout() {
+        try {
+            // optional confirm
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Logout");
+            confirm.setHeaderText(null);
+            confirm.setContentText("Are you sure you want to log out?");
+            Optional<ButtonType> result = confirm.showAndWait();
+            if (result.isPresent() && result.get() != ButtonType.OK) {
+                return; // user cancelled
+            }
+
+            // update DB statut to "deconnecte"
+            if (currentUser != null) {
+                currentUser.setStatut("deconnecte");
+
+                // optionally update last connection / modify object fields if you track that
+                // currentUser.setDerniereConnexion(new Timestamp(System.currentTimeMillis()));
+
+                // persist change (uses your existing UserService.updateUser(User))
+                userService.updateUser(currentUser);
+            }
+
+            // clear session
+            currentUser = null;
+
+            // go back to login screen
+            if (primaryStageRef != null) {
+                showLogin(primaryStageRef);
+            } else {
+                // fallback: create new Stage if somehow null
+                Stage s = new Stage();
+                showLogin(s);
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Alert err = new Alert(Alert.AlertType.ERROR);
+            err.setTitle("Logout error");
+            err.setHeaderText(null);
+            err.setContentText("An error occurred while logging out.");
+            err.showAndWait();
+        }
+    }//new
+
 
     /**
      * Initialise les composants et événements du tableau de bord principal
@@ -134,51 +386,173 @@ public class MainClass extends Application {
         lblTitle = (Label) namespace.get("lblTitle");
         lblUserName = (Label) namespace.get("lblUserName");
         contentArea = (AnchorPane) namespace.get("contentArea");
+        if (lblUserName != null && currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+        }
+
+        if (lblUserRole != null && currentUser != null) {
+            String roleName;
+
+            switch (currentUser.getIdRole()) {
+                case 1:
+                    roleName = "Admin";
+                    break;
+                case 2:
+                    roleName = "User";
+                    break;
+                case 3:
+                    roleName = "Manager";
+                    break;
+                default:
+                    roleName = "Unknown";
+            }
+
+            lblUserRole.setText(roleName);
+        }//new
 
         // Configuration des boutons du menu
+        setupMenuButton(namespace, "btnDashboard", "DASHBOARD", root);
         setupMenuButton(namespace, "btnUtilisateurs", "UTILISATEURS", root);
         setupMenuButton(namespace, "btnEvenements", "EVENEMENTS", root);
         setupMenuButton(namespace, "btnCoaching", "COACHING", root);
         setupMenuButton(namespace, "btnBlog", "BLOG", root);
         setupMenuButton(namespace, "btnProduits", "PRODUITS", root);
 
-        if (lblUserName != null) {
-            lblUserName.setText("Admin User");
+        Button btnLogout = (Button) namespace.get("btnLogout");
+        if (btnLogout != null) {
+            btnLogout.setOnAction(evt -> logout());
+        }//new
+        Button btnProfile = (Button) namespace.get("btnProfile");
+
+        if (btnProfile != null) {
+            btnProfile.setOnAction(e -> showUserProfileDialog());
         }
+
     }
 
-    /**
-     * Configure un bouton de menu
-     */
-    private void setupMenuButton(java.util.Map<String, Object> namespace, String id, String moduleName, Parent root) {
-        Button btn = (Button) namespace.get(id);
+    private void setupMenuButton(Map<String, Object> namespace, String buttonId, String moduleName, Parent root) {
+
+        Button btn = (Button) namespace.get(buttonId);
+
         if (btn != null) {
             btn.setOnAction(e -> {
-                loadModule(moduleName);
-                updateActiveButton(root, btn);
+
+                // 🔐 Restrict UTILISATEURS access
+                if ("UTILISATEURS".equals(moduleName)) {
+                    if (currentUser == null || currentUser.getIdRole() != 1) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Access denied");
+                        alert.setHeaderText(null);
+                        alert.setContentText("You are not authorized to access this section.");
+                        alert.showAndWait();
+                        return; // 🚫 stop here
+                    }
+                }
+
+                // ✅ If allowed → load module safely
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainDashboard.fxml"));
+                    Parent loadedRoot = loader.load();  // may throw IOException
+
+                    // Get the controller
+                    MainDashboardController controller = loader.getController();
+
+                    // Now call the method on the controller
+                    controller.loadModule(moduleName);
+
+                    // Optionally, replace content in your UI:
+                    if (root instanceof AnchorPane) {
+                        AnchorPane contentArea = (AnchorPane) root;
+                        contentArea.getChildren().clear();
+                        contentArea.getChildren().add(loadedRoot);
+                        AnchorPane.setTopAnchor(loadedRoot, 0.0);
+                        AnchorPane.setBottomAnchor(loadedRoot, 0.0);
+                        AnchorPane.setLeftAnchor(loadedRoot, 0.0);
+                        AnchorPane.setRightAnchor(loadedRoot, 0.0);
+                    }
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    showDialog("Erreur", "Impossible de charger le module: " + moduleName);
+                }
             });
         }
     }
+
+    private void showUserProfileDialog() {
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("My Profile");
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+
+        // main container
+        VBox card = new VBox(12);
+        card.getStyleClass().add("profile-card");
+
+        // avatar circle (initials)
+        String initials = currentUser.getPrenom().substring(0,1).toUpperCase()
+                + currentUser.getNom().substring(0,1).toUpperCase();
+
+        Label avatar = new Label(initials);
+        avatar.getStyleClass().add("profile-avatar");
+
+        Label name = new Label(currentUser.getPrenom() + " " + currentUser.getNom());
+        name.getStyleClass().add("profile-name");
+
+        Label role = new Label(getRoleName(currentUser.getIdRole()));
+        role.getStyleClass().add("profile-role");
+
+        VBox header = new VBox(5, avatar, name, role);
+        header.setAlignment(Pos.CENTER);
+
+        // info section
+        VBox info = new VBox(8);
+        info.getChildren().addAll(
+                createProfileItem("📧 Email", currentUser.getEmail()),
+                createProfileItem("📞 Phone", currentUser.getTelephone()),
+                createProfileItem("📍 Address", currentUser.getAdresse())
+        );
+
+        card.getChildren().addAll(header, new Separator(), info);
+
+        pane.setContent(card);
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+
+        dialog.showAndWait();
+    }//new
+
+    private String getRoleName(int idRole) {
+        return switch (idRole) {
+            case 1 -> "Admin";
+            case 2 -> "User";
+            case 3 -> "Manager";
+            default -> "Unknown";
+        };
+    }
+
+    private HBox createProfileItem(String label, String value) {
+        Label l1 = new Label(label + ":");
+        l1.getStyleClass().add("profile-label");
+
+        Label l2 = new Label(value != null ? value : "-");
+        l2.getStyleClass().add("profile-value");
+
+        HBox row = new HBox(10, l1, l2);
+        return row;
+    }//new
+
 
     /**
      * Met à jour le style du bouton actif
      */
     private void updateActiveButton(Parent root, Button activeButton) {
-        // Pour gérer les classes CSS, on peut parcourir tous les boutons du namespace
-        // si on l'avait stocké,
-        // ou utiliser un lookup CSS sur la racine si les boutons n'ont pas d'ID CSS.
-        // Ici, on va utiliser lookup car les boutons ont des styleClass.
+
         String[] btnIds = { "#btnUtilisateurs", "#btnEvenements", "#btnCoaching", "#btnBlog", "#btnProduits" };
 
         for (String id : btnIds) {
             Button btn = (Button) root.lookup(id);
-            // Si lookup échoue (pas d'ID CSS), on peut essayer de retrouver le composant
-            // d'une autre manière,
-            // mais ici on suppose que fx:id génère un ID CSS par défaut avec FXMLLoader, ce
-            // qui n'est pas garanti.
-            // Si fx:id="toto", FXMLLoader fait souvent node.setId("toto") si aucun
-            // contrôleur n'est défini.
-            // Vérifions si c'est le cas. Sinon, on devra stocker les références.
 
             if (btn != null) {
                 btn.getStyleClass().remove("active-menu-btn");
@@ -188,10 +562,7 @@ public class MainClass extends Application {
                     }
                 }
             } else {
-                // Si lookup échoue, on peut iterer sur les enfants du conteneur de menu si on
-                // le connait.
-                // Pour simplifier, on va supposer que lookup fonctionne ou que ça n'est pas
-                // critique pour l'instant.
+
             }
         }
 
@@ -201,42 +572,118 @@ public class MainClass extends Application {
         }
     }
 
-    /**
-     * Charge un module dans la zone de contenu
-     */
-    private void loadModule(String moduleName) {
+    private void loadData() {
+
+        dataList = FXCollections.observableArrayList();
+
         try {
-            currentModule = moduleName;
 
-            if (lblTitle != null) {
-                lblTitle.setText("GESTION " + moduleName);
+            switch (currentModule) {
+
+                case "UTILISATEURS":
+                    dataList.addAll(userService.getAllUsers());
+                    break;
+
+                case "EVENEMENTS":
+                    dataList.addAll(EvenementService.afficher());
+                    break;
+
+                case "COACHING":
+                    break;
+
+                case "BLOG":
+                    break;
+
+                case "PRODUITS":
+                    dataList.addAll(productService.getAllProducts());
+                    break;
             }
 
-            // Charger le FXML du module
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ModuleView.fxml"));
-            Parent moduleView = loader.load();
+        } catch (Exception e) {
+            System.err.println("❌ Database loading error: " + e.getMessage());
+            showDialog("Database Error", "Unable to load data from database.");
+        }
 
-            // Initialiser les composants du module via namespace
-            initializeModuleView(loader.getNamespace(), moduleView);
+        updateTable();
+        updateResultsLabel();
+    }
+    private Parent createDashboardView() {
 
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(20));
+        root.getStyleClass().add("dashboard-root");
 
-            // Ajouter à la zone de contenu
-            if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(moduleView);
+        // ===== Title =====
+        Label title = new Label("Overview");
+        title.getStyleClass().add("dashboard-title");
 
-                // Ancrer aux 4 coins
-                AnchorPane.setTopAnchor(moduleView, 0.0);
-                AnchorPane.setBottomAnchor(moduleView, 0.0);
-                AnchorPane.setLeftAnchor(moduleView, 0.0);
-                AnchorPane.setRightAnchor(moduleView, 0.0);
-            }
+        // ===== KPI CARDS =====
+        HBox cards = new HBox(20);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            showDialog("Erreur", "Impossible de charger le module: " + moduleName);
+        VBox usersCard = createStatCard("Users", getUsersCount(), "👤");
+        VBox productsCard = createStatCard("Products", getProductsCount(), "📦");
+        VBox eventsCard = createStatCard("Events", "12", "📅"); // fake for now
+        VBox revenueCard = createStatCard("Revenue", "12,400 DT", "💰"); // fake
+
+        cards.getChildren().addAll(usersCard, productsCard, eventsCard, revenueCard);
+
+        // ===== Simple chart (fake data for now) =====
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis();
+
+        BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
+        chart.setTitle("Activity");
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.getData().add(new XYChart.Data<>("Mon", 5));
+        series.getData().add(new XYChart.Data<>("Tue", 8));
+        series.getData().add(new XYChart.Data<>("Wed", 6));
+        series.getData().add(new XYChart.Data<>("Thu", 10));
+        series.getData().add(new XYChart.Data<>("Fri", 4));
+
+        chart.getData().add(series);
+        chart.setPrefHeight(300);
+
+        root.getChildren().addAll(title, cards, chart);
+
+        return root;
+    }
+
+    private String getUsersCount() {
+        try {
+            return String.valueOf(userService.getAllUsers().size());
+        } catch (Exception e) {
+            return "0";
         }
     }
+
+    private String getProductsCount() {
+        try {
+            return String.valueOf(productService.getAllProducts().size());
+        } catch (Exception e) {
+            return "0";
+        }
+    }
+
+    private VBox createStatCard(String title, String value, String icon) {
+
+        Label lblIcon = new Label(icon);
+        lblIcon.getStyleClass().add("stat-icon");
+
+        Label lblTitle = new Label(title);
+        lblTitle.getStyleClass().add("stat-title");
+
+        Label lblValue = new Label(value);
+        lblValue.getStyleClass().add("stat-value");
+
+        VBox box = new VBox(8, lblIcon, lblTitle, lblValue);
+        box.getStyleClass().add("stat-card");
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.setPrefWidth(180);
+
+        return box;
+    }
+
 
     /**
      * Initialise les composants et événements de la vue module
@@ -342,6 +789,7 @@ public class MainClass extends Application {
                 break;
             case "PRODUITS":
                 createProductColumns();
+
                 break;
         }
 
@@ -1227,6 +1675,7 @@ public class MainClass extends Application {
         tf.getStyleClass().add("form-field");
         return tf;
     }
+
 
     private TextArea createStyledTextArea(String prompt) {
         TextArea ta = new TextArea();

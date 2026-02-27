@@ -7,6 +7,7 @@ module com.gestion {
     requires itextpdf;
     requires com.google.protobuf;
 
+
     opens com.gestion to javafx.fxml;
     opens com.gestion.controllers to javafx.fxml;
     opens com.gestion.models to javafx.base;

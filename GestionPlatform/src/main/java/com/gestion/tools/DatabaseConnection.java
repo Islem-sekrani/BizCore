@@ -22,6 +22,14 @@ public class DatabaseConnection {
         }
     }
 
+    public static Connection getConnection() {
+        if (instance == null) {
+            instance = new DatabaseConnection();
+
+        }
+        return instance.cnx;
+    }
+
 
     public Connection getCnx() {
         return cnx;

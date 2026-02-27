@@ -17,16 +17,16 @@
                 <padding>
                     <Insets top="20" bottom="20"/>
                 </padding>
-                <Label text="ADMIN" styleClass="logo-title">
+                <Label text="Bizcore" styleClass="logo-title">
                     <font>
                         <Font name="System Bold" size="24"/>
                     </font>
                 </Label>
-                <Label text="Panel" styleClass="logo-subtitle">
+                <!--<Label text="Panel" styleClass="logo-subtitle">
                     <font>
                         <Font size="18"/>
                     </font>
-                </Label>
+                </Label>-->
             </VBox>
 
             <Separator/>
@@ -42,47 +42,53 @@
                         <Font name="System Bold" size="11"/>
                     </font>
                 </Label>
-
-                <Button fx:id="btnUtilisateurs" text="👤  UTILISATEURS" 
-                        styleClass="menu-btn, active-menu-btn"
-                        maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleUtilisateurs">
+                <Button fx:id="btnDashboard" text="📊  DASHBOARD" styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
+                    <padding>
+                        <Insets top="12" bottom="12" left="15" right="15"/>
+                    </padding>
+                </Button>
+                <Button fx:id="btnUtilisateurs" text="👤  UTILISATEURS"
+                        styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
                 </Button>
 
-                <Button fx:id="btnEvenements" text="📅  ÉVÉNEMENTS" 
+                <Button fx:id="btnEvenements" text="📅  ÉVÉNEMENTS"
                         styleClass="menu-btn"
-                        maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleEvenements">
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
                 </Button>
 
-                <Button fx:id="btnCoaching" text="🎯  COACHING" 
+                <Button fx:id="btnCoaching" text="🎯  COACHING"
                         styleClass="menu-btn"
-                        maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleCoaching">
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
                 </Button>
 
-                <Button fx:id="btnBlog" text="📝  BLOG" 
+                <Button fx:id="btnBlog" text="📝  BLOG"
                         styleClass="menu-btn"
-                        maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleBlog">
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
                 </Button>
 
-                <Button fx:id="btnProduits" text="🛍  PRODUITS/COMMANDES" 
+                <Button fx:id="btnProduits" text="🛍  PRODUITS/COMMANDES"
                         styleClass="menu-btn"
-                        maxWidth="Infinity" alignment="CENTER_LEFT" 
-                        onAction="#handleProduits">
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
                     <padding>
                         <Insets top="12" bottom="12" left="15" right="15"/>
                     </padding>
@@ -113,11 +119,13 @@
                                 <Font name="System Bold" size="13"/>
                             </font>
                         </Label>
-                        <Label text="Administrateur" styleClass="user-role">
+                        <Label fx:id="lblUserRole" text="Administrateur" styleClass="user-role">
                             <font>
                                 <Font size="11"/>
                             </font>
                         </Label>
+                        <Button fx:id="btnProfile" text="Profile" styleClass="btn-secondary"/>
+                        <Button fx:id="btnLogout" text="Logout" styleClass="btn-logout"/>
                     </VBox>
                 </HBox>
             </VBox>
@@ -158,11 +166,11 @@
                         <Font size="18"/>
                     </font>
                 </Button>
-                <Button text="⛶" styleClass="icon-btn">
+                <!--<Button text="⛶" styleClass="icon-btn">
                     <font>
                         <Font size="18"/>
                     </font>
-                </Button>
+                </Button>-->
             </HBox>
 
             <!-- Content Area -->

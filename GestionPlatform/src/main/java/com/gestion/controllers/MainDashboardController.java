@@ -1,5 +1,6 @@
 package com.gestion.controllers;
 
+import com.gestion.entities.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -24,6 +25,7 @@ public class MainDashboardController implements Initializable {
     @FXML private Label lblUserName;
 
     private String currentModule;
+    private User currentUser;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -66,7 +68,7 @@ public class MainDashboardController implements Initializable {
     }
 
     // 🔥 MÉTHODE CORRIGÉE
-    private void loadModule(String moduleName) {
+    public void loadModule(String moduleName) {
 
         try {
 
@@ -134,5 +136,9 @@ public class MainDashboardController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
     }
 }

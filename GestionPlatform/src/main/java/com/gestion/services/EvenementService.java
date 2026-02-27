@@ -9,7 +9,7 @@ import java.util.List;
 
 public class EvenementService {
 
-    private Connection cnx;
+    private static Connection cnx;
 
     public EvenementService() {
         try {
@@ -54,7 +54,7 @@ public class EvenementService {
     }
 
     // 🔹 AFFICHER
-    public List<Evenement> afficher() {
+    public static List<Evenement> afficher() {
         List<Evenement> list = new ArrayList<>();
         String sql = "SELECT * FROM evenement";
 
