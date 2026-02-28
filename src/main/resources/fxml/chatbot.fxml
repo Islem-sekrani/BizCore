@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.Connexion3A7.Controller.ChatbotController"
+            styleClass="chatbot-root">
+
+    <!-- ── Header ── -->
+    <top>
+        <HBox styleClass="chat-header" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+            <Label text="🤖" style="-fx-font-size: 28px;"/>
+            <VBox spacing="2">
+                <Label text="Assistant GestionCoach" styleClass="header-title"/>
+                <Label text="Propulsé par Hugging Face · Coaching &amp; Fitness" styleClass="header-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="clearButton" text="🗑 Effacer"
+                    styleClass="clear-button"
+                    onAction="#handleClear"/>
+        </HBox>
+    </top>
+
+    <!-- ── Zone messages ── -->
+    <center>
+        <ScrollPane fx:id="scrollPane"
+                    fitToWidth="true"
+                    styleClass="messages-scroll">
+            <VBox fx:id="messagesContainer"
+                  spacing="6"
+                  styleClass="messages-container">
+                <padding><Insets top="12" right="8" bottom="12" left="8"/></padding>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- ── Zone de saisie ── -->
+    <bottom>
+        <VBox styleClass="input-area" spacing="4">
+            <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
+
+            <!-- Barre de statut -->
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <ProgressIndicator fx:id="loadingIndicator"
+                                   prefWidth="16" prefHeight="16"/>
+                <Label fx:id="statusLabel" styleClass="status-label"/>
+            </HBox>
+
+            <!-- Champ de saisie + bouton Envoyer -->
+            <HBox spacing="8" alignment="CENTER">
+                <TextField fx:id="messageInput"
+                           promptText="Posez votre question sur le coaching..."
+                           styleClass="message-input"
+                           HBox.hgrow="ALWAYS"/>
+                <Button fx:id="sendButton" text="Envoyer ➤"
+                        styleClass="send-button"
+                        onAction="#handleSendMessage"
+                        defaultButton="true"/>
+            </HBox>
+        </VBox>
+    </bottom>
+
+</BorderPane>

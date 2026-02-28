@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.Connexion3A7.Controller.ChatbotController"
+            styleClass="chatbot-panel-root">
+
+    <!-- ── Header ── -->
+    <top>
+        <HBox styleClass="cb-panel-header" alignment="CENTER_LEFT" spacing="10">
+            <padding><Insets top="10" right="12" bottom="10" left="12"/></padding>
+            <Label text="🤖" style="-fx-font-size: 22px;"/>
+            <VBox spacing="1" HBox.hgrow="ALWAYS">
+                <Label text="Assistant Coach" styleClass="cb-panel-title"/>
+                <Label text="Hugging Face · IA" styleClass="cb-panel-subtitle"/>
+            </VBox>
+            <Button fx:id="clearButton" text="🗑"
+                    styleClass="cb-panel-clear"
+                    onAction="#handleClear"/>
+        </HBox>
+    </top>
+
+    <!-- ── Messages area ── -->
+    <center>
+        <ScrollPane fx:id="scrollPane"
+                    fitToWidth="true"
+                    styleClass="cb-panel-scroll">
+            <VBox fx:id="messagesContainer"
+                  spacing="6"
+                  styleClass="cb-panel-messages">
+                <padding><Insets top="10" right="8" bottom="10" left="8"/></padding>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- ── Input area ── -->
+    <bottom>
+        <VBox spacing="4">
+            <padding><Insets top="6" right="10" bottom="10" left="10"/></padding>
+
+            <!-- Status bar -->
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <ProgressIndicator fx:id="loadingIndicator"
+                                   prefWidth="14" prefHeight="14"/>
+                <Label fx:id="statusLabel" styleClass="cb-panel-status"/>
+            </HBox>
+
+            <!-- Input + send -->
+            <HBox spacing="6" alignment="CENTER">
+                <TextField fx:id="messageInput"
+                           promptText="Posez votre question..."
+                           styleClass="cb-panel-input"
+                           HBox.hgrow="ALWAYS"/>
+                <Button fx:id="sendButton" text="➤"
+                        styleClass="cb-panel-send"
+                        onAction="#handleSendMessage"
+                        defaultButton="true"/>
+            </HBox>
+        </VBox>
+    </bottom>
+
+</BorderPane>

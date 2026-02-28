@@ -1,0 +1,13 @@
+
+<!-- ...existing code... -->
+
+    <!-- Ajouter ce bouton dans votre HBox/VBox de navigation existante -->
+    <Button text="🤖 Assistant IA"
+            onAction="#openChatbot"
+            styleClass="nav-chatbot-button"
+            style="-fx-background-color: #1a73e8; -fx-text-fill: white;
+                   -fx-background-radius: 20px; -fx-padding: 8 16;
+                   -fx-font-weight: bold; -fx-cursor: hand;"/>
+
+<!-- ...existing code... -->
+

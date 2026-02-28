@@ -354,7 +354,7 @@ public class AjouterCoach {
 
             if (editingCoach != null) {
                 coachService.updateCoach(c);
-                showInfoAlert("Succes", "Coach modifie avec succes !");
+                showInfoAlert("Succes", "Coach enregistré avec succes !");
                 editingCoach = null;
             } else {
                 coachService.addCoach(c);
@@ -436,6 +436,11 @@ public class AjouterCoach {
         if (dashboardController != null) {
             dashboardController.showCoachTable();
         }
+    }
+
+    @FXML
+    void openChatbot(ActionEvent event) {
+        ChatbotController.openChatbotWindow();
     }
 
     private void clearForm() {

@@ -532,3 +532,78 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- ============================================================
+-- PATCH — apply AFTER the initial dump above
+-- Adds columns and tables referenced by the Java services
+-- but missing from the original phpMyAdmin export.
+-- Run once; each statement uses IF NOT EXISTS / IF column check
+-- so re-running is safe.
+-- ============================================================
+
+START TRANSACTION;
+
+-- 1. coach: add string-based 'domaine' column used by CoachService
+ALTER TABLE `coach`
+    ADD COLUMN IF NOT EXISTS `domaine` varchar(50) DEFAULT NULL AFTER `id_domaine`;
+
+-- 2. coach: add phone number column used by CoachService
+ALTER TABLE `coach`
+    ADD COLUMN IF NOT EXISTS `num_tel` varchar(20) DEFAULT NULL AFTER `disponibilite`;
+
+-- 3. coach_rating: per-user ratings for recalculating note_moyenne
+CREATE TABLE IF NOT EXISTS `coach_rating` (
+  `id_rating`  int(11)     NOT NULL AUTO_INCREMENT,
+  `id_user`    int(11)     NOT NULL,
+  `id_coach`   int(11)     NOT NULL,
+  `rating`     tinyint(1)  NOT NULL COMMENT '1-5 stars',
+  `created_at` timestamp   NOT NULL DEFAULT current_timestamp()
+                           ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_rating`),
+  UNIQUE KEY `uq_user_coach` (`id_user`, `id_coach`),
+  KEY `fk_rating_user`  (`id_user`),
+  KEY `fk_rating_coach` (`id_coach`),
+  CONSTRAINT `fk_rating_user`  FOREIGN KEY (`id_user`)  REFERENCES `users`  (`id_user`)  ON DELETE CASCADE,
+  CONSTRAINT `fk_rating_coach` FOREIGN KEY (`id_coach`) REFERENCES `coach`  (`id_coach`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 4. reservation: coach booking records used by ReservationService
+CREATE TABLE IF NOT EXISTS `reservation` (
+  `id_reservation`   int(11)   NOT NULL AUTO_INCREMENT,
+  `id_user`          int(11)   DEFAULT NULL,
+  `id_coach`         int(11)   DEFAULT NULL,
+  `date_reservation` timestamp NOT NULL DEFAULT current_timestamp(),
+  `statut`           varchar(20) DEFAULT 'CONFIRMEE',
+  PRIMARY KEY (`id_reservation`),
+  KEY `fk_res_user`  (`id_user`),
+  KEY `fk_res_coach` (`id_coach`),
+  CONSTRAINT `fk_res_user`  FOREIGN KEY (`id_user`)  REFERENCES `users`  (`id_user`)  ON DELETE CASCADE,
+  CONSTRAINT `fk_res_coach` FOREIGN KEY (`id_coach`) REFERENCES `coach`  (`id_coach`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+COMMIT;
+
+-- ============================================================
+-- PATCH 2 — Coach Selection + Weekly Availability
+-- Adds disponibilite table and date_seance column on reservation
+-- ============================================================
+
+START TRANSACTION;
+
+-- 5. disponibilite: per-day availability for each coach
+CREATE TABLE IF NOT EXISTS `disponibilite` (
+  `id_dispo`  int(11)     NOT NULL AUTO_INCREMENT,
+  `id_coach`  int(11)     NOT NULL,
+  `jour`      date        NOT NULL,
+  `statut`    varchar(20) NOT NULL DEFAULT 'Disponible' COMMENT 'Disponible or Indisponible',
+  PRIMARY KEY (`id_dispo`),
+  UNIQUE KEY `uq_coach_jour` (`id_coach`, `jour`),
+  KEY `fk_dispo_coach` (`id_coach`),
+  CONSTRAINT `fk_dispo_coach` FOREIGN KEY (`id_coach`) REFERENCES `coach` (`id_coach`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 6. reservation: add date_seance column for day-specific bookings
+ALTER TABLE `reservation`
+    ADD COLUMN IF NOT EXISTS `date_seance` date DEFAULT NULL AFTER `date_reservation`;
+
+COMMIT;

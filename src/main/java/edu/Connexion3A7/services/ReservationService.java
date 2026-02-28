@@ -4,6 +4,7 @@ import edu.Connexion3A7.entities.Reservation;
 import edu.Connexion3A7.tools.MyConnection;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,5 +91,68 @@ public class ReservationService {
             list.add(r);
         }
         return list;
+    }
+
+    // ── Date-specific booking (coach selection weekly view) ──────────────────
+
+    /**
+     * Book a coach for a user on a specific date.
+     * Throws if ANYONE already booked this coach on that date (prevents
+     * double-booking).
+     */
+    public void addReservation(int userId, int coachId, LocalDate dateSeance) throws SQLException {
+        // Check if the coach is already booked by ANY user on this date
+        if (isCoachBookedOnDate(coachId, dateSeance)) {
+            throw new SQLException("Ce coach est deja reserve par un autre utilisateur pour le "
+                    + dateSeance + ". Veuillez choisir un autre jour.");
+        }
+
+        String sql = "INSERT INTO reservation (id_user, id_coach, date_seance, statut) VALUES (?, ?, ?, 'CONFIRMEE')";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setInt(1, userId);
+        pst.setInt(2, coachId);
+        pst.setDate(3, Date.valueOf(dateSeance));
+        pst.executeUpdate();
+        System.out.println("Reservation ajoutee: user=" + userId + " coach=" + coachId + " date=" + dateSeance);
+    }
+
+    /**
+     * Check if a user already has a booking with a coach on a specific date.
+     */
+    public boolean isBookedOnDate(int userId, int coachId, LocalDate date) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM reservation WHERE id_user = ? AND id_coach = ? AND date_seance = ?";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setInt(1, userId);
+        pst.setInt(2, coachId);
+        pst.setDate(3, Date.valueOf(date));
+        ResultSet rs = pst.executeQuery();
+        return rs.next() && rs.getInt(1) > 0;
+    }
+
+    /**
+     * Check if ANY user has booked a coach on a specific date.
+     * Used to prevent double-booking: only one user can book a coach per day.
+     */
+    public boolean isCoachBookedOnDate(int coachId, LocalDate date) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM reservation WHERE id_coach = ? AND date_seance = ? AND statut = 'CONFIRMEE'";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setInt(1, coachId);
+        pst.setDate(2, Date.valueOf(date));
+        ResultSet rs = pst.executeQuery();
+        return rs.next() && rs.getInt(1) > 0;
+    }
+
+    /**
+     * Cancel a date-specific booking for a user.
+     */
+    public void removeReservationOnDate(int userId, int coachId, LocalDate date) throws SQLException {
+        String sql = "DELETE FROM reservation WHERE id_user = ? AND id_coach = ? AND date_seance = ?";
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql);
+        pst.setInt(1, userId);
+        pst.setInt(2, coachId);
+        pst.setDate(3, Date.valueOf(date));
+        int rows = pst.executeUpdate();
+        System.out.println("Reservation supprimee (" + rows + " lignes): user=" + userId
+                + " coach=" + coachId + " date=" + date);
     }
 }

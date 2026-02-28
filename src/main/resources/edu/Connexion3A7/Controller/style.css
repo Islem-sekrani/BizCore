@@ -390,3 +390,269 @@
 #logoImage {
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 6, 0, 0, 2);
 }
+
+/* ====================================
+   CHATBOT — Floating Button + Panel
+   ==================================== */
+
+/* --- Floating Action Button (FAB) --- */
+.chatbot-fab {
+    -fx-background-color: #1a73e8;
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-min-width: 56;
+    -fx-min-height: 56;
+    -fx-max-width: 56;
+    -fx-max-height: 56;
+    -fx-background-radius: 28;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(26, 115, 232, 0.45), 12, 0, 0, 4);
+}
+
+.chatbot-fab:hover {
+    -fx-background-color: #1557b0;
+    -fx-effect: dropshadow(gaussian, rgba(26, 115, 232, 0.65), 16, 0, 0, 6);
+}
+
+.chatbot-fab:pressed {
+    -fx-background-color: #0d47a1;
+}
+
+/* --- Panel container --- */
+.chatbot-panel-root {
+    -fx-background-color: #f0f2f5;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 20, 0, 0, 6);
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* --- Panel header --- */
+.cb-panel-header {
+    -fx-background-color: linear-gradient(to right, #1a73e8, #0d47a1);
+    -fx-background-radius: 16 16 0 0;
+}
+
+.cb-panel-title {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.cb-panel-subtitle {
+    -fx-text-fill: rgba(255, 255, 255, 0.70);
+    -fx-font-size: 10px;
+}
+
+.cb-panel-clear {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-text-fill: white;
+    -fx-background-radius: 14;
+    -fx-padding: 4 10;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.35);
+    -fx-border-radius: 14;
+}
+
+.cb-panel-clear:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+}
+
+/* --- Messages area --- */
+.cb-panel-scroll {
+    -fx-background: #f0f2f5;
+    -fx-background-color: #f0f2f5;
+    -fx-border-color: transparent;
+}
+
+.cb-panel-messages {
+    -fx-background-color: #f0f2f5;
+}
+
+/* --- Chat bubbles --- */
+.user-bubble {
+    -fx-background-color: #1a73e8;
+    -fx-text-fill: white;
+    -fx-padding: 10 14;
+    -fx-background-radius: 16 16 4 16;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 4, 0, 0, 1);
+}
+
+.bot-bubble {
+    -fx-background-color: white;
+    -fx-text-fill: #1a1a2e;
+    -fx-padding: 10 14;
+    -fx-background-radius: 16 16 16 4;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 4, 0, 0, 1);
+}
+
+/* --- Status label --- */
+.cb-panel-status {
+    -fx-text-fill: #9aa0a6;
+    -fx-font-size: 10px;
+    -fx-font-style: italic;
+}
+
+/* --- Input field --- */
+.cb-panel-input {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-color: #dadce0;
+    -fx-border-radius: 20;
+    -fx-padding: 8 14;
+    -fx-font-size: 12px;
+}
+
+.cb-panel-input:focused {
+    -fx-border-color: #1a73e8;
+    -fx-background-color: white;
+}
+
+/* --- Send button --- */
+.cb-panel-send {
+    -fx-background-color: #1a73e8;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-min-width: 40;
+    -fx-min-height: 36;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.cb-panel-send:hover {
+    -fx-background-color: #1557b0;
+}
+
+.cb-panel-send:disabled {
+    -fx-background-color: #bdc1c6;
+}
+
+/* ====================================
+   COACH SELECTION — List + Availability
+   ==================================== */
+
+/* --- Left panel (coach list) --- */
+.cs-list-panel {
+    -fx-background-color: #FAFBFC;
+    -fx-border-color: transparent #E8EAED transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+/* --- Right panel (availability detail) --- */
+.cs-detail-panel {
+    -fx-background-color: #F5F6FA;
+}
+
+/* --- Coach card --- */
+.cs-coach-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #E8EAED;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 4, 0, 0, 1);
+}
+
+.cs-coach-card:hover {
+    -fx-background-color: #F0FFF8;
+    -fx-border-color: #2ECC9B;
+    -fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.15), 8, 0, 0, 2);
+}
+
+.cs-coach-card-selected {
+    -fx-background-color: #E8F8F0;
+    -fx-border-color: #2ECC9B;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.25), 10, 0, 0, 3);
+}
+
+/* --- Availability badges --- */
+.cs-badge-available {
+    -fx-background-color: #D5F5E3;
+    -fx-text-fill: #27AE60;
+    -fx-padding: 4 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.cs-badge-unavailable {
+    -fx-background-color: #FADBD8;
+    -fx-text-fill: #E74C3C;
+    -fx-padding: 4 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.cs-badge-booked {
+    -fx-background-color: #D6EAF8;
+    -fx-text-fill: #2980B9;
+    -fx-padding: 4 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* --- Day rows in availability grid --- */
+.cs-day-row-available {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #E8EAED;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+.cs-day-row-available:hover {
+    -fx-background-color: #F0FFF8;
+    -fx-border-color: #2ECC9B;
+}
+
+.cs-day-row-unavailable {
+    -fx-background-color: #FAFAFA;
+    -fx-background-radius: 8;
+    -fx-border-color: #F0F0F0;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-opacity: 0.7;
+}
+
+.cs-day-row-booked {
+    -fx-background-color: #EBF5FB;
+    -fx-background-radius: 8;
+    -fx-border-color: #AED6F1;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.cs-day-row-selected {
+    -fx-background-color: #E8F8F0;
+    -fx-border-color: #2ECC9B;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.2), 6, 0, 0, 2);
+}
+
+/* --- Week navigation button --- */
+.cs-week-btn {
+    -fx-background-color: white;
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 14;
+    -fx-background-radius: 8;
+    -fx-border-color: #E8EAED;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+.cs-week-btn:hover {
+    -fx-background-color: #F0F0F0;
+    -fx-border-color: #BDC3C7;
+}

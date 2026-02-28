@@ -184,4 +184,91 @@ public class CoachService implements IService<coach> {
         }
         return stats;
     }
+
+    /**
+     * Search coaches with optional filters.
+     * 
+     * @param domaine  if non-null/non-empty, filter by domaine (case-insensitive)
+     * @param maxTarif if > 0, only return coaches with tarif_horaire <= maxTarif
+     * @return filtered list of coaches (only available ones)
+     */
+    public List<coach> searchCoaches(String domaine, double maxTarif) throws SQLException {
+        List<coach> results = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM coach WHERE disponibilite = 'Disponible'");
+        List<Object> params = new ArrayList<>();
+
+        if (domaine != null && !domaine.trim().isEmpty()) {
+            sql.append(" AND LOWER(domaine) LIKE LOWER(?)");
+            params.add("%" + domaine.trim() + "%");
+        }
+        if (maxTarif > 0) {
+            sql.append(" AND tarif_horaire <= ?");
+            params.add(maxTarif);
+        }
+
+        sql.append(" ORDER BY note_moyenne DESC, tarif_horaire ASC");
+
+        PreparedStatement pst = MyConnection.getInstance().getCnx().prepareStatement(sql.toString());
+        for (int i = 0; i < params.size(); i++) {
+            Object p = params.get(i);
+            if (p instanceof String) {
+                pst.setString(i + 1, (String) p);
+            } else if (p instanceof Double) {
+                pst.setDouble(i + 1, (Double) p);
+            }
+        }
+
+        ResultSet rs = pst.executeQuery();
+        while (rs.next()) {
+            coach c = new coach();
+            c.setId_coach(rs.getInt("id_coach"));
+            c.setId_user(rs.getInt("id_user"));
+            c.setDomaine(rs.getString("domaine"));
+            c.setNom(rs.getString("nom"));
+            c.setPrenom(rs.getString("prenom"));
+            c.setBiographie(rs.getString("biographie"));
+            c.setExperience(rs.getInt("experience_annees"));
+            c.setTarif(rs.getFloat("tarif_horaire"));
+            c.setDispo(rs.getString("disponibilite"));
+            c.setNumTel(rs.getString("num_tel"));
+            c.setNote(rs.getFloat("note_moyenne"));
+            results.add(c);
+        }
+        return results;
+    }
+
+    /**
+     * Builds a human-readable summary of all coaches for AI context injection.
+     * The text is designed to be included in the chatbot system prompt so the
+     * LLM can recommend real coaches from the database.
+     */
+    public String buildCoachSummary() {
+        try {
+            List<coach> coaches = getData();
+            if (coaches.isEmpty()) {
+                return "Aucun coach n'est actuellement enregistre dans le systeme.";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Voici les coachs disponibles dans notre systeme :\n\n");
+
+            for (coach c : coaches) {
+                sb.append("- ").append(c.getNom()).append(" ").append(c.getPrenom());
+                sb.append(" | Domaine: ").append(c.getDomaine() != null ? c.getDomaine() : "N/A");
+                sb.append(" | Tarif: ").append(String.format("%.0f", c.getTarif())).append(" DT/H");
+                sb.append(" | Experience: ").append(c.getExperience()).append(" ans");
+                sb.append(" | Note: ").append(String.format("%.1f", c.getNote())).append("/5");
+                sb.append(" | Disponibilite: ").append(c.getDispo() != null ? c.getDispo() : "N/A");
+                if (c.getBiographie() != null && !c.getBiographie().isEmpty()) {
+                    sb.append(" | Bio: ").append(c.getBiographie());
+                }
+                sb.append("\n");
+            }
+
+            return sb.toString();
+        } catch (SQLException e) {
+            System.err.println("[CoachService] Erreur buildCoachSummary: " + e.getMessage());
+            return "Erreur lors de la recuperation des donnees des coachs.";
+        }
+    }
 }

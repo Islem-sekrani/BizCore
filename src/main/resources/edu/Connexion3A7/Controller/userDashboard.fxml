@@ -13,104 +13,173 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane prefHeight="650.0" prefWidth="1050.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.Connexion3A7.Controller.UserDashboardController">
+<StackPane prefHeight="650.0" prefWidth="1050.0" stylesheets="@style.css"
+           xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="edu.Connexion3A7.Controller.UserDashboardController">
 
-    <!-- ======================== LEFT SIDEBAR ======================== -->
-    <left>
-        <VBox id="sidebar" prefWidth="270" spacing="0">
+    <!-- ==================== Main dashboard (layer 0) ==================== -->
+    <BorderPane>
 
-            <!-- Logo Section -->
-            <VBox id="logoPane" alignment="CENTER" spacing="4">
-                <ImageView fitHeight="161.0" fitWidth="193.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@images/logo.png" />
-                    </image>
-                </ImageView>
+        <!-- ======================== LEFT SIDEBAR ======================== -->
+        <left>
+            <VBox id="sidebar" prefWidth="270" spacing="0">
+
+                <!-- Logo Section -->
+                <VBox id="logoPane" alignment="CENTER" spacing="4">
+                    <ImageView fitHeight="161.0" fitWidth="193.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@images/logo.png" />
+                        </image>
+                    </ImageView>
+                </VBox>
+
+                <!-- NAVIGATION Section Label -->
+                <Label id="sectionLabel" text="NAVIGATION" />
+
+                <!-- Navigation Buttons -->
+                <VBox spacing="2">
+                    <padding><Insets left="15" right="15" /></padding>
+
+                    <Button maxWidth="Infinity" onAction="#handleCoachingClick" styleClass="nav-button-active" text="  🎯  COACHING" />
+
+                    <Button maxWidth="Infinity" onAction="#handleEvenementsClick" styleClass="nav-button" text="  📅  ÉVÉNEMENTS" />
+
+                    <Button maxWidth="Infinity" onAction="#handleBlogClick" styleClass="nav-button" text="  📝  BLOG" />
+
+                    <Button maxWidth="Infinity" onAction="#handleProduitsClick" styleClass="nav-button" text="  🛒  PRODUITS" />
+                </VBox>
+
+                <!-- Spacer -->
+                <Region VBox.vgrow="ALWAYS" />
+
+                <!-- Logout Button -->
+                <VBox spacing="2">
+                    <padding><Insets left="15" right="15" bottom="10" /></padding>
+                    <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="nav-button" text="  🚪  DÉCONNEXION" />
+                </VBox>
+
+                <!-- User Footer -->
+                <VBox id="adminPane" spacing="2">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane>
+                            <Circle radius="18" styleClass="avatar-circle" />
+                            <Label fx:id="sidebarInitial" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" text="U" />
+                        </StackPane>
+                        <VBox spacing="1">
+                            <Label fx:id="userNameLabel" id="adminNameLabel" text="Utilisateur" />
+                            <Label fx:id="userRoleLabel" id="adminRoleLabel" text="Utilisateur" />
+                        </VBox>
+                    </HBox>
+                </VBox>
             </VBox>
+        </left>
 
-            <!-- GESTION Section Label -->
-            <Label id="sectionLabel" text="NAVIGATION" />
-
-            <!-- Navigation Buttons -->
-            <VBox spacing="2">
-                <padding><Insets left="15" right="15" /></padding>
-
-                <Button maxWidth="Infinity" onAction="#handleCoachingClick" styleClass="nav-button-active" text="  🎯  COACHING" />
-
-                <Button maxWidth="Infinity" onAction="#handleEvenementsClick" styleClass="nav-button" text="  📅  ÉVÉNEMENTS" />
-
-                <Button maxWidth="Infinity" onAction="#handleBlogClick" styleClass="nav-button" text="  📝  BLOG" />
-
-                <Button maxWidth="Infinity" onAction="#handleProduitsClick" styleClass="nav-button" text="  🛒  PRODUITS" />
-            </VBox>
-
-            <!-- Spacer -->
-            <Region VBox.vgrow="ALWAYS" />
-
-            <!-- Logout Button -->
-            <VBox spacing="2">
-                <padding><Insets left="15" right="15" bottom="10" /></padding>
-                <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="nav-button" text="  🚪  DÉCONNEXION" />
-            </VBox>
-
-            <!-- User Footer -->
-            <VBox id="adminPane" spacing="2">
-                <HBox alignment="CENTER_LEFT" spacing="10">
+        <!-- ======================== CENTER ======================== -->
+        <center>
+            <VBox>
+                <!-- Top Bar -->
+                <HBox id="topBar" alignment="CENTER_LEFT" prefHeight="55" spacing="12">
+                    <Label id="homeIcon" text="🏠" />
+                    <Label style="-fx-text-fill: #BDC3C7;" text="/" />
+                    <Label fx:id="breadcrumbLabel" id="breadcrumbLabel" text="COACHING — Trouver un Coach" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button styleClass="top-icon-button" text="🔔" />
+                    <Button styleClass="top-icon-button" text="⚙" />
+                    <!-- Profile Icon -->
                     <StackPane>
-                        <Circle radius="18" styleClass="avatar-circle" />
-                        <Label fx:id="sidebarInitial" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" text="U" />
+                        <Circle fx:id="profileCircle" radius="16" style="-fx-fill: #3498DB;" />
+                        <Label fx:id="profileInitials" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;" text="U" />
                     </StackPane>
-                    <VBox spacing="1">
-                        <Label fx:id="userNameLabel" id="adminNameLabel" text="Utilisateur" />
-                        <Label fx:id="userRoleLabel" id="adminRoleLabel" text="Utilisateur" />
+                </HBox>
+
+                <!-- ===== Master-Detail Split Content ===== -->
+                <HBox VBox.vgrow="ALWAYS" spacing="0">
+
+                    <!-- LEFT PANEL: Coach list with cards -->
+                    <VBox prefWidth="420" minWidth="360" styleClass="cs-list-panel">
+                        <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+                        <!-- Header -->
+                        <VBox id="tableCard" spacing="8">
+                            <padding><Insets bottom="10" left="10" right="10" top="10" /></padding>
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label id="tableTitle" text="Coachs Disponibles" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="coachCountLabel" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" text="" />
+                            </HBox>
+                            <Label fx:id="statusLabel" id="statusLabel" text="" />
+                        </VBox>
+
+                        <!-- Scrollable coach cards -->
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                            <padding><Insets top="10"/></padding>
+                            <VBox fx:id="coachCardsContainer" spacing="10">
+                                <!-- Cards added dynamically -->
+                            </VBox>
+                        </ScrollPane>
                     </VBox>
+
+                    <!-- RIGHT PANEL: Availability detail -->
+                    <VBox HBox.hgrow="ALWAYS" styleClass="cs-detail-panel">
+                        <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+
+                        <!-- Placeholder when no coach selected -->
+                        <VBox fx:id="noSelectionPlaceholder" alignment="CENTER" VBox.vgrow="ALWAYS" spacing="10">
+                            <Label text="📅" style="-fx-font-size: 48px; -fx-opacity: 0.4;"/>
+                            <Label text="Selectionnez un coach" style="-fx-font-size: 16px; -fx-text-fill: #95A5A6; -fx-font-weight: bold;"/>
+                            <Label text="pour afficher sa disponibilite hebdomadaire" style="-fx-font-size: 12px; -fx-text-fill: #BDC3C7;"/>
+                        </VBox>
+
+                        <!-- Availability panel (hidden initially) -->
+                        <VBox fx:id="availabilityPanel" visible="false" managed="false" spacing="15" VBox.vgrow="ALWAYS">
+
+                            <!-- Selected coach name -->
+                            <Label fx:id="selectedCoachLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;"/>
+
+                            <!-- Week navigation -->
+                            <HBox alignment="CENTER" spacing="15">
+                                <Button fx:id="prevWeekBtn" text="◀" onAction="#handlePrevWeek" styleClass="cs-week-btn"/>
+                                <Label fx:id="weekLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;"/>
+                                <Button fx:id="nextWeekBtn" text="▶" onAction="#handleNextWeek" styleClass="cs-week-btn"/>
+                            </HBox>
+
+                            <!-- Day grid -->
+                            <VBox fx:id="dayGrid" spacing="8" VBox.vgrow="ALWAYS">
+                                <padding><Insets top="5"/></padding>
+                            </VBox>
+
+                            <!-- Reserve button -->
+                            <HBox alignment="CENTER">
+                                <padding><Insets top="10" bottom="5"/></padding>
+                                <Button fx:id="reserveButton" text="Reserver cette seance" onAction="#handleReserve"
+                                        styleClass="btn-book" disable="true"
+                                        style="-fx-font-size: 14px; -fx-padding: 12 40;"/>
+                            </HBox>
+
+                            <Label fx:id="reserveStatusLabel" style="-fx-font-size: 11px; -fx-text-fill: #7F8C8D;" alignment="CENTER"
+                                   maxWidth="Infinity"/>
+                        </VBox>
+                    </VBox>
+
                 </HBox>
             </VBox>
-        </VBox>
-    </left>
+        </center>
 
-    <!-- ======================== TOP + CENTER ======================== -->
-    <center>
-        <VBox>
-            <!-- Top Bar -->
-            <HBox id="topBar" alignment="CENTER_LEFT" prefHeight="55" spacing="12">
-                <Label id="homeIcon" text="🏠" />
-                <Label style="-fx-text-fill: #BDC3C7;" text="/" />
-                <Label fx:id="breadcrumbLabel" id="breadcrumbLabel" text="COACHING — Trouver un Coach" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Button styleClass="top-icon-button" text="🔔" />
-                <Button styleClass="top-icon-button" text="⚙" />
-                <!-- Profile Icon -->
-                <StackPane>
-                    <Circle fx:id="profileCircle" radius="16" style="-fx-fill: #3498DB;" />
-                    <Label fx:id="profileInitials" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;" text="U" />
-                </StackPane>
-            </HBox>
+    </BorderPane>
 
-            <!-- Main Content Area -->
-            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-                <VBox id="contentArea" spacing="15">
-                    <padding><Insets bottom="20" left="20" right="20" top="20" /></padding>
+    <!-- ==================== Chatbot overlay panel (layer 1) ==================== -->
+    <VBox fx:id="chatbotOverlay" visible="false" managed="false"
+          maxWidth="380" maxHeight="520"
+          StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin><Insets bottom="80" right="20"/></StackPane.margin>
+        <!-- chatbotPanel.fxml is loaded into this VBox dynamically -->
+    </VBox>
 
-                    <!-- Header -->
-                    <VBox id="tableCard" spacing="8">
-                        <padding><Insets bottom="15" left="20" right="20" top="15" /></padding>
-                        <HBox alignment="CENTER_LEFT" spacing="15">
-                            <Label id="tableTitle" text="Coachs Disponibles" />
-                            <Region HBox.hgrow="ALWAYS" />
-                            <Label fx:id="coachCountLabel" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" text="" />
-                        </HBox>
-                        <Label fx:id="statusLabel" id="statusLabel" text="" />
-                    </VBox>
+    <!-- ==================== Floating action button (layer 2) ==================== -->
+    <Button fx:id="chatbotFab" onAction="#handleChatbotToggle"
+            text="💬" styleClass="chatbot-fab"
+            StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin><Insets bottom="20" right="20"/></StackPane.margin>
+    </Button>
 
-                    <!-- Coach profile cards (populated by controller) -->
-                    <VBox fx:id="coachCardsContainer" spacing="15">
-                        <!-- Cards added dynamically -->
-                    </VBox>
-
-                </VBox>
-            </ScrollPane>
-        </VBox>
-    </center>
-
-</BorderPane>
+</StackPane>
