@@ -1,5 +1,17 @@
 package edu.Connexion3A7.Controller;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import edu.Connexion3A7.entities.coach;
 import edu.Connexion3A7.entities.user;
 import edu.Connexion3A7.services.CoachService;
@@ -12,21 +24,19 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-
-import javafx.stage.FileChooser;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DashboardController {
 
@@ -362,52 +372,115 @@ public class DashboardController {
 
     @FXML
     void handleExportCSV(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Enregistrer le fichier CSV");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Fichiers CSV", "*.csv"));
-        fileChooser.setInitialFileName("coachs_export.csv");
-
-        File initialDir = new File(System.getProperty("user.home") + "/Downloads");
-        if (initialDir.exists())
-            fileChooser.setInitialDirectory(initialDir);
-
-        File file = fileChooser.showSaveDialog(contentArea.getScene().getWindow());
-        if (file == null)
-            return;
+        // ── Resolve the Downloads folder portably ──────────────────────────────
+        String dateStr = java.time.LocalDate.now().toString(); // e.g. 2026-03-02
+        File downloadsDir = new File(System.getProperty("user.home"), "Downloads");
+        if (!downloadsDir.exists())
+            downloadsDir.mkdirs();
+        File file = new File(downloadsDir, "BizCore_Coachs_" + dateStr + ".csv");
 
         var items = coachTable.getItems();
-        try (PrintWriter pw = new PrintWriter(new FileWriter(file, java.nio.charset.StandardCharsets.UTF_8))) {
+
+        // Column widths (characters)
+        final int W_NOM = 18;
+        final int W_PRE = 18;
+        final int W_DOM = 18;
+        final int W_EXP = 6;
+        final int W_TAR = 12;
+        final int W_DIS = 14;
+        final int W_TEL = 14;
+        final int W_NOT = 6;
+
+        // Box width: sum of widths + separators " | " (3 chars × 7 gaps) = total + 21
+        int boxInner = W_NOM + W_PRE + W_DOM + W_EXP + W_TAR + W_DIS + W_TEL + W_NOT + 21;
+        String top = "╔" + "═".repeat(boxInner) + "╗";
+        String bottom = "╚" + "═".repeat(boxInner) + "╝";
+        String sep = "─".repeat(boxInner + 2);
+
+        String titleText = " BIZCORE — GestionCoach : LISTE DES COACHS ";
+        String exportText = " Exporté le : " + dateStr + " — BizCore © 2026 ";
+
+        try (
+                PrintWriter pw = new PrintWriter(new BufferedWriter(
+                        new OutputStreamWriter(
+                                new FileOutputStream(file), StandardCharsets.UTF_8)))) {
+            // UTF-8 BOM — needed for Excel to open the file correctly
+            pw.print('\uFEFF');
+
+            // ── Header box ──────────────────────────────────────────────────
+            pw.println(top);
+            pw.println(centerInBox(titleText, boxInner));
+            pw.println(centerInBox(exportText, boxInner));
+            pw.println(bottom);
+            pw.println();
+
+            // ── Column headers ───────────────────────────────────────────────
             pw.println(
-                    "nom,prenom,domaine,biographie,experience_annees,tarif_horaire,disponibilite,num_tel,note_moyenne");
+                    padRight("NOM", W_NOM) + " | " +
+                            padRight("PRENOM", W_PRE) + " | " +
+                            padRight("DOMAINE", W_DOM) + " | " +
+                            padRight("EXP", W_EXP) + " | " +
+                            padRight("TARIF (DT/H)", W_TAR) + " | " +
+                            padRight("DISPONIBILITE", W_DIS) + " | " +
+                            padRight("TELEPHONE", W_TEL) + " | " +
+                            padRight("NOTE", W_NOT));
+            pw.println(sep);
+
+            // ── Data rows ────────────────────────────────────────────────────
             for (coach c : items) {
                 pw.println(
-                        escapeCsv(c.getNom()) + "," +
-                                escapeCsv(c.getPrenom()) + "," +
-                                escapeCsv(c.getDomaine()) + "," +
-                                escapeCsv(c.getBiographie()) + "," +
-                                c.getExperience() + "," +
-                                c.getTarif() + "," +
-                                escapeCsv(c.getDispo()) + "," +
-                                escapeCsv(c.getNumTel()) + "," +
-                                c.getNote());
+                        padRight(nvl(c.getNom()), W_NOM) + " | " +
+                                padRight(nvl(c.getPrenom()), W_PRE) + " | " +
+                                padRight(nvl(c.getDomaine()), W_DOM) + " | " +
+                                padRight(String.valueOf(c.getExperience()), W_EXP) + " | " +
+                                padRight(String.format("%.2f", c.getTarif()), W_TAR) + " | " +
+                                padRight(nvl(c.getDispo()), W_DIS) + " | " +
+                                padRight(nvl(c.getNumTel()), W_TEL) + " | " +
+                                padRight(String.format("%.1f", c.getNote()), W_NOT));
             }
+
+            // ── Footer ───────────────────────────────────────────────────────
+            pw.println();
+            pw.println(sep);
+            pw.println("Total Coachs : " + items.size() +
+                    "  |  Exporté par : Admin  |  BizCore © 2026");
+
+            // ── Success alert ─────────────────────────────────────────────────
             Alert info = new Alert(Alert.AlertType.INFORMATION);
-            info.setTitle("Export CSV");
-            info.setHeaderText("Export terminé");
-            info.setContentText(items.size() + " coach(s) exporté(s) vers:\n" + file.getAbsolutePath());
+            info.setTitle("Export Réussi ✅");
+            info.setHeaderText("Fichier sauvegardé avec succès !");
+            info.setContentText("Fichier sauvegardé dans :\n" + file.getAbsolutePath());
             info.showAndWait();
+
         } catch (IOException e) {
             showErrorAlert("Erreur export CSV", e.getMessage());
         }
     }
 
-    private String escapeCsv(String value) {
-        if (value == null)
-            return "";
-        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            return "\"" + value.replace("\"", "\"\"") + "\"";
-        }
-        return value;
+    // ── CSV helpers ───────────────────────────────────────────────────────────
+
+    /** Returns the string if non-null, otherwise empty string. */
+    private String nvl(String value) {
+        return value != null ? value : "";
+    }
+
+    /** Pads or truncates {@code s} to exactly {@code width} characters. */
+    private String padRight(String s, int width) {
+        if (s == null)
+            s = "";
+        if (s.length() >= width)
+            return s.substring(0, width);
+        return String.format("%-" + width + "s", s);
+    }
+
+    /**
+     * Centers {@code text} inside a {@code ║...║} box line of total inner width
+     * {@code innerWidth}.
+     */
+    private String centerInBox(String text, int innerWidth) {
+        int padding = Math.max(0, innerWidth - text.length());
+        int left = padding / 2;
+        int right = padding - left;
+        return "║" + " ".repeat(left) + text + " ".repeat(right) + "║";
     }
 }

@@ -5,13 +5,19 @@ import edu.Connexion3A7.entities.DomaineNom;
 import edu.Connexion3A7.entities.coach;
 import edu.Connexion3A7.services.CoachService;
 import edu.Connexion3A7.services.DomaineCoachingService;
+import edu.Connexion3A7.services.IpDetectionService;
+import edu.Connexion3A7.services.IpDetectionService.CountryData;
+import edu.Connexion3A7.services.IpDetectionService.DetectionResult;
 import edu.Connexion3A7.tools.MyConnection;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -21,10 +27,13 @@ import javafx.scene.text.FontWeight;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class AjouterCoach {
 
-    // --- Profile section ---
+    // ─── Profile section ──────────────────────────────────────────────────────
     @FXML
     private VBox profileCardsContainer;
     @FXML
@@ -32,7 +41,7 @@ public class AjouterCoach {
     @FXML
     private Label statusLabel;
 
-    // --- Form fields ---
+    // ─── Form fields ──────────────────────────────────────────────────────────
     @FXML
     private TextField nom;
     @FXML
@@ -52,15 +61,36 @@ public class AjouterCoach {
     @FXML
     private Label formStatusLabel;
 
+    // ─── Phone prefix UI ──────────────────────────────────────────────────────
+    @FXML
+    private ImageView flagImage; // country flag (40 × ~27 px)
+    @FXML
+    private Label prefixLabel; // "+216", "+31", etc.
+    @FXML
+    private Label digitCounterLabel;// "0/8", "3/9", etc.
+    @FXML
+    private HBox phoneRowBox; // outer border HBox
+
+    // ─── Services ─────────────────────────────────────────────────────────────
     private final CoachService coachService = new CoachService();
     private final DomaineCoachingService domaineService = new DomaineCoachingService();
 
+    // ─── State ────────────────────────────────────────────────────────────────
     private DashboardController dashboardController;
     private coach editingCoach = null;
-
-    /** The logged-in user's ID — used for coach.id_user FK */
     private int loggedInUserId = 0;
 
+    /** Currently detected calling prefix, e.g. "+216". */
+    private volatile String detectedPrefix = "+216";
+    /** Number of local digits required for the detected country. */
+    private volatile int requiredDigits = 8;
+    /** Last detected ISO-2 country code (uppercase). Used to detect VPN change. */
+    private volatile String lastCountryCode = "";
+
+    /** Background scheduler that polls for country changes every 10 seconds. */
+    private ScheduledExecutorService scheduler;
+
+    // ─── Setters ──────────────────────────────────────────────────────────────
     public void setDashboardController(DashboardController dc) {
         this.dashboardController = dc;
     }
@@ -69,56 +99,187 @@ public class AjouterCoach {
         this.loggedInUserId = userId;
     }
 
+    // =========================================================================
+    // Lifecycle
+    // =========================================================================
+
     @FXML
     public void initialize() {
-        dispo.setItems(FXCollections.observableArrayList(
-                "Disponible", "Indisponible"));
+        // Availability & domaine combos
+        dispo.setItems(FXCollections.observableArrayList("Disponible", "Indisponible"));
         dispo.getSelectionModel().selectFirst();
-
-        // Populate domaine combo from enum
         domaine.setItems(FXCollections.observableArrayList(DomaineNom.values()));
         domaine.getSelectionModel().selectFirst();
+        domaine.setButtonCell(domaineCell());
+        domaine.setCellFactory(lv -> domaineCell());
 
-        domaine.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(DomaineNom item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getDisplayName());
+        // Phone field: digits only, max = requiredDigits
+        numTel.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null)
+                return;
+            String digits = newVal.replaceAll("[^0-9]", "");
+            if (digits.length() > requiredDigits)
+                digits = digits.substring(0, requiredDigits);
+            if (!digits.equals(newVal)) {
+                numTel.setText(digits);
+                return;
             }
+            updatePhoneStyle(digits.length());
         });
-        domaine.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(DomaineNom item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getDisplayName());
-            }
-        });
+
+        // Show loading state
+        prefixLabel.setText("...");
+        digitCounterLabel.setText("0/?");
+        digitCounterLabel.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 11px;");
+
+        // First detection on init
+        IpDetectionService.getInstance().detect(this::applyDetectionResult);
+
+        // Start 10-second polling for VPN changes
+        startPolling();
 
         loadProfileCards();
     }
 
+    // =========================================================================
+    // IP detection & polling
+    // =========================================================================
+
+    /**
+     * Starts a daemon scheduler that re-checks the country every 10 seconds.
+     * If the country has changed (VPN connected/disconnected), applies updates.
+     */
+    private void startPolling() {
+        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "country-poll-thread");
+            t.setDaemon(true); // won't prevent JVM shutdown
+            return t;
+        });
+        // Delay 15s before first poll (init() already did the first detection)
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                DetectionResult result = IpDetectionService.getInstance().detectSync();
+                if (!result.countryCode().equals(lastCountryCode)) {
+                    // Country changed — apply updates atomically on the FX thread
+                    Platform.runLater(() -> applyDetectionResult(result));
+                }
+            } catch (Exception e) {
+                System.err.println("[AjouterCoach] Poll error: " + e.getMessage());
+            }
+        }, 15, 10, TimeUnit.SECONDS);
+    }
+
+    /** Stops the polling scheduler. Call when the form is no longer shown. */
+    private void stopPolling() {
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown();
+        }
+    }
+
+    /**
+     * MUST be called on the JavaFX Application Thread.
+     * Updates ALL 4 phone-prefix UI elements atomically from one DetectionResult.
+     * Also loads the flag image on a background thread.
+     */
+    private void applyDetectionResult(DetectionResult result) {
+        // Record the new country so the poller can detect future changes
+        lastCountryCode = result.countryCode();
+
+        CountryData data = result.phone();
+
+        // ── Atomically update state + labels ─────────────────────────────────
+        detectedPrefix = data.callingCode();
+        requiredDigits = data.digits();
+
+        prefixLabel.setText(detectedPrefix);
+        numTel.setPromptText("ex: " + data.example());
+        digitCounterLabel.setText("0/" + requiredDigits);
+
+        // Clear stale phone input when country changes (to avoid leftover digits)
+        if (!numTel.getText().isEmpty()) {
+            numTel.clear();
+        }
+        updatePhoneStyle(0);
+
+        // ── Load flag image on a background thread ────────────────────────────
+        String flagUrl = result.flagUrl();
+        Thread flagThread = new Thread(() -> {
+            try {
+                Image img = new Image(flagUrl, 40, 27, true, true, false);
+                if (!img.isError()) {
+                    Platform.runLater(() -> flagImage.setImage(img));
+                }
+            } catch (Exception e) {
+                System.err.println("[AjouterCoach] Flag load failed: " + e.getMessage());
+            }
+        }, "flag-image-thread");
+        flagThread.setDaemon(true);
+        flagThread.start();
+    }
+
+    // =========================================================================
+    // Phone field style
+    // =========================================================================
+
+    /** Green border when digit count matches required, red otherwise. */
+    private void updatePhoneStyle(int currentLen) {
+        digitCounterLabel.setText(currentLen + "/" + requiredDigits);
+        if (currentLen == requiredDigits) {
+            phoneRowBox.setStyle("-fx-background-color: white;"
+                    + " -fx-border-color: #2ECC9B; -fx-border-width: 2;"
+                    + " -fx-border-radius: 6; -fx-background-radius: 6;");
+            digitCounterLabel.setStyle("-fx-text-fill: #2ECC9B; -fx-font-size: 11px; -fx-font-weight: bold;");
+        } else {
+            phoneRowBox.setStyle("-fx-background-color: white;"
+                    + " -fx-border-color: #E74C3C; -fx-border-width: 2;"
+                    + " -fx-border-radius: 6; -fx-background-radius: 6;");
+            digitCounterLabel.setStyle("-fx-text-fill: #E74C3C; -fx-font-size: 11px; -fx-font-weight: bold;");
+        }
+    }
+
+    // =========================================================================
+    // Dev test button (hidden by default in FXML)
+    // =========================================================================
+
+    @FXML
+    void handleTestApiBtn(ActionEvent event) {
+        Thread t = new Thread(() -> {
+            String report = IpDetectionService.getInstance().testIpDetection();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("🧪 IP Detection Test");
+                alert.setHeaderText("Résultats du test API");
+                alert.setContentText(report);
+                alert.getDialogPane().setMinWidth(480);
+                alert.showAndWait();
+            });
+        }, "api-test-thread");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    // =========================================================================
+    // Profile cards
+    // =========================================================================
+
     private void loadProfileCards() {
         profileCardsContainer.getChildren().clear();
-
         if (!MyConnection.getInstance().isConnected()) {
-            statusLabel.setText("Base de donnees non disponible.");
+            statusLabel.setText("Base de données non disponible.");
             statusLabel.setStyle("-fx-text-fill: #E74C3C;");
             profileCount.setText("0 coachs");
             return;
         }
-
         try {
             List<coach> coaches = coachService.getData();
             profileCount.setText(coaches.size() + " coach(s)");
-
             if (coaches.isEmpty()) {
-                Label empty = new Label("Aucun coach enregistre. Utilisez le formulaire ci-dessous.");
+                Label empty = new Label("Aucun coach enregistré. Utilisez le formulaire ci-dessous.");
                 empty.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 13px; -fx-padding: 20;");
                 profileCardsContainer.getChildren().add(empty);
             } else {
-                for (coach c : coaches) {
+                for (coach c : coaches)
                     profileCardsContainer.getChildren().add(createProfileCard(c));
-                }
             }
             statusLabel.setText("");
         } catch (SQLException e) {
@@ -136,7 +297,6 @@ public class AjouterCoach {
         card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
                 "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 6, 0, 0, 2);");
 
-        // Avatar
         StackPane avatar = new StackPane();
         Circle circle = new Circle(22);
         String[] colors = { "#2ECC9B", "#3498DB", "#E67E22", "#9B59B6", "#E74C3C", "#1ABC9C" };
@@ -145,30 +305,20 @@ public class AjouterCoach {
         initials.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
         avatar.getChildren().addAll(circle, initials);
 
-        // Info — no IDs displayed
         VBox info = new VBox(3);
         HBox.setHgrow(info, Priority.ALWAYS);
-
         Label nameLabel = new Label(c.getNom() + " " + c.getPrenom());
         nameLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
         nameLabel.setStyle("-fx-text-fill: #2C3E50;");
-
         Label detailLabel = new Label(
                 "Exp: " + c.getExperience() + " ans | Tarif: " + c.getTarif() +
                         " DT/H | Note: " + c.getNote() + "/5");
         detailLabel.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 11px;");
-
         Label dispoLabel = new Label(
-                (c.getDispo() != null ? c.getDispo() : "N/A") +
-                        " | Tel: "
-                        + (c.getNumTel() != null && !c.getNumTel().isEmpty() ? c.getNumTel() : "N/A"));
+                (c.getDispo() != null ? c.getDispo() : "N/A") + " | Tel: " +
+                        (c.getNumTel() != null && !c.getNumTel().isEmpty() ? c.getNumTel() : "N/A"));
         dispoLabel.setStyle("-fx-text-fill: #95A5A6; -fx-font-size: 11px;");
-
         info.getChildren().addAll(nameLabel, detailLabel, dispoLabel);
-
-        // Buttons
-        HBox buttons = new HBox(6);
-        buttons.setAlignment(Pos.CENTER_RIGHT);
 
         Button modifyBtn = new Button("Modifier");
         modifyBtn.getStyleClass().add("btn-primary");
@@ -180,7 +330,8 @@ public class AjouterCoach {
         deleteBtn.setStyle("-fx-font-size: 11px; -fx-padding: 5 12;");
         deleteBtn.setOnAction(e -> handleDeleteCoach(c));
 
-        buttons.getChildren().addAll(modifyBtn, deleteBtn);
+        HBox buttons = new HBox(6, modifyBtn, deleteBtn);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
         card.getChildren().addAll(avatar, info, buttons);
 
         card.setOnMouseEntered(e -> card.setStyle(
@@ -189,112 +340,98 @@ public class AjouterCoach {
         card.setOnMouseExited(e -> card.setStyle(
                 "-fx-background-color: white; -fx-background-radius: 10; " +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 6, 0, 0, 2);"));
-
         return card;
     }
 
     private String getInitials(coach c) {
-        String initials = "";
+        String s = "";
         if (c.getNom() != null && !c.getNom().isEmpty())
-            initials += c.getNom().charAt(0);
+            s += c.getNom().charAt(0);
         if (c.getPrenom() != null && !c.getPrenom().isEmpty())
-            initials += c.getPrenom().charAt(0);
-        return initials.toUpperCase();
+            s += c.getPrenom().charAt(0);
+        return s.toUpperCase();
     }
 
-    // ==================== VALIDATION ====================
+    // =========================================================================
+    // Validation
+    // =========================================================================
 
-    /**
-     * Validate all form fields. Returns a list of error messages.
-     * Empty list = valid.
-     */
     private List<String> validateForm() {
         List<String> errors = new ArrayList<>();
 
-        // nom: required, letters/spaces only, min 2
         String nomVal = nom.getText() != null ? nom.getText().trim() : "";
-        if (nomVal.isEmpty()) {
+        if (nomVal.isEmpty())
             errors.add("Le nom est obligatoire.");
-        } else if (nomVal.length() < 2) {
-            errors.add("Le nom doit contenir au moins 2 caracteres.");
-        } else if (!nomVal.matches("[a-zA-ZÀ-ÿ\\s]+")) {
-            errors.add("Le nom ne doit contenir que des lettres et espaces.");
-        }
+        else if (nomVal.length() < 2)
+            errors.add("Le nom doit contenir au moins 2 caractères.");
+        else if (!nomVal.matches("[a-zA-ZÀ-ÿ\\s]+"))
+            errors.add("Le nom ne doit contenir que des lettres.");
 
-        // prenom: required, letters/spaces only, min 2
         String prenomVal = prenom.getText() != null ? prenom.getText().trim() : "";
-        if (prenomVal.isEmpty()) {
-            errors.add("Le prenom est obligatoire.");
-        } else if (prenomVal.length() < 2) {
-            errors.add("Le prenom doit contenir au moins 2 caracteres.");
-        } else if (!prenomVal.matches("[a-zA-ZÀ-ÿ\\s]+")) {
-            errors.add("Le prenom ne doit contenir que des lettres et espaces.");
-        }
+        if (prenomVal.isEmpty())
+            errors.add("Le prénom est obligatoire.");
+        else if (prenomVal.length() < 2)
+            errors.add("Le prénom doit contenir au moins 2 caractères.");
+        else if (!prenomVal.matches("[a-zA-ZÀ-ÿ\\s]+"))
+            errors.add("Le prénom ne doit contenir que des lettres.");
 
-        // biographie: required, min 10 chars
         String bioVal = biographie.getText() != null ? biographie.getText().trim() : "";
-        if (bioVal.isEmpty()) {
+        if (bioVal.isEmpty())
             errors.add("La biographie est obligatoire.");
-        } else if (bioVal.length() < 10) {
-            errors.add("La biographie doit contenir au moins 10 caracteres.");
-        }
+        else if (bioVal.length() < 10)
+            errors.add("La biographie doit contenir au moins 10 caractères.");
 
-        // experience: required, integer >= 0
         String expVal = experience.getText() != null ? experience.getText().trim() : "";
         if (expVal.isEmpty()) {
-            errors.add("L'experience est obligatoire.");
+            errors.add("L'expérience est obligatoire.");
         } else {
             try {
-                int exp = Integer.parseInt(expVal);
-                if (exp < 0) {
-                    errors.add("L'experience doit etre >= 0.");
-                }
+                if (Integer.parseInt(expVal) < 0)
+                    errors.add("L'expérience doit être >= 0.");
             } catch (NumberFormatException e) {
-                errors.add("L'experience doit etre un nombre entier valide.");
+                errors.add("L'expérience doit être un entier.");
             }
         }
 
-        // tarif: required, decimal > 0
         String tarifVal = tarif.getText() != null ? tarif.getText().trim() : "";
         if (tarifVal.isEmpty()) {
             errors.add("Le tarif horaire est obligatoire.");
         } else {
             try {
-                double t = Double.parseDouble(tarifVal);
-                if (t <= 0) {
-                    errors.add("Le tarif horaire doit etre > 0.");
-                }
+                if (Double.parseDouble(tarifVal) <= 0)
+                    errors.add("Le tarif doit être > 0.");
             } catch (NumberFormatException e) {
-                errors.add("Le tarif horaire doit etre un nombre valide.");
+                errors.add("Le tarif doit être un nombre valide.");
             }
         }
 
-        // disponibilite: ComboBox not null
-        if (dispo.getValue() == null || dispo.getValue().isEmpty()) {
-            errors.add("La disponibilite est obligatoire.");
-        }
+        if (dispo.getValue() == null || dispo.getValue().isEmpty())
+            errors.add("La disponibilité est obligatoire.");
 
-        // domaine: ComboBox not null
-        if (domaine.getValue() == null) {
+        if (domaine.getValue() == null)
             errors.add("Le domaine est obligatoire.");
-        }
 
-        // numTel: required, exactly 8 digits, numeric only
+        // Phone: validate against the dynamically detected requiredDigits
         String telVal = numTel.getText() != null ? numTel.getText().trim() : "";
         if (telVal.isEmpty()) {
-            errors.add("Le numero de telephone est obligatoire.");
-        } else if (!telVal.matches("\\d{8}")) {
-            errors.add("Le numero de telephone doit contenir exactement 8 chiffres.");
+            errors.add("Le numéro de téléphone est obligatoire.");
+        } else if (!telVal.matches("\\d+")) {
+            errors.add("Le numéro de téléphone ne doit contenir que des chiffres.");
+        } else if (telVal.length() != requiredDigits) {
+            errors.add("Le numéro doit contenir exactement " + requiredDigits +
+                    " chiffres pour " + lastCountryCode +
+                    " (actuel : " + telVal.length() + ").");
         }
 
         return errors;
     }
 
-    // ==================== CRUD ====================
+    // =========================================================================
+    // CRUD actions
+    // =========================================================================
 
     @FXML
     void AjouterPersonneAction(ActionEvent event) {
-        // Full validation
         List<String> errors = validateForm();
         if (!errors.isEmpty()) {
             showErrorAlert("Erreurs de validation", String.join("\n", errors));
@@ -302,38 +439,29 @@ public class AjouterCoach {
             formStatusLabel.setStyle("-fx-text-fill: #E74C3C;");
             return;
         }
-
         if (!MyConnection.getInstance().isConnected()) {
-            showErrorAlert("Connexion", "Base de donnees non disponible.");
+            showErrorAlert("Connexion", "Base de données non disponible.");
             return;
         }
-
         try {
             String nomVal = nom.getText().trim();
             String prenomVal = prenom.getText().trim();
 
-            // Duplicate check
             if (editingCoach != null) {
                 if (coachService.isCoachDuplicateExcluding(nomVal, prenomVal, editingCoach.getId_coach())) {
-                    showErrorAlert("Coach deja existant",
-                            "Un coach avec le nom \"" + nomVal + " " + prenomVal + "\" existe deja.");
+                    showErrorAlert("Coach déjà existant", "\"" + nomVal + " " + prenomVal + "\" existe déjà.");
                     return;
                 }
             } else {
                 if (coachService.isCoachDuplicate(nomVal, prenomVal)) {
-                    showErrorAlert("Coach deja existant",
-                            "Un coach avec le nom \"" + nomVal + " " + prenomVal + "\" existe deja.");
+                    showErrorAlert("Coach déjà existant", "\"" + nomVal + " " + prenomVal + "\" existe déjà.");
                     return;
                 }
             }
 
-            coach c;
-            if (editingCoach != null) {
-                c = editingCoach;
-            } else {
-                c = new coach();
+            coach c = (editingCoach != null) ? editingCoach : new coach();
+            if (editingCoach == null)
                 c.setId_user(loggedInUserId);
-            }
 
             c.setNom(nomVal);
             c.setPrenom(prenomVal);
@@ -341,38 +469,32 @@ public class AjouterCoach {
             c.setExperience(Integer.parseInt(experience.getText().trim()));
             c.setTarif(Float.parseFloat(tarif.getText().trim()));
             c.setDispo(dispo.getValue());
-            c.setNumTel(numTel.getText().trim());
 
-            // Note defaults to 0; users rate via their dashboard
-            if (editingCoach == null) {
+            // Store E.164: prefix + local digits (e.g. "+4012345678")
+            c.setNumTel(detectedPrefix + numTel.getText().trim());
+
+            if (editingCoach == null)
                 c.setNote(0f);
-            }
-
-            // Domaine — store the enum name
-            DomaineNom selectedDomaine = domaine.getValue();
-            c.setDomaine(selectedDomaine.name());
+            c.setDomaine(domaine.getValue().name());
 
             if (editingCoach != null) {
                 coachService.updateCoach(c);
-                showInfoAlert("Succes", "Coach enregistré avec succes !");
+                showInfoAlert("Succès", "Coach modifié avec succès !");
                 editingCoach = null;
             } else {
                 coachService.addCoach(c);
-                showInfoAlert("Succes", "Coach ajoute avec succes !");
+                showInfoAlert("Succès", "Coach ajouté avec succès !");
             }
 
-            formStatusLabel.setText("Operation reussie");
+            formStatusLabel.setText("Opération réussie");
             formStatusLabel.setStyle("-fx-text-fill: #27AE7A;");
-
             clearForm();
             loadProfileCards();
-
-            if (dashboardController != null) {
+            if (dashboardController != null)
                 dashboardController.refreshTable();
-            }
 
         } catch (SQLException e) {
-            showErrorAlert("Erreur base de donnees", e.getMessage());
+            showErrorAlert("Erreur base de données", e.getMessage());
             formStatusLabel.setText("Erreur: " + e.getMessage());
             formStatusLabel.setStyle("-fx-text-fill: #E74C3C;");
         }
@@ -385,27 +507,31 @@ public class AjouterCoach {
         biographie.setText(c.getBiographie());
         experience.setText(String.valueOf(c.getExperience()));
         tarif.setText(String.valueOf(c.getTarif()));
-        numTel.setText(c.getNumTel());
 
-        if (c.getDispo() != null) {
-            dispo.getSelectionModel().select(c.getDispo());
+        // Strip stored prefix before populating phone field
+        String stored = c.getNumTel() != null ? c.getNumTel() : "";
+        if (!stored.isEmpty() && stored.startsWith(detectedPrefix)) {
+            numTel.setText(stored.substring(detectedPrefix.length()));
+        } else {
+            numTel.setText(stored.replaceAll("[^0-9]", ""));
         }
+
+        if (c.getDispo() != null)
+            dispo.getSelectionModel().select(c.getDispo());
 
         try {
             DomaineCoaching dc = domaineService.getByNomDomaine(c.getDomaine());
-            if (dc != null && dc.getNomDomaine() != null) {
+            if (dc != null && dc.getNomDomaine() != null)
                 domaine.getSelectionModel().select(dc.getNomDomaine());
-            }
         } catch (SQLException e) {
             try {
-                DomaineNom dn = DomaineNom.valueOf(c.getDomaine());
-                domaine.getSelectionModel().select(dn);
+                domaine.getSelectionModel().select(DomaineNom.valueOf(c.getDomaine()));
             } catch (Exception ex) {
-                System.out.println("Erreur lookup domaine: " + e.getMessage());
+                System.out.println("Erreur domaine: " + e.getMessage());
             }
         }
 
-        formStatusLabel.setText("Mode modification: " + c.getNom() + " " + c.getPrenom());
+        formStatusLabel.setText("Mode modification : " + c.getNom() + " " + c.getPrenom());
         formStatusLabel.setStyle("-fx-text-fill: #3498DB;");
     }
 
@@ -419,10 +545,9 @@ public class AjouterCoach {
                 try {
                     coachService.deleteCoach(c);
                     loadProfileCards();
-                    if (dashboardController != null) {
+                    if (dashboardController != null)
                         dashboardController.refreshTable();
-                    }
-                    formStatusLabel.setText("Coach supprime.");
+                    formStatusLabel.setText("Coach supprimé.");
                     formStatusLabel.setStyle("-fx-text-fill: #27AE7A;");
                 } catch (SQLException e) {
                     showErrorAlert("Erreur suppression", e.getMessage());
@@ -433,9 +558,9 @@ public class AjouterCoach {
 
     @FXML
     void handleRetour(ActionEvent event) {
-        if (dashboardController != null) {
+        stopPolling(); // <— shut down the scheduler cleanly
+        if (dashboardController != null)
             dashboardController.showCoachTable();
-        }
     }
 
     @FXML
@@ -453,23 +578,34 @@ public class AjouterCoach {
         dispo.getSelectionModel().selectFirst();
         domaine.getSelectionModel().selectFirst();
         editingCoach = null;
+        formStatusLabel.setText("");
     }
 
-    /** Show an error Alert dialog */
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private ListCell<DomaineNom> domaineCell() {
+        return new ListCell<>() {
+            @Override
+            protected void updateItem(DomaineNom item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item.getDisplayName());
+            }
+        };
+    }
+
     private void showErrorAlert(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Erreur");
+        a.setHeaderText(header);
+        a.setContentText(content);
+        a.showAndWait();
     }
 
-    /** Show an info Alert dialog */
     private void showInfoAlert(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Information");
+        a.setHeaderText(header);
+        a.setContentText(content);
+        a.showAndWait();
     }
 }

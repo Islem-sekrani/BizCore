@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
 
@@ -24,10 +25,7 @@
             <Label fx:id="profileCount" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" text="" />
         </HBox>
 
-        <!-- Coach profile cards container (populated dynamically) -->
-        <VBox fx:id="profileCardsContainer" spacing="10">
-            <!-- Cards are added here by the controller -->
-        </VBox>
+        <VBox fx:id="profileCardsContainer" spacing="10" />
 
         <Label fx:id="statusLabel" id="statusLabel" text="" />
     </VBox>
@@ -39,6 +37,17 @@
         <HBox alignment="CENTER_LEFT" spacing="15">
             <Label id="formTitle" text="Ajouter un Coach" />
             <Region HBox.hgrow="ALWAYS" />
+
+            <!-- Hidden dev button: set visible="true" managed="true" to enable -->
+            <Button fx:id="testApiBtn"
+                    text="🧪 Test API"
+                    visible="false"
+                    managed="false"
+                    onAction="#handleTestApiBtn"
+                    style="-fx-background-color: #2C3E50; -fx-text-fill: #2ECC9B;
+                           -fx-font-size: 11px; -fx-padding: 4 10;
+                           -fx-background-radius: 6; -fx-cursor: hand;" />
+
             <Button text="Retour" styleClass="btn-secondary" onAction="#handleRetour" />
         </HBox>
 
@@ -49,21 +58,27 @@
                 <ColumnConstraints percentWidth="50" />
             </columnConstraints>
 
-            <Label text="Nom" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <!-- Nom / Prénom -->
+            <Label text="Nom" styleClass="form-label"
+                   GridPane.columnIndex="0" GridPane.rowIndex="0" />
             <TextField fx:id="nom" styleClass="form-field" promptText="Nom du coach"
                        GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
-            <Label text="Prenom" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            <TextField fx:id="prenom" styleClass="form-field" promptText="Prenom du coach"
+            <Label text="Prénom" styleClass="form-label"
+                   GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <TextField fx:id="prenom" styleClass="form-field" promptText="Prénom du coach"
                        GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
+            <!-- Biographie -->
             <Label text="Biographie" styleClass="form-label"
                    GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" />
-            <TextArea fx:id="biographie" styleClass="form-textarea" promptText="Description du coach (min 10 caracteres)..."
+            <TextArea fx:id="biographie" styleClass="form-textarea"
+                      promptText="Description du coach (min 10 caractères)..."
                       prefRowCount="2"
                       GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2" />
 
-            <Label text="Experience (annees)" styleClass="form-label"
+            <!-- Expérience / Tarif -->
+            <Label text="Expérience (années)" styleClass="form-label"
                    GridPane.columnIndex="0" GridPane.rowIndex="4" />
             <TextField fx:id="experience" styleClass="form-field" promptText="Ex: 5"
                        GridPane.columnIndex="0" GridPane.rowIndex="5" />
@@ -73,16 +88,80 @@
             <TextField fx:id="tarif" styleClass="form-field" promptText="Ex: 45.00 DT"
                        GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-            <Label text="Disponibilite" styleClass="form-label"
+            <!-- Disponibilité -->
+            <Label text="Disponibilité" styleClass="form-label"
                    GridPane.columnIndex="0" GridPane.rowIndex="6" />
             <ComboBox fx:id="dispo" styleClass="form-combo" maxWidth="Infinity"
                       GridPane.columnIndex="0" GridPane.rowIndex="7" />
 
-            <Label text="Numero de telephone" styleClass="form-label"
+            <!-- Phone field label -->
+            <Label text="Numéro de téléphone" styleClass="form-label"
                    GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <TextField fx:id="numTel" styleClass="form-field" promptText="8 chiffres (ex: 12345678)"
-                       GridPane.columnIndex="1" GridPane.rowIndex="7" />
 
+            <!--
+                Composite phone row:
+                ┌─────────────────────────────────────────────────┐
+                │  🏳 [flag]  │  +216 [prefix]  │  digits input  │
+                └─────────────────────────────────────────────────┘
+                Only the digit counter (0/N) is shown below — no status label.
+            -->
+            <VBox spacing="4"
+                  GridPane.columnIndex="1" GridPane.rowIndex="7">
+
+                <!-- Outer HBox — border changes green/red via controller -->
+                <HBox fx:id="phoneRowBox"
+                      spacing="0" alignment="CENTER_LEFT"
+                      style="-fx-background-color: white;
+                             -fx-border-color: #E74C3C;
+                             -fx-border-width: 2;
+                             -fx-border-radius: 6;
+                             -fx-background-radius: 6;">
+
+                    <!-- Flag image -->
+                    <HBox alignment="CENTER" minWidth="46"
+                          style="-fx-padding: 0 6 0 8;
+                                 -fx-border-color: #BDC3C7;
+                                 -fx-border-width: 0 1 0 0;">
+                        <ImageView fx:id="flagImage"
+                                   fitWidth="30" fitHeight="20"
+                                   preserveRatio="true"
+                                   pickOnBounds="true" />
+                    </HBox>
+
+                    <!-- Calling code label (+216 / +31 / …) -->
+                    <Label fx:id="prefixLabel"
+                           text="..."
+                           minWidth="52"
+                           style="-fx-font-family: 'Segoe UI';
+                                  -fx-font-weight: bold;
+                                  -fx-font-size: 13px;
+                                  -fx-text-fill: #2C3E50;
+                                  -fx-padding: 0 8 0 8;
+                                  -fx-border-color: #BDC3C7;
+                                  -fx-border-width: 0 1 0 0;" />
+
+                    <!-- Local digit input -->
+                    <TextField fx:id="numTel"
+                               promptText="ex: 12345678"
+                               HBox.hgrow="ALWAYS"
+                               style="-fx-background-color: transparent;
+                                      -fx-border-color: transparent;
+                                      -fx-font-family: 'Segoe UI';
+                                      -fx-font-size: 13px;
+                                      -fx-padding: 8 10;" />
+                </HBox>
+
+                <!-- Digit counter only — no status/VPN label -->
+                <HBox alignment="CENTER_RIGHT">
+                    <Label fx:id="digitCounterLabel"
+                           text="0/?"
+                           style="-fx-text-fill: #E74C3C;
+                                  -fx-font-size: 11px;
+                                  -fx-font-weight: bold;" />
+                </HBox>
+            </VBox>
+
+            <!-- Domaine -->
             <Label text="Domaine" styleClass="form-label"
                    GridPane.columnIndex="0" GridPane.rowIndex="8" />
             <ComboBox fx:id="domaine" styleClass="form-combo" maxWidth="Infinity"
@@ -91,8 +170,8 @@
 
         <HBox spacing="12" alignment="CENTER_RIGHT">
             <padding><Insets top="10" /></padding>
-            <Button text="Annuler" styleClass="btn-secondary" onAction="#handleRetour" />
-            <Button text="Valider" styleClass="btn-primary" onAction="#AjouterPersonneAction" />
+            <Button text="Annuler"  styleClass="btn-secondary" onAction="#handleRetour" />
+            <Button text="Valider"  styleClass="btn-primary"   onAction="#AjouterPersonneAction" />
         </HBox>
 
         <Label fx:id="formStatusLabel" id="statusLabel" text="" />
