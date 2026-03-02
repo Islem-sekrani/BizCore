@@ -4,8 +4,10 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -98,15 +100,18 @@
                 <VBox id="tableCard" fx:id="coachTableCard" maxHeight="Infinity" maxWidth="Infinity" spacing="12" StackPane.alignment="TOP_LEFT">
                     <padding><Insets bottom="5" left="5" right="5" top="5" /></padding>
 
-                    <!-- Domain stats cards row -->
-                    <HBox fx:id="statsContainer" spacing="10" alignment="CENTER_LEFT">
-                        <!-- Stat cards are added dynamically by the controller -->
-                    </HBox>
 
-                    <!-- Title + Add button row -->
-                    <HBox alignment="CENTER_LEFT" spacing="15">
+                    <!-- Title + buttons row -->
+                    <HBox alignment="CENTER_LEFT" spacing="12">
                         <Label id="tableTitle" text="Liste des Coachs" />
                         <Region HBox.hgrow="ALWAYS" />
+                        <Button onAction="#handleStatsClick"
+                                style="-fx-background-color: #EBF5FB; -fx-text-fill: #2980B9;
+                                       -fx-font-weight: bold; -fx-font-size: 11px;
+                                       -fx-padding: 6 14; -fx-background-radius: 8;
+                                       -fx-cursor: hand; -fx-border-color: #AED6F1;
+                                       -fx-border-radius: 8; -fx-border-width: 1;"
+                                text="📊 Statistiques" />
                         <Button fx:id="addCoachBtn" onAction="#handleCoachingClick" styleClass="btn-primary" text="+ Ajouter Coach" />
                     </HBox>
 
@@ -138,6 +143,7 @@
                         <padding><Insets top="5" /></padding>
                         <Button fx:id="exportCsvBtn" onAction="#handleExportCSV" styleClass="btn-primary" text="💾 Exporter CSV" />
                     </HBox>
+
                 </VBox>
 
             </StackPane>

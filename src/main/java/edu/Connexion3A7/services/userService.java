@@ -14,14 +14,18 @@ public class userService implements IUserService {
         cnx = MyConnection.getInstance().getCnx();
     }
 
+    // ── Reconnect helper ──────────────────────────────────────────────────────
+    private Connection conn() throws SQLException {
+        if (cnx == null || cnx.isClosed())
+            cnx = MyConnection.getInstance().getCnx();
+        return cnx;
+    }
+
+    // ── Authentication ────────────────────────────────────────────────────────
     @Override
     public user authenticate(String email, String password) throws SQLException {
-        // Re-fetch connection in case it was null at construction time
-        if (cnx == null || cnx.isClosed()) {
-            cnx = MyConnection.getInstance().getCnx();
-        }
         String query = "SELECT * FROM users WHERE email = ? AND password = ?";
-        PreparedStatement ps = cnx.prepareStatement(query);
+        PreparedStatement ps = conn().prepareStatement(query);
         ps.setString(1, email);
         ps.setString(2, password);
         ResultSet rs = ps.executeQuery();
@@ -32,8 +36,46 @@ public class userService implements IUserService {
             u.setEmail(rs.getString("email"));
             u.setMdp(rs.getString("password"));
             u.setRole(rs.getString("role"));
+            // telephone column may not exist yet — read it safely
+            try {
+                u.setTelephone(rs.getString("telephone"));
+            } catch (SQLException ignored) {
+            }
             return u;
         }
         return null;
+    }
+
+    // ── Phone number methods ──────────────────────────────────────────────────
+
+    /**
+     * Returns the stored E.164 telephone for a user, or null if not set.
+     * Safe to call before the SQL migration has been run (catches missing column).
+     */
+    public String getUserTelephone(int userId) {
+        String sql = "SELECT telephone FROM users WHERE id_user = ?";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next())
+                return rs.getString("telephone");
+        } catch (SQLException e) {
+            // Column `telephone` not yet created — silently ignore
+            System.err.println("[userService] getUserTelephone: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Persists a phone number (E.164 format) for the given user.
+     * Requires the SQL migration to have been run first.
+     */
+    public void updateTelephone(int userId, String telephone) throws SQLException {
+        String sql = "UPDATE users SET telephone = ? WHERE id_user = ?";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setString(1, telephone);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
     }
 }

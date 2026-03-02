@@ -7,6 +7,7 @@ public class user {
     private String email;
     private String mdp;
     private String role; // "ADMIN" or "USER"
+    private String telephone; // International format e.g. "+21655123456"
 
     public user() {
     }
@@ -50,6 +51,14 @@ public class user {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
     public boolean isAdmin() {

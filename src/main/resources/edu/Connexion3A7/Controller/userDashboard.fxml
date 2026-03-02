@@ -13,9 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<StackPane prefHeight="650.0" prefWidth="1050.0" stylesheets="@style.css"
-           xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="edu.Connexion3A7.Controller.UserDashboardController">
+<StackPane prefHeight="650.0" prefWidth="1050.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.Connexion3A7.Controller.UserDashboardController">
 
     <!-- ==================== Main dashboard (layer 0) ==================== -->
     <BorderPane>
@@ -54,7 +52,7 @@
 
                 <!-- Logout Button -->
                 <VBox spacing="2">
-                    <padding><Insets left="15" right="15" bottom="10" /></padding>
+                    <padding><Insets bottom="10" left="15" right="15" /></padding>
                     <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="nav-button" text="  🚪  DÉCONNEXION" />
                 </VBox>
 
@@ -66,8 +64,8 @@
                             <Label fx:id="sidebarInitial" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" text="U" />
                         </StackPane>
                         <VBox spacing="1">
-                            <Label fx:id="userNameLabel" id="adminNameLabel" text="Utilisateur" />
-                            <Label fx:id="userRoleLabel" id="adminRoleLabel" text="Utilisateur" />
+                            <Label id="adminNameLabel" fx:id="userNameLabel" text="Utilisateur" />
+                            <Label id="adminRoleLabel" fx:id="userRoleLabel" text="Utilisateur" />
                         </VBox>
                     </HBox>
                 </VBox>
@@ -81,9 +79,14 @@
                 <HBox id="topBar" alignment="CENTER_LEFT" prefHeight="55" spacing="12">
                     <Label id="homeIcon" text="🏠" />
                     <Label style="-fx-text-fill: #BDC3C7;" text="/" />
-                    <Label fx:id="breadcrumbLabel" id="breadcrumbLabel" text="COACHING — Trouver un Coach" />
+                    <Label id="breadcrumbLabel" fx:id="breadcrumbLabel" text="COACHING — Trouver un Coach" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Button styleClass="top-icon-button" text="🔔" />
+                    <!-- Bell button with badge -->
+                    <StackPane>
+                        <Button fx:id="bellButton" onAction="#handleBellClick" styleClass="top-icon-button" text="🔔" />
+                        <!-- Red dot badge — hidden by default -->
+                        <Label fx:id="bellBadge" styleClass="notif-bell-badge" text="" visible="false" StackPane.alignment="TOP_RIGHT" />
+                    </StackPane>
                     <Button styleClass="top-icon-button" text="⚙" />
                     <!-- Profile Icon -->
                     <StackPane>
@@ -93,11 +96,11 @@
                 </HBox>
 
                 <!-- ===== Master-Detail Split Content ===== -->
-                <HBox VBox.vgrow="ALWAYS" spacing="0">
+                <HBox spacing="0" VBox.vgrow="ALWAYS">
 
                     <!-- LEFT PANEL: Coach list with cards -->
-                    <VBox prefWidth="420" minWidth="360" styleClass="cs-list-panel">
-                        <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+                    <VBox minWidth="360" prefWidth="420" styleClass="cs-list-panel">
+                        <padding><Insets bottom="15" left="15" right="15" top="15" /></padding>
 
                         <!-- Header -->
                         <VBox id="tableCard" spacing="8">
@@ -107,12 +110,12 @@
                                 <Region HBox.hgrow="ALWAYS" />
                                 <Label fx:id="coachCountLabel" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" text="" />
                             </HBox>
-                            <Label fx:id="statusLabel" id="statusLabel" text="" />
+                            <Label id="statusLabel" fx:id="statusLabel" text="" />
                         </VBox>
 
                         <!-- Scrollable coach cards -->
-                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-                            <padding><Insets top="10"/></padding>
+                        <ScrollPane fitToWidth="true" maxWidth="Infinity" prefHeight="465.0" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                            <padding><Insets top="10" /></padding>
                             <VBox fx:id="coachCardsContainer" spacing="10">
                                 <!-- Cards added dynamically -->
                             </VBox>
@@ -120,44 +123,41 @@
                     </VBox>
 
                     <!-- RIGHT PANEL: Availability detail -->
-                    <VBox HBox.hgrow="ALWAYS" styleClass="cs-detail-panel">
-                        <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+                    <VBox prefHeight="595.0" prefWidth="323.0" styleClass="cs-detail-panel" HBox.hgrow="ALWAYS">
+                        <padding><Insets bottom="15" left="20" right="20" top="15" /></padding>
 
                         <!-- Placeholder when no coach selected -->
-                        <VBox fx:id="noSelectionPlaceholder" alignment="CENTER" VBox.vgrow="ALWAYS" spacing="10">
-                            <Label text="📅" style="-fx-font-size: 48px; -fx-opacity: 0.4;"/>
-                            <Label text="Selectionnez un coach" style="-fx-font-size: 16px; -fx-text-fill: #95A5A6; -fx-font-weight: bold;"/>
-                            <Label text="pour afficher sa disponibilite hebdomadaire" style="-fx-font-size: 12px; -fx-text-fill: #BDC3C7;"/>
+                        <VBox fx:id="noSelectionPlaceholder" alignment="CENTER" prefHeight="566.0" prefWidth="354.0" spacing="10" VBox.vgrow="ALWAYS">
+                            <Label style="-fx-font-size: 48px; -fx-opacity: 0.4;" text="📅" />
+                            <Label style="-fx-font-size: 16px; -fx-text-fill: #95A5A6; -fx-font-weight: bold;" text="Selectionnez un coach" />
+                            <Label style="-fx-font-size: 12px; -fx-text-fill: #BDC3C7;" text="pour afficher sa disponibilite hebdomadaire" />
                         </VBox>
 
                         <!-- Availability panel (hidden initially) -->
-                        <VBox fx:id="availabilityPanel" visible="false" managed="false" spacing="15" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="availabilityPanel" managed="false" spacing="15" visible="false" VBox.vgrow="ALWAYS">
 
                             <!-- Selected coach name -->
-                            <Label fx:id="selectedCoachLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;"/>
+                            <Label fx:id="selectedCoachLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
 
                             <!-- Week navigation -->
                             <HBox alignment="CENTER" spacing="15">
-                                <Button fx:id="prevWeekBtn" text="◀" onAction="#handlePrevWeek" styleClass="cs-week-btn"/>
-                                <Label fx:id="weekLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;"/>
-                                <Button fx:id="nextWeekBtn" text="▶" onAction="#handleNextWeek" styleClass="cs-week-btn"/>
+                                <Button fx:id="prevWeekBtn" onAction="#handlePrevWeek" styleClass="cs-week-btn" text="◀" />
+                                <Label fx:id="weekLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                                <Button fx:id="nextWeekBtn" onAction="#handleNextWeek" styleClass="cs-week-btn" text="▶" />
                             </HBox>
 
                             <!-- Day grid -->
                             <VBox fx:id="dayGrid" spacing="8" VBox.vgrow="ALWAYS">
-                                <padding><Insets top="5"/></padding>
+                                <padding><Insets top="5" /></padding>
                             </VBox>
 
                             <!-- Reserve button -->
                             <HBox alignment="CENTER">
-                                <padding><Insets top="10" bottom="5"/></padding>
-                                <Button fx:id="reserveButton" text="Reserver cette seance" onAction="#handleReserve"
-                                        styleClass="btn-book" disable="true"
-                                        style="-fx-font-size: 14px; -fx-padding: 12 40;"/>
+                                <padding><Insets bottom="5" top="10" /></padding>
+                                <Button fx:id="reserveButton" disable="true" onAction="#handleReserve" style="-fx-font-size: 14px; -fx-padding: 12 40;" styleClass="btn-book" text="Reserver cette seance" />
                             </HBox>
 
-                            <Label fx:id="reserveStatusLabel" style="-fx-font-size: 11px; -fx-text-fill: #7F8C8D;" alignment="CENTER"
-                                   maxWidth="Infinity"/>
+                            <Label fx:id="reserveStatusLabel" alignment="CENTER" maxWidth="Infinity" style="-fx-font-size: 11px; -fx-text-fill: #7F8C8D;" />
                         </VBox>
                     </VBox>
 
@@ -167,19 +167,50 @@
 
     </BorderPane>
 
-    <!-- ==================== Chatbot overlay panel (layer 1) ==================== -->
-    <VBox fx:id="chatbotOverlay" visible="false" managed="false"
-          maxWidth="380" maxHeight="520"
+    <!-- ==================== Notification toast (layer 1) ==================== -->
+    <!-- Auto-dismissed after 5 seconds; compact pill at bottom-right -->
+    <VBox fx:id="notifToast" styleClass="notif-toast" managed="false" visible="false"
+          maxHeight="80" prefHeight="72" fillWidth="false"
           StackPane.alignment="BOTTOM_RIGHT">
-        <StackPane.margin><Insets bottom="80" right="20"/></StackPane.margin>
+        <StackPane.margin><Insets bottom="90" right="30" /></StackPane.margin>
+        <HBox alignment="CENTER_LEFT" spacing="12" fillHeight="false">
+            <Label styleClass="notif-toast-icon" text="✅" />
+            <VBox spacing="2">
+                <Label styleClass="notif-toast-title" text="Séance réservée !" />
+                <Label fx:id="notifToastDetail" styleClass="notif-toast-detail" text=""
+                       wrapText="false" maxWidth="280" />
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- ==================== Notification announcement panel (layer 2) ==================== -->
+    <!-- Shown when user clicks the bell icon — lists the last booking details -->
+    <VBox fx:id="notifPanel" styleClass="notif-panel" managed="false" visible="false"
+          StackPane.alignment="TOP_RIGHT">
+        <StackPane.margin><Insets top="55" right="15" /></StackPane.margin>
+
+        <!-- Panel header -->
+        <HBox styleClass="notif-panel-header" alignment="CENTER_LEFT" spacing="8">
+            <Label styleClass="notif-panel-title" text="🔔  Notifications" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="notifCloseBtn" onAction="#handleCloseNotifPanel"
+                    styleClass="notif-panel-close" text="✕" />
+        </HBox>
+
+        <!-- Content injected dynamically -->
+        <VBox fx:id="notifPanelContent" styleClass="notif-panel-content" spacing="0" />
+
+    </VBox>
+
+    <!-- ==================== Chatbot overlay panel (layer 3) ==================== -->
+    <VBox fx:id="chatbotOverlay" managed="false" maxHeight="520" maxWidth="380" visible="false" StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin><Insets bottom="80" right="20" /></StackPane.margin>
         <!-- chatbotPanel.fxml is loaded into this VBox dynamically -->
     </VBox>
 
-    <!-- ==================== Floating action button (layer 2) ==================== -->
-    <Button fx:id="chatbotFab" onAction="#handleChatbotToggle"
-            text="💬" styleClass="chatbot-fab"
-            StackPane.alignment="BOTTOM_RIGHT">
-        <StackPane.margin><Insets bottom="20" right="20"/></StackPane.margin>
+    <!-- ==================== Floating action button (layer 4) ==================== -->
+    <Button fx:id="chatbotFab" onAction="#handleChatbotToggle" styleClass="chatbot-fab" text="💬" StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin><Insets bottom="20" right="20" /></StackPane.margin>
     </Button>
 
 </StackPane>

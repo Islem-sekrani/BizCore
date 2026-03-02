@@ -4,8 +4,13 @@ import edu.Connexion3A7.entities.coach;
 import edu.Connexion3A7.entities.user;
 import edu.Connexion3A7.services.CoachService;
 import edu.Connexion3A7.services.DisponibiliteService;
+import edu.Connexion3A7.services.OkHttpSmsService;
 import edu.Connexion3A7.services.ReservationService;
+import edu.Connexion3A7.services.userService;
 import edu.Connexion3A7.tools.MyConnection;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -17,24 +22,26 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Unified user dashboard controller.
- * Merges the old UserDashboardController (coach cards + rating + booking)
- * with CoachSelectionController (weekly availability + date-based booking)
- * into one master-detail view.
+ * Handles coach cards, availability calendar, booking, rating,
+ * chatbot overlay, and the new booking notification system.
  */
 public class UserDashboardController {
 
-    // ── Sidebar ──────────────────────────────────────────────────────────────
+    // ── Sidebar ───────────────────────────────────────────────────────────────
     @FXML
     private Label userNameLabel;
     @FXML
@@ -42,15 +49,31 @@ public class UserDashboardController {
     @FXML
     private Label sidebarInitial;
 
-    // ── Top bar ──────────────────────────────────────────────────────────────
+    // ── Top bar ───────────────────────────────────────────────────────────────
     @FXML
     private Circle profileCircle;
     @FXML
     private Label profileInitials;
     @FXML
     private Label breadcrumbLabel;
+    @FXML
+    private Button bellButton;
+    @FXML
+    private Label bellBadge; // red dot; visible = true when unread notif
 
-    // ── Left panel: coach cards ──────────────────────────────────────────────
+    // ── Notification Toast (auto-dismiss after 5 s) ───────────────────────────
+    @FXML
+    private VBox notifToast;
+    @FXML
+    private Label notifToastDetail;
+
+    // ── Notification Announcement Panel ──────────────────────────────────────
+    @FXML
+    private VBox notifPanel;
+    @FXML
+    private VBox notifPanelContent;
+
+    // ── Left panel: coach cards ───────────────────────────────────────────────
     @FXML
     private VBox coachCardsContainer;
     @FXML
@@ -58,7 +81,7 @@ public class UserDashboardController {
     @FXML
     private Label coachCountLabel;
 
-    // ── Right panel: availability ────────────────────────────────────────────
+    // ── Right panel: availability ─────────────────────────────────────────────
     @FXML
     private VBox noSelectionPlaceholder;
     @FXML
@@ -78,7 +101,7 @@ public class UserDashboardController {
     @FXML
     private Label reserveStatusLabel;
 
-    // ── Chatbot overlay ──────────────────────────────────────────────────────
+    // ── Chatbot overlay ───────────────────────────────────────────────────────
     @FXML
     private VBox chatbotOverlay;
     @FXML
@@ -87,12 +110,12 @@ public class UserDashboardController {
     private boolean chatbotLoaded = false;
     private boolean chatbotVisible = false;
 
-    // ── Services ─────────────────────────────────────────────────────────────
+    // ── Services ──────────────────────────────────────────────────────────────
     private final CoachService coachService = new CoachService();
     private final DisponibiliteService dispoService = new DisponibiliteService();
     private final ReservationService reservationService = new ReservationService();
 
-    // ── State ────────────────────────────────────────────────────────────────
+    // ── State ─────────────────────────────────────────────────────────────────
     private user loggedInUser;
     private coach selectedCoach;
     private LocalDate currentWeekStart;
@@ -100,17 +123,26 @@ public class UserDashboardController {
     private VBox selectedCoachCard;
     private HBox selectedDayRow;
 
+    /** In-memory notification history (written per session). */
+    private final List<NotifEntry> notifHistory = new ArrayList<>();
+    private Timeline toastTimeline;
+
+    /** Single notification record. */
+    private record NotifEntry(String coachName, String domain, String dateStr, String timeStr) {
+    }
+
     private static final String[] JOUR_FR = {
             "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
     };
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final String[] AVATAR_COLORS = {
             "#2ECC9B", "#3498DB", "#E67E22", "#9B59B6", "#E74C3C", "#1ABC9C"
     };
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
     // Initialisation
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
 
     public void setLoggedInUser(user u) {
         this.loggedInUser = u;
@@ -130,19 +162,182 @@ public class UserDashboardController {
     public void initialize() {
         profileInitials.setText("U");
         currentWeekStart = LocalDate.now().with(DayOfWeek.MONDAY);
-        if (reserveButton != null) {
+        if (reserveButton != null)
             reserveButton.setDisable(true);
+
+        // Notification panel hidden until user clicks bell
+        notifPanel.setVisible(false);
+        notifPanel.setManaged(false);
+        notifToast.setVisible(false);
+        notifToast.setManaged(false);
+        bellBadge.setVisible(false);
+
+        renderNotifPanel();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NOTIFICATION — public API
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Called right after a successful booking.
+     * Shows a 5-second toast and activates the bell badge.
+     */
+    private void triggerBookingNotification(coach c, LocalDate date) {
+        String coachName = c.getNom() + " " + c.getPrenom();
+        String domain = c.getDomaine() != null ? c.getDomaine() : "";
+        String dateStr = JOUR_FR[date.getDayOfWeek().getValue() - 1] + " " + date.format(DATE_FMT);
+        String timeStr = LocalTime.now().format(TIME_FMT);
+
+        // ── 1. Store in history ──
+        notifHistory.add(0, new NotifEntry(coachName, domain, dateStr, timeStr));
+
+        // ── 2. Show toast with full details (name + domain + date) ──
+        String domainPart = domain.isEmpty() ? "" : " (" + domain + ")";
+        notifToastDetail.setText(coachName + domainPart + " — " + dateStr);
+        showToast();
+
+        // ── 3. Activate bell badge ──
+        bellBadge.setVisible(true);
+
+        // ── 4. Refresh panel content (in case it's open) ──
+        renderNotifPanel();
+    }
+
+    // ── Toast logic ───────────────────────────────────────────────────────────
+
+    private void showToast() {
+        // Cancel any in-flight timer
+        if (toastTimeline != null)
+            toastTimeline.stop();
+
+        notifToast.setOpacity(1.0);
+        notifToast.setVisible(true);
+        notifToast.setManaged(true);
+
+        // Auto-dismiss after 5 seconds with a 0.5-second fade-out
+        toastTimeline = new Timeline(
+                new KeyFrame(Duration.seconds(5), e -> {
+                }),
+                new KeyFrame(Duration.seconds(5.5), new KeyValue(notifToast.opacityProperty(), 0.0)));
+        toastTimeline.setOnFinished(e -> {
+            notifToast.setVisible(false);
+            notifToast.setManaged(false);
+            notifToast.setOpacity(1.0);
+        });
+        toastTimeline.play();
+    }
+
+    // ── Bell click → toggle announcement panel ────────────────────────────────
+
+    @FXML
+    void handleBellClick() {
+        boolean show = !notifPanel.isVisible();
+        notifPanel.setVisible(show);
+        notifPanel.setManaged(show);
+
+        if (show) {
+            // Clear the badge dot once the user opens the panel
+            bellBadge.setVisible(false);
+            renderNotifPanel();
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    @FXML
+    void handleCloseNotifPanel() {
+        notifPanel.setVisible(false);
+        notifPanel.setManaged(false);
+    }
+
+    /** Rebuilds the notification panel rows from the in-memory history. */
+    private void renderNotifPanel() {
+        notifPanelContent.getChildren().clear();
+
+        if (notifHistory.isEmpty()) {
+            Label empty = new Label("Aucune notification pour le moment.");
+            empty.getStyleClass().add("notif-panel-empty");
+            empty.setMaxWidth(Double.MAX_VALUE);
+            empty.setAlignment(Pos.CENTER);
+            notifPanelContent.getChildren().add(empty);
+            return;
+        }
+
+        for (int i = 0; i < notifHistory.size(); i++) {
+            NotifEntry entry = notifHistory.get(i);
+            final int idx = i;
+
+            HBox row = new HBox(10);
+            row.getStyleClass().add("notif-row");
+            row.setAlignment(Pos.CENTER_LEFT);
+
+            // ── Icon ──
+            Label icon = new Label("✅");
+            icon.getStyleClass().add("notif-row-icon");
+
+            // ── Text block ──
+            VBox textBlock = new VBox(3);
+            HBox.setHgrow(textBlock, Priority.ALWAYS);
+
+            Label titleLbl = new Label("Séance réservée !");
+            titleLbl.getStyleClass().add("notif-row-title");
+
+            // Coach name + domain on first line, date on second
+            String domainPart = entry.domain().isEmpty() ? "" : " (" + entry.domain() + ")";
+            Label coachLbl = new Label(entry.coachName() + domainPart);
+            coachLbl.getStyleClass().add("notif-row-sub");
+            coachLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #2C3E50; -fx-font-size: 11px;");
+
+            Label dateLbl = new Label("📅 " + entry.dateStr());
+            dateLbl.getStyleClass().add("notif-row-sub");
+
+            textBlock.getChildren().addAll(titleLbl, coachLbl, dateLbl);
+
+            // ── Timestamp ──
+            Label timeLbl = new Label(entry.timeStr());
+            timeLbl.getStyleClass().add("notif-row-time");
+
+            // ── Delete button (X) ──
+            Button deleteBtn = new Button("✕");
+            deleteBtn.setStyle(
+                    "-fx-background-color: transparent; " +
+                            "-fx-text-fill: #BDC3C7; " +
+                            "-fx-font-size: 12px; " +
+                            "-fx-cursor: hand; " +
+                            "-fx-padding: 2 5; " +
+                            "-fx-background-radius: 6;");
+            deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle(
+                    "-fx-background-color: #FADBD8; " +
+                            "-fx-text-fill: #E74C3C; " +
+                            "-fx-font-size: 12px; " +
+                            "-fx-cursor: hand; " +
+                            "-fx-padding: 2 5; " +
+                            "-fx-background-radius: 6;"));
+            deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(
+                    "-fx-background-color: transparent; " +
+                            "-fx-text-fill: #BDC3C7; " +
+                            "-fx-font-size: 12px; " +
+                            "-fx-cursor: hand; " +
+                            "-fx-padding: 2 5; " +
+                            "-fx-background-radius: 6;"));
+            deleteBtn.setOnAction(e -> {
+                notifHistory.remove(idx);
+                // Hide badge if no notifications remain
+                if (notifHistory.isEmpty())
+                    bellBadge.setVisible(false);
+                renderNotifPanel();
+            });
+
+            row.getChildren().addAll(icon, textBlock, timeLbl, deleteBtn);
+            notifPanelContent.getChildren().add(row);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // LEFT PANEL — Coach cards with rating + "📅 Disponibilité" button
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
 
     private void loadCoachCards() {
         coachCardsContainer.getChildren().clear();
-
-        // Reset right panel
         resetAvailabilityPanel();
 
         if (!MyConnection.getInstance().isConnected()) {
@@ -181,7 +376,7 @@ public class UserDashboardController {
                 "-fx-border-color: #E8EAED; -fx-border-radius: 10; -fx-border-width: 1; " +
                 "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 4, 0, 0, 1);");
 
-        // === Top section: Avatar + Name + Domain badge ===
+        // === Top row: Avatar + Name + Domain badge ===
         HBox topRow = new HBox(12);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -204,7 +399,6 @@ public class UserDashboardController {
 
         nameBox.getChildren().addAll(nameLabel, domainBadge);
 
-        // Dispo badge
         String dispoText = c.getDispo() != null ? c.getDispo() : "N/A";
         Label dispoBadge = new Label(dispoText);
         if ("Disponible".equalsIgnoreCase(dispoText)) {
@@ -217,7 +411,7 @@ public class UserDashboardController {
 
         topRow.getChildren().addAll(avatar, nameBox, dispoBadge);
 
-        // === Info row: tarif + experience ===
+        // === Info row ===
         HBox infoRow = new HBox(15);
         infoRow.setAlignment(Pos.CENTER_LEFT);
         Label tarifLabel = new Label(String.format("💰 %.0f DT/H", c.getTarif()));
@@ -263,7 +457,6 @@ public class UserDashboardController {
             buttonBox.getChildren().add(spacer);
         }
 
-        // "📅 Disponibilité" button — opens the right availability panel
         boolean isIndisponible = "Indisponible".equalsIgnoreCase(c.getDispo());
         if (!isIndisponible) {
             Button dispoBtn = new Button("📅 Disponibilité");
@@ -275,7 +468,6 @@ public class UserDashboardController {
 
         card.getChildren().addAll(topRow, infoRow, starBox, buttonBox);
 
-        // Hover effects
         card.setOnMouseEntered(e -> {
             if (card != selectedCoachCard) {
                 card.setStyle("-fx-background-color: #F0FFF8; -fx-background-radius: 10; " +
@@ -294,12 +486,11 @@ public class UserDashboardController {
         return card;
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
     // RIGHT PANEL — Weekly availability + date-based booking
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
 
     private void selectCoach(coach c, VBox card) {
-        // Remove highlight from previous
         if (selectedCoachCard != null) {
             selectedCoachCard.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
                     "-fx-border-color: #E8EAED; -fx-border-radius: 10; -fx-border-width: 1; " +
@@ -311,12 +502,10 @@ public class UserDashboardController {
         selectedDate = null;
         selectedDayRow = null;
 
-        // Highlight selected card
         card.setStyle("-fx-background-color: #E8F8F0; -fx-background-radius: 10; " +
                 "-fx-border-color: #2ECC9B; -fx-border-radius: 10; -fx-border-width: 2; " +
                 "-fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.25), 10, 0, 0, 3);");
 
-        // Show availability panel, hide placeholder
         noSelectionPlaceholder.setVisible(false);
         noSelectionPlaceholder.setManaged(false);
         availabilityPanel.setVisible(true);
@@ -365,9 +554,7 @@ public class UserDashboardController {
                     selectedCoach.getId_coach(), currentWeekStart);
 
             for (Map.Entry<LocalDate, String> entry : week.entrySet()) {
-                LocalDate day = entry.getKey();
-                String statut = entry.getValue();
-                dayGrid.getChildren().add(buildDayRow(day, statut));
+                dayGrid.getChildren().add(buildDayRow(entry.getKey(), entry.getValue()));
             }
         } catch (SQLException e) {
             Label err = new Label("Erreur chargement disponibilites: " + e.getMessage());
@@ -397,14 +584,12 @@ public class UserDashboardController {
         } catch (SQLException ignored) {
         }
 
-        // Day name
         int dayIdx = day.getDayOfWeek().getValue() - 1;
         Label dayName = new Label(JOUR_FR[dayIdx]);
         dayName.setMinWidth(90);
         dayName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 13));
         dayName.setStyle("-fx-text-fill: #2C3E50;");
 
-        // Date
         Label dateLabel = new Label(day.format(DATE_FMT));
         dateLabel.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 12px;");
 
@@ -412,7 +597,6 @@ public class UserDashboardController {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         if (bookedByMe) {
-            // ── Current user's booking → show badge + cancel button ──
             Label badge = new Label("✅ Mon RDV");
             badge.getStyleClass().add("cs-badge-booked");
 
@@ -425,7 +609,6 @@ public class UserDashboardController {
             row.getStyleClass().add("cs-day-row-booked");
 
         } else if (bookedByOther) {
-            // ── Another user's booking → show "Occupé" (not clickable) ──
             Label badge = new Label("🔒 Occupé");
             badge.setStyle("-fx-background-color: #FADBD8; -fx-text-fill: #C0392B; " +
                     "-fx-padding: 4 10; -fx-background-radius: 10; -fx-font-size: 11px; -fx-font-weight: bold;");
@@ -434,7 +617,6 @@ public class UserDashboardController {
             row.getStyleClass().add("cs-day-row-unavailable");
 
         } else if (available) {
-            // ── Available → clickable for booking ──
             Label badge = new Label("Disponible");
             badge.getStyleClass().add("cs-badge-available");
             row.getStyleClass().add("cs-day-row-available");
@@ -443,7 +625,6 @@ public class UserDashboardController {
             row.getChildren().addAll(dayName, dateLabel, spacer, badge);
 
         } else {
-            // ── Unavailable ──
             Label badge = new Label("Indisponible");
             badge.getStyleClass().add("cs-badge-unavailable");
             row.getStyleClass().add("cs-day-row-unavailable");
@@ -454,9 +635,6 @@ public class UserDashboardController {
         return row;
     }
 
-    /**
-     * Cancel a date-specific booking and refresh the availability calendar.
-     */
     private void handleCancelOnDate(LocalDate date) {
         if (loggedInUser == null || selectedCoach == null)
             return;
@@ -472,8 +650,8 @@ public class UserDashboardController {
                     reservationService.removeReservationOnDate(
                             loggedInUser.getId_user(), selectedCoach.getId_coach(), date);
                     showInfoAlert("Succes", "Reservation annulee pour le " + date.format(DATE_FMT));
-                    loadWeekAvailability(); // refresh calendar
-                    loadCoachCards(); // refresh left panel booking badges
+                    loadWeekAvailability();
+                    loadCoachCards();
                 } catch (SQLException e) {
                     showErrorAlert("Erreur annulation", e.getMessage());
                 }
@@ -495,7 +673,7 @@ public class UserDashboardController {
                 " " + day.format(DATE_FMT) + " selectionne");
     }
 
-    // ── Week navigation ──────────────────────────────────────────────────────
+    // ── Week navigation ───────────────────────────────────────────────────────
 
     @FXML
     void handlePrevWeek() {
@@ -509,7 +687,7 @@ public class UserDashboardController {
         loadWeekAvailability();
     }
 
-    // ── Reserve (date-based) ─────────────────────────────────────────────────
+    // ── Reserve (date-based) ──────────────────────────────────────────────────
 
     @FXML
     void handleReserve() {
@@ -522,20 +700,28 @@ public class UserDashboardController {
             return;
         }
 
+        // ── Validation : date passée ──────────────────────────────────────────
+        if (selectedDate.isBefore(LocalDate.now())) {
+            showErrorAlert("Date invalide",
+                    "Vous ne pouvez pas réserver une séance dans le passé.\n" +
+                            "Date sélectionnée : " + JOUR_FR[selectedDate.getDayOfWeek().getValue() - 1]
+                            + " " + selectedDate.format(DATE_FMT) + "\n" +
+                            "Veuillez choisir une date à partir d'aujourd'hui.");
+            return;
+        }
+
         if ("Indisponible".equalsIgnoreCase(selectedCoach.getDispo())) {
             showInfoAlert("Coach indisponible",
                     "Ce coach est indisponible, vous ne pouvez pas le reserver.");
             return;
         }
 
-        // Verify day-level availability
         try {
             Map<LocalDate, String> week = dispoService.getWeekAvailability(
                     selectedCoach.getId_coach(), currentWeekStart);
             String dayStatus = week.get(selectedDate);
             if (!"Disponible".equalsIgnoreCase(dayStatus)) {
-                showInfoAlert("Jour indisponible",
-                        "Ce coach est indisponible ce jour-la.");
+                showInfoAlert("Jour indisponible", "Ce coach est indisponible ce jour-la.");
                 return;
             }
         } catch (SQLException e) {
@@ -543,7 +729,6 @@ public class UserDashboardController {
             return;
         }
 
-        // Already booked?
         try {
             if (reservationService.isBookedOnDate(
                     loggedInUser.getId_user(), selectedCoach.getId_coach(), selectedDate)) {
@@ -556,23 +741,56 @@ public class UserDashboardController {
             return;
         }
 
-        // Confirm
         String msg = "Reserver " + selectedCoach.getNom() + " " + selectedCoach.getPrenom() +
                 "\nle " + JOUR_FR[selectedDate.getDayOfWeek().getValue() - 1] +
                 " " + selectedDate.format(DATE_FMT) + " ?";
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.YES, ButtonType.NO);
         confirm.setHeaderText("Confirmer la reservation");
+
+        // Keep a local copy for use in lambda below (selectedDate may change)
+        final coach bookedCoach = selectedCoach;
+        final LocalDate bookedDate = selectedDate;
+
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
                 try {
                     reservationService.addReservation(
-                            loggedInUser.getId_user(), selectedCoach.getId_coach(), selectedDate);
-                    showInfoAlert("Reservation confirmee",
-                            "Votre seance est reservee pour le " + selectedDate.format(DATE_FMT));
+                            loggedInUser.getId_user(), bookedCoach.getId_coach(), bookedDate);
+
                     reserveStatusLabel.setText("Reservation confirmee !");
                     reserveStatusLabel.setStyle(
                             "-fx-text-fill: #27AE60; -fx-font-weight: bold; -fx-font-size: 11px;");
                     loadWeekAvailability();
+
+                    // ── Trigger in-app notification ──
+                    triggerBookingNotification(bookedCoach, bookedDate);
+
+                    // ── Send confirmation SMS (background daemon thread — never blocks UI) ──
+                    final int userId = loggedInUser.getId_user();
+                    final String dateStr = JOUR_FR[bookedDate.getDayOfWeek().getValue() - 1]
+                            + " " + bookedDate.format(DATE_FMT);
+                    Thread smsThread = new Thread(() -> {
+                        try {
+                            userService us = new userService();
+                            String userPhone = us.getUserTelephone(userId);
+                            String userName = loggedInUser.getEmail();
+
+                            OkHttpSmsService.getInstance().sendBookingConfirmation(
+                                    userName,
+                                    userPhone, // null → silently skipped
+                                    bookedCoach.getNom() + " " + bookedCoach.getPrenom(),
+                                    bookedCoach.getNumTel(), // null is handled in sendSmsAsync; "N/A" would reach
+                                                             // Twilio
+                                    bookedCoach.getDomaine() != null ? bookedCoach.getDomaine() : "",
+                                    dateStr);
+                        } catch (Exception ex) {
+                            System.err.println("[SMS] Erreur inattendue: " + ex.getMessage());
+                        }
+                    });
+                    smsThread.setDaemon(true);
+                    smsThread.setName("sms-booking");
+                    smsThread.start();
+
                 } catch (SQLException e) {
                     showErrorAlert("Erreur reservation", e.getMessage());
                 }
@@ -580,9 +798,9 @@ public class UserDashboardController {
         });
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
     // Interactive star rating
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
 
     private HBox buildInteractiveStarRating(coach c) {
         HBox box = new HBox(3);
@@ -600,24 +818,20 @@ public class UserDashboardController {
             box.getChildren().add(star);
         }
 
-        Label ratingValueLabel = new Label(String.format(" %.1f/5", c.getNote()));
-        ratingValueLabel.setStyle(
-                "-fx-font-size: 11px; -fx-text-fill: #2C3E50; -fx-font-weight: bold; -fx-padding: 0 0 0 4;");
-        box.getChildren().add(ratingValueLabel);
+        Label rvl = new Label(String.format(" %.1f/5", c.getNote()));
+        rvl.setStyle("-fx-font-size: 11px; -fx-text-fill: #2C3E50; -fx-font-weight: bold; -fx-padding: 0 0 0 4;");
+        box.getChildren().add(rvl);
 
         for (int i = 0; i < 5; i++) {
-            final int starIndex = i + 1;
-            final Label rvl = ratingValueLabel;
-
+            final int idx = i + 1;
             stars[i].setOnMouseEntered(e -> {
                 for (int j = 0; j < 5; j++) {
-                    stars[j].setText(j < starIndex ? "★" : "☆");
-                    stars[j].setStyle(j < starIndex
+                    stars[j].setText(j < idx ? "★" : "☆");
+                    stars[j].setStyle(j < idx
                             ? "-fx-font-size: 16px; -fx-text-fill: #F1C40F; -fx-cursor: hand;"
                             : "-fx-font-size: 16px; -fx-text-fill: #BDC3C7; -fx-cursor: hand;");
                 }
             });
-
             stars[i].setOnMouseExited(e -> {
                 int cur = Math.round(c.getNote());
                 for (int j = 0; j < 5; j++) {
@@ -627,15 +841,13 @@ public class UserDashboardController {
                             : "-fx-font-size: 16px; -fx-text-fill: #BDC3C7; -fx-cursor: hand;");
                 }
             });
-
             stars[i].setOnMouseClicked(e -> {
                 if (loggedInUser == null) {
                     showErrorAlert("Erreur", "Vous devez etre connecte pour noter un coach.");
                     return;
                 }
                 try {
-                    coachService.addOrUpdateUserRating(
-                            loggedInUser.getId_user(), c.getId_coach(), starIndex);
+                    coachService.addOrUpdateUserRating(loggedInUser.getId_user(), c.getId_coach(), idx);
                     float newAvg = coachService.getAverageRating(c.getId_coach());
                     c.setNote(newAvg);
 
@@ -656,9 +868,9 @@ public class UserDashboardController {
         return box;
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // Cancel booking
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Cancel booking (coach-card level)
+    // ═══════════════════════════════════════════════════════════════════════════
 
     private void handleCancelBooking(coach c) {
         if (loggedInUser == null) {
@@ -683,29 +895,26 @@ public class UserDashboardController {
         });
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
     // Sidebar navigation
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
 
     @FXML
-    void handleCoachingClick(javafx.event.ActionEvent event) {
+    void handleCoachingClick(javafx.event.ActionEvent e) {
         loadCoachCards();
     }
 
     @FXML
-    void handleEvenementsClick(javafx.event.ActionEvent event) {
-        /* placeholder */
-    }
+    void handleEvenementsClick(javafx.event.ActionEvent e) {
+        /* placeholder */ }
 
     @FXML
-    void handleBlogClick(javafx.event.ActionEvent event) {
-        /* placeholder */
-    }
+    void handleBlogClick(javafx.event.ActionEvent e) {
+        /* placeholder */ }
 
     @FXML
-    void handleProduitsClick(javafx.event.ActionEvent event) {
-        /* placeholder */
-    }
+    void handleProduitsClick(javafx.event.ActionEvent e) {
+        /* placeholder */ }
 
     @FXML
     void handleLogout(javafx.event.ActionEvent event) {
@@ -720,15 +929,14 @@ public class UserDashboardController {
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // Chatbot FAB toggle
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Chatbot FAB
+    // ═══════════════════════════════════════════════════════════════════════════
 
     @FXML
     void handleChatbotToggle() {
-        if (!chatbotLoaded) {
+        if (!chatbotLoaded)
             loadChatbotPanel();
-        }
 
         chatbotVisible = !chatbotVisible;
         chatbotOverlay.setVisible(chatbotVisible);
@@ -745,9 +953,6 @@ public class UserDashboardController {
             VBox.setVgrow(panel, Priority.ALWAYS);
             chatbotLoaded = true;
         } catch (IOException e) {
-            System.err.println("[UserDashboard] Cannot load chatbot panel: " + e.getMessage());
-            e.printStackTrace();
-
             Label errorLabel = new Label("Impossible de charger le chatbot:\n" + e.getMessage());
             errorLabel.setWrapText(true);
             errorLabel.setStyle("-fx-text-fill: #E74C3C; -fx-padding: 20;");
@@ -756,9 +961,9 @@ public class UserDashboardController {
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
     // Helpers
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════
 
     private String getInitials(coach c) {
         String init = "";
@@ -770,18 +975,18 @@ public class UserDashboardController {
     }
 
     private void showErrorAlert(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Erreur");
+        a.setHeaderText(header);
+        a.setContentText(content);
+        a.showAndWait();
     }
 
     private void showInfoAlert(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Information");
+        a.setHeaderText(header);
+        a.setContentText(content);
+        a.showAndWait();
     }
 }

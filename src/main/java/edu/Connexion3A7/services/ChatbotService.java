@@ -56,7 +56,7 @@ public class ChatbotService {
         this.temperature = Double.parseDouble(
                 props.getProperty("huggingface.temperature", "0.7"));
         this.systemPrompt = props.getProperty("chatbot.system.prompt",
-                "Tu es un assistant expert en coaching sportif.");
+                "Tu es un assistant expert en coaching business et entrepreneuriat.");
 
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)

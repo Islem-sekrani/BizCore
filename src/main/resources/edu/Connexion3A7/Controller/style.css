@@ -555,20 +555,20 @@
     -fx-border-radius: 10;
     -fx-border-width: 1;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 4, 0, 0, 1);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.04), 4, 0, 0, 1);
 }
 
 .cs-coach-card:hover {
     -fx-background-color: #F0FFF8;
     -fx-border-color: #2ECC9B;
-    -fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.15), 8, 0, 0, 2);
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.15), 8, 0, 0, 2);
 }
 
 .cs-coach-card-selected {
     -fx-background-color: #E8F8F0;
     -fx-border-color: #2ECC9B;
     -fx-border-width: 2;
-    -fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.25), 10, 0, 0, 3);
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.25), 10, 0, 0, 3);
 }
 
 /* --- Availability badges --- */
@@ -635,7 +635,7 @@
     -fx-background-color: #E8F8F0;
     -fx-border-color: #2ECC9B;
     -fx-border-width: 2;
-    -fx-effect: dropshadow(three-pass-box, rgba(46,204,155,0.2), 6, 0, 0, 2);
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 155, 0.2), 6, 0, 0, 2);
 }
 
 /* --- Week navigation button --- */
@@ -655,4 +655,225 @@
 .cs-week-btn:hover {
     -fx-background-color: #F0F0F0;
     -fx-border-color: #BDC3C7;
+}
+
+/* ====================================
+   PERFORMANCE TABLE — Admin Dashboard
+   ==================================== */
+
+/* Section header above performance table */
+.perf-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bc-text-dark;
+    -fx-padding: 8 0 6 0;
+}
+
+/* Performance TableView — mirrors coachTable palette */
+#perfTable {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+#perfTable .column-header-background {
+    -fx-background-color: -bc-bg;
+}
+
+#perfTable .column-header {
+    -fx-background-color: -bc-bg;
+    -fx-border-color: transparent transparent -bc-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+#perfTable .column-header .label {
+    -fx-text-fill: #5D6D7E;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+#perfTable .table-row-cell {
+    -fx-background-color: -bc-white;
+    -fx-border-color: transparent transparent #F0F0F0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+#perfTable .table-row-cell:hover {
+    -fx-background-color: #F8FFF8;
+}
+
+#perfTable .table-row-cell:selected {
+    -fx-background-color: rgba(46, 204, 155, 0.12);
+}
+
+#perfTable .table-cell {
+    -fx-text-fill: -bc-text-dark;
+    -fx-font-size: 12px;
+    -fx-padding: 7 6 7 6;
+}
+
+/* Trend labels */
+.trend-positive {
+    -fx-text-fill: #27AE60;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.trend-negative {
+    -fx-text-fill: #E74C3C;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* ProgressBar inside Score Final cell */
+.perf-progress {
+    -fx-pref-height: 10;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+
+.perf-progress .bar {
+    -fx-background-color: -bc-teal;
+    -fx-background-radius: 5;
+}
+
+.perf-progress .track {
+    -fx-background-color: #E8EAED;
+    -fx-background-radius: 5;
+}
+
+/* Perf status label */
+#perfStatusLabel {
+    -fx-font-size: 12px;
+    -fx-padding: 4 0 0 0;
+    -fx-text-fill: #7F8C8D;
+}
+
+/* ====================================
+   BOOKING NOTIFICATIONS
+   ==================================== */
+
+/* ── Toast (bottom-right, 5-second auto-dismiss) ── */
+.notif-toast {
+    -fx-background-color: #1E8449;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 16, 0, 0, 4);
+    -fx-padding: 14 20 14 20;
+    -fx-min-width: 300;
+    -fx-max-width: 380;
+    -fx-pref-height: 72;
+    -fx-max-height: 80;
+}
+
+
+.notif-toast-icon {
+    -fx-font-size: 22px;
+}
+
+.notif-toast-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.notif-toast-detail {
+    -fx-font-size: 11px;
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Bell badge (red dot) ── */
+.notif-bell-badge {
+    -fx-background-color: #E74C3C;
+    -fx-background-radius: 6;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+    -fx-padding: 0;
+}
+
+/* ── Notification announcement panel ── */
+.notif-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 20, 0, 0, 4);
+    -fx-min-width: 320;
+    -fx-max-width: 360;
+    -fx-max-height: 480;
+}
+
+.notif-panel-header {
+    -fx-background-color: #2C3E50;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 14 16 14 16;
+}
+
+.notif-panel-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.notif-panel-close {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-text-fill: white;
+    -fx-background-radius: 14;
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-max-width: 26;
+    -fx-max-height: 26;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-border-color: rgba(255, 255, 255, 0.30);
+    -fx-border-radius: 14;
+}
+
+.notif-panel-close:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+}
+
+.notif-panel-content {
+    -fx-padding: 10 0 10 0;
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 12 12;
+}
+
+/* Individual notification row inside the panel */
+.notif-row {
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: transparent transparent #F0F0F0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.notif-row:hover {
+    -fx-background-color: #F8FFF8;
+}
+
+.notif-row-icon {
+    -fx-font-size: 20px;
+}
+
+.notif-row-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50;
+}
+
+.notif-row-sub {
+    -fx-font-size: 11px;
+    -fx-text-fill: #7F8C8D;
+    -fx-wrap-text: true;
+}
+
+.notif-row-time {
+    -fx-font-size: 10px;
+    -fx-text-fill: #BDC3C7;
+}
+
+/* Empty state inside panel */
+.notif-panel-empty {
+    -fx-font-size: 12px;
+    -fx-text-fill: #BDC3C7;
+    -fx-padding: 30;
+    -fx-alignment: center;
 }

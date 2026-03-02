@@ -56,10 +56,10 @@ public class ChatbotController {
         if (chatbotService.isConfigured()) {
             appendBotMessage(
                     "Bonjour ! Je suis votre assistant GestionCoach. 🤖\n\n" +
-                            "Je peux vous aider a trouver le coach ideal :\n" +
-                            "  • Dites-moi votre domaine (Leadership, Finance, Branding...)\n" +
+                            "Je peux vous aider a trouver le coach business ideal :\n" +
+                            "  • Dites-moi votre domaine (Leadership, Finance, Branding, E-Commerce, Funding)\n" +
                             "  • Indiquez votre budget maximum (ex: 50 DT/H)\n" +
-                            "  • Demandez des conseils sportifs ou nutrition\n\n" +
+                            "  • Demandez des conseils en entrepreneuriat et strategie d'entreprise\n\n" +
                             "Comment puis-je vous aider ?");
         } else {
             appendBotMessage(

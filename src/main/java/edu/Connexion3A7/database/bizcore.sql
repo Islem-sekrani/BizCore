@@ -607,3 +607,54 @@ ALTER TABLE `reservation`
     ADD COLUMN IF NOT EXISTS `date_seance` date DEFAULT NULL AFTER `date_reservation`;
 
 COMMIT;
+
+
+-- ============================================================
+-- PATCH 3 — Phone Number Format Correction
+-- Corrects phone numbers to E.164 format (+216XXXXXXXX)
+-- ============================================================
+
+START TRANSACTION;
+
+-- Fix coach phone numbers: add +216 prefix if missing
+UPDATE `coach`
+SET `num_tel` = CONCAT('+216', `num_tel`)
+WHERE `num_tel` IS NOT NULL 
+  AND `num_tel` != '' 
+  AND `num_tel` NOT LIKE '+%'
+  AND LENGTH(`num_tel`) = 8;
+
+-- Fix coach phone numbers: add + prefix if missing but has 216
+UPDATE `coach`
+SET `num_tel` = CONCAT('+', `num_tel`)
+WHERE `num_tel` IS NOT NULL 
+  AND `num_tel` != '' 
+  AND `num_tel` NOT LIKE '+%'
+  AND `num_tel` LIKE '216%'
+  AND LENGTH(`num_tel`) = 11;
+
+-- Fix user phone numbers: add +216 prefix if missing
+UPDATE `users`
+SET `telephone` = CONCAT('+216', `telephone`)
+WHERE `telephone` IS NOT NULL 
+  AND `telephone` != '' 
+  AND `telephone` NOT LIKE '+%'
+  AND LENGTH(`telephone`) = 8;
+
+-- Fix user phone numbers: add + prefix if missing but has 216
+UPDATE `users`
+SET `telephone` = CONCAT('+', `telephone`)
+WHERE `telephone` IS NOT NULL 
+  AND `telephone` != '' 
+  AND `telephone` NOT LIKE '+%'
+  AND `telephone` LIKE '216%'
+  AND LENGTH(`telephone`) = 11;
+
+COMMIT;
+
+-- Verify corrections
+SELECT 'Coach phone numbers:' as info;
+SELECT id_coach, nom, prenom, num_tel FROM coach WHERE num_tel IS NOT NULL;
+
+SELECT 'User phone numbers:' as info;
+SELECT id_user, nom, prenom, telephone FROM users WHERE telephone IS NOT NULL;

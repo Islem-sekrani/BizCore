@@ -11,14 +11,10 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 
 import javafx.stage.FileChooser;
@@ -30,7 +26,6 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DashboardController {
@@ -65,10 +60,6 @@ public class DashboardController {
     @FXML
     private Button addCoachBtn;
 
-    // --- Domain stats ---
-    @FXML
-    private HBox statsContainer;
-
     // --- Search + Sort ---
     @FXML
     private TextField searchField;
@@ -79,7 +70,7 @@ public class DashboardController {
     @FXML
     private Button exportCsvBtn;
 
-    // --- Table columns ---
+    // --- Coach table columns ---
     @FXML
     private TableColumn<coach, String> colNom;
     @FXML
@@ -97,6 +88,7 @@ public class DashboardController {
     @FXML
     private TableColumn<coach, Void> colActions;
 
+    // ─────────────────────────────────────────────────────────────────────────
     private final CoachService coachService = new CoachService();
 
     /** Full unfiltered list — kept for search/sort */
@@ -121,17 +113,47 @@ public class DashboardController {
         }
     }
 
+    // =========================================================================
+    // JavaFX lifecycle
+    // =========================================================================
+
     @FXML
     public void initialize() {
-        // Table columns
-        colNom.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNom()));
-        colPrenom.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPrenom()));
-        colExperience
-                .setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getExperience()).asObject());
-        colTarif.setCellValueFactory(data -> new SimpleFloatProperty(data.getValue().getTarif()).asObject());
-        colDispo.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDispo()));
-        colNumTel.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNumTel()));
-        colNote.setCellValueFactory(data -> new SimpleFloatProperty(data.getValue().getNote()).asObject());
+        // ── Coach table columns ──────────────────────────────────────────────
+        colNom.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNom()));
+        colNom.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String v, boolean empty) {
+                super.updateItem(v, empty);
+                if (empty || v == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(v);
+                setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #1A7DC4;");
+            }
+        });
+
+        colPrenom.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPrenom()));
+        colPrenom.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String v, boolean empty) {
+                super.updateItem(v, empty);
+                if (empty || v == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(v);
+                setStyle("-fx-font-size: 12px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+            }
+        });
+        colExperience.setCellValueFactory(d -> new SimpleIntegerProperty(d.getValue().getExperience()).asObject());
+        colTarif.setCellValueFactory(d -> new SimpleFloatProperty(d.getValue().getTarif()).asObject());
+        colDispo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDispo()));
+        colNumTel.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNumTel()));
+        colNote.setCellValueFactory(d -> new SimpleFloatProperty(d.getValue().getNote()).asObject());
 
         // Actions column — delete button per row
         colActions.setCellFactory(col -> new TableCell<>() {
@@ -156,8 +178,7 @@ public class DashboardController {
         });
 
         // Sort ComboBox
-        sortOrder.setItems(FXCollections.observableArrayList(
-                "Nom (A → Z)", "Nom (Z → A)"));
+        sortOrder.setItems(FXCollections.observableArrayList("Nom (A → Z)", "Nom (Z → A)"));
         sortOrder.getSelectionModel().selectFirst();
         sortOrder.valueProperty().addListener((obs, oldVal, newVal) -> filterAndSort());
 
@@ -171,12 +192,17 @@ public class DashboardController {
                 e -> gestionContainer.setStyle("-fx-background-color: transparent;"));
 
         profileInitials.setText("A");
-        coachTable.setItems(FXCollections.observableArrayList()); // initial empty list
+        coachTable.setItems(FXCollections.observableArrayList());
+
         refreshTable();
     }
 
+    // =========================================================================
+    // Data loading
+    // =========================================================================
+
     /**
-     * Reload all data from DB, refresh stats, and apply current filter/sort.
+     * Reload all coach data from DB, refresh domain stats, and apply filter/sort.
      */
     public void refreshTable() {
         if (!MyConnection.getInstance().isConnected()) {
@@ -185,11 +211,9 @@ public class DashboardController {
             coachTable.getItems().clear();
             return;
         }
-
         try {
             allCoaches = coachService.getData();
             filterAndSort();
-            loadDomainStats();
         } catch (SQLException e) {
             showErrorAlert("Erreur chargement", e.getMessage());
             statusLabel.setText("Erreur: " + e.getMessage());
@@ -198,9 +222,27 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Filter allCoaches by search text and sort by selected order.
-     */
+    // =========================================================================
+    // Navigation — Statistics
+    // =========================================================================
+
+    /** Loads stat.fxml into the content area when the user clicks STATISTIQUES. */
+    @FXML
+    void handleStatsClick() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/edu/Connexion3A7/Controller/stat.fxml"));
+            Parent statView = loader.load();
+            contentArea.getChildren().setAll(statView);
+        } catch (IOException e) {
+            showErrorAlert("Erreur chargement statistiques", e.getMessage());
+        }
+    }
+
+    // =========================================================================
+    // Filter & sort
+    // =========================================================================
+
     private void filterAndSort() {
         String query = searchField.getText() != null ? searchField.getText().trim().toLowerCase() : "";
         String order = sortOrder.getValue();
@@ -229,7 +271,6 @@ public class DashboardController {
                 return nb.compareToIgnoreCase(na);
             };
         }
-        // Default: A → Z
         return (a, b) -> {
             String na = a.getNom() != null ? a.getNom() : "";
             String nb = b.getNom() != null ? b.getNom() : "";
@@ -237,57 +278,9 @@ public class DashboardController {
         };
     }
 
-    /**
-     * Build domain stat cards from DB data.
-     */
-    private void loadDomainStats() {
-        statsContainer.getChildren().clear();
-
-        try {
-            Map<String, Integer> stats = coachService.getCoachCountByDomaine();
-
-            String[] bgColors = { "#EBF5FB", "#FDEDEC", "#E8F8F5", "#F5EEF8", "#FEF9E7", "#EAFAF1" };
-            String[] fgColors = { "#2980B9", "#E74C3C", "#1ABC9C", "#8E44AD", "#F39C12", "#27AE60" };
-            int colorIdx = 0;
-
-            for (Map.Entry<String, Integer> entry : stats.entrySet()) {
-                VBox card = new VBox(4);
-                card.setPadding(new Insets(12, 18, 12, 18));
-                card.setAlignment(Pos.CENTER);
-                String bg = bgColors[colorIdx % bgColors.length];
-                String fg = fgColors[colorIdx % fgColors.length];
-                card.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 10;");
-
-                Label countLabel = new Label(String.valueOf(entry.getValue()));
-                countLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + fg + ";");
-
-                Label nameLabel = new Label(entry.getKey());
-                nameLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + fg + ";");
-
-                card.getChildren().addAll(countLabel, nameLabel);
-                statsContainer.getChildren().add(card);
-                colorIdx++;
-            }
-
-            // Total card
-            int total = stats.values().stream().mapToInt(Integer::intValue).sum();
-            VBox totalCard = new VBox(4);
-            totalCard.setPadding(new Insets(12, 18, 12, 18));
-            totalCard.setAlignment(Pos.CENTER);
-            totalCard.setStyle("-fx-background-color: #2C3E50; -fx-background-radius: 10;");
-
-            Label totalCount = new Label(String.valueOf(total));
-            totalCount.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-            Label totalLabel = new Label("TOTAL");
-            totalLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #BDC3C7;");
-
-            totalCard.getChildren().addAll(totalCount, totalLabel);
-            statsContainer.getChildren().add(totalCard);
-        } catch (SQLException e) {
-            System.out.println("Erreur chargement stats domaine: " + e.getMessage());
-        }
-    }
+    // =========================================================================
+    // Actions
+    // =========================================================================
 
     @FXML
     void handleCoachingClick(ActionEvent event) {
@@ -375,24 +368,18 @@ public class DashboardController {
                 new FileChooser.ExtensionFilter("Fichiers CSV", "*.csv"));
         fileChooser.setInitialFileName("coachs_export.csv");
 
-        // Default to Downloads
         File initialDir = new File(System.getProperty("user.home") + "/Downloads");
-        if (initialDir.exists()) {
+        if (initialDir.exists())
             fileChooser.setInitialDirectory(initialDir);
-        }
 
         File file = fileChooser.showSaveDialog(contentArea.getScene().getWindow());
-        if (file == null) {
-            return; // user cancelled
-        }
+        if (file == null)
+            return;
 
-        // Export whatever is currently in the table (respects search/sort)
         var items = coachTable.getItems();
         try (PrintWriter pw = new PrintWriter(new FileWriter(file, java.nio.charset.StandardCharsets.UTF_8))) {
-            // Header
             pw.println(
                     "nom,prenom,domaine,biographie,experience_annees,tarif_horaire,disponibilite,num_tel,note_moyenne");
-
             for (coach c : items) {
                 pw.println(
                         escapeCsv(c.getNom()) + "," +
@@ -405,21 +392,16 @@ public class DashboardController {
                                 escapeCsv(c.getNumTel()) + "," +
                                 c.getNote());
             }
-
             Alert info = new Alert(Alert.AlertType.INFORMATION);
             info.setTitle("Export CSV");
-            info.setHeaderText("Export termine");
-            info.setContentText(items.size() + " coach(s) exporte(s) vers:\n" + file.getAbsolutePath());
+            info.setHeaderText("Export terminé");
+            info.setContentText(items.size() + " coach(s) exporté(s) vers:\n" + file.getAbsolutePath());
             info.showAndWait();
         } catch (IOException e) {
             showErrorAlert("Erreur export CSV", e.getMessage());
         }
     }
 
-    /**
-     * Escape a field for CSV: wrap in quotes if it contains comma, quote, or
-     * newline.
-     */
     private String escapeCsv(String value) {
         if (value == null)
             return "";

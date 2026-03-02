@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="statRoot" spacing="0" maxWidth="Infinity" maxHeight="Infinity"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="edu.Connexion3A7.Controller.StatController">
+
+    <padding><Insets top="10" right="10" bottom="10" left="10" /></padding>
+
+    <!-- ===== Card wrapper ===== -->
+    <VBox fx:id="chartStudio" spacing="10" VBox.vgrow="ALWAYS"
+          style="-fx-background-color: white; -fx-background-radius: 12;
+                 -fx-border-color: #E8EAED; -fx-border-radius: 12; -fx-border-width: 1;
+                 -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 6, 0, 0, 2);
+                 -fx-padding: 14 14 14 14;">
+
+        <!-- Header row -->
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label styleClass="perf-section-title" text="📊 Performance des Coaches" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="refreshChartBtn" text="↻ Actualiser"
+                    onAction="#handleRefreshChart"
+                    style="-fx-background-color: #EBF5FB; -fx-text-fill: #2980B9;
+                           -fx-font-size: 11px; -fx-padding: 5 12; -fx-background-radius: 8;
+                           -fx-cursor: hand; -fx-border-color: #AED6F1;
+                           -fx-border-radius: 8; -fx-border-width: 1;" />
+        </HBox>
+
+        <!-- Leaderboard scroll area -->
+        <ScrollPane fx:id="chartArea" fitToWidth="true" VBox.vgrow="ALWAYS"
+                    style="-fx-background: transparent; -fx-background-color: transparent;
+                           -fx-border-color: #E8EAED; -fx-border-radius: 8; -fx-border-width: 1;
+                           -fx-background-radius: 8;" />
+
+        <Label fx:id="perfStatusLabel" text=""
+               style="-fx-font-size: 11px; -fx-text-fill: #7F8C8D;" />
+    </VBox>
+
+</VBox>
