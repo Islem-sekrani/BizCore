@@ -9,5 +9,4 @@ module com.gestion {
     
     exports com.gestion;
     exports com.gestion.controllers;
-    exports com.gestion.models;
-}
+    exports com.gestion.models;}
