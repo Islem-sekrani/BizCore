@@ -89,6 +89,7 @@ public class MainClass extends Application {
             blogService = new BlogService();
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainDashboard.fxml"));
+
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1400, 800);
