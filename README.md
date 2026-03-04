@@ -337,3 +337,24 @@ Projet développé dans le cadre de **Connexion3A7**.
 ## 📄 Licence
 
 Ce projet est à usage académique.
+## Contributors
+
+| Name | Role |
+|---|---|
+| Islem Sekrani | Développeur — Module Gestion Coach |
+
+---
+
+## Academic Context
+
+This module was developed as part of the **PIDEV** – 3rd Year Engineering Program  
+at **Esprit School of Engineering – Tunisia**  
+Academic Year: **2025–2026** | Class: **3A7**
+
+---
+
+## Acknowledgments
+
+- **Esprit School of Engineering** for the academic framework
+- **HuggingFace** for the free AI inference API
+- **Twilio** for the SMS service
