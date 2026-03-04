@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body style="display:flex;justify-content:center;align-items:center;height:100vh;">
+
+<form id="form">
+    <div class="g-recaptcha"
+         data-sitekey="6LedT34sAAAAAHwlJe1xmShXVUKOuu9WoiVB7pa5">
+    </div>
+    <br/>
+    <button type="submit">Verify</button>
+</form>
+
+<script>
+    document.getElementById("form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        var response = grecaptcha.getResponse();
+
+        if(response.length === 0) {
+            alert("Please complete reCAPTCHA");
+        } else {
+            window.location.href =
+                "http://localhost:8080/success?token=" + response;
+        }
+    });
+</script>
+
+</body>
+</html>

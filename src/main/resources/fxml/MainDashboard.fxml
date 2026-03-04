@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="@../css/styles.css">
+
+    <!-- SIDEBAR -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="240" spacing="0">
+            <!-- Logo -->
+            <VBox styleClass="logo-section" alignment="CENTER" spacing="5">
+                <padding>
+                    <Insets top="20" bottom="20"/>
+                </padding>
+                <Label text="Bizcore" styleClass="logo-title">
+                    <font>
+                        <Font name="System Bold" size="24"/>
+                    </font>
+                </Label>
+                <!--<Label text="Panel" styleClass="logo-subtitle">
+                    <font>
+                        <Font size="18"/>
+                    </font>
+                </Label>-->
+            </VBox>
+
+            <Separator/>
+
+            <!-- Menu Section -->
+            <VBox fx:id="sidebarMenu" styleClass="menu-section" spacing="5">
+                <padding>
+                    <Insets top="20" left="15" right="15" bottom="10"/>
+                </padding>
+
+                <Label text="GESTION" styleClass="menu-header">
+                    <font>
+                        <Font name="System Bold" size="11"/>
+                    </font>
+                </Label>
+                <Button fx:id="btnDashboard" text="📊  DASHBOARD" styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT"
+                >
+                <padding>
+                    <Insets top="12" bottom="12" left="15" right="15"/>
+                </padding>
+                </Button>
+                <Button fx:id="btnUtilisateurs" text="👤  UTILISATEURS" 
+                        styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT" 
+                       >
+                    <padding>
+                        <Insets top="12" bottom="12" left="15" right="15"/>
+                    </padding>
+                </Button>
+
+                <Button fx:id="btnEvenements" text="📅  ÉVÉNEMENTS" 
+                        styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT" 
+                       >
+                    <padding>
+                        <Insets top="12" bottom="12" left="15" right="15"/>
+                    </padding>
+                </Button>
+
+                <Button fx:id="btnCoaching" text="🎯  COACHING" 
+                        styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT" 
+                       >
+                    <padding>
+                        <Insets top="12" bottom="12" left="15" right="15"/>
+                    </padding>
+                </Button>
+
+                <Button fx:id="btnBlog" text="📝  BLOG" 
+                        styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT" 
+                       >
+                    <padding>
+                        <Insets top="12" bottom="12" left="15" right="15"/>
+                    </padding>
+                </Button>
+
+                <Button fx:id="btnProduits" text="🛍  PRODUITS/COMMANDES" 
+                        styleClass="menu-btn"
+                        maxWidth="Infinity" alignment="CENTER_LEFT" 
+                       >
+                    <padding>
+                        <Insets top="12" bottom="12" left="15" right="15"/>
+                    </padding>
+                </Button>
+            </VBox>
+
+            <!-- Spacer -->
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- User Info Section -->
+            <VBox styleClass="user-info-section" spacing="5" alignment="CENTER">
+                <padding>
+                    <Insets top="15" bottom="20" left="15" right="15"/>
+                </padding>
+                <Separator/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <padding>
+                        <Insets top="15"/>
+                    </padding>
+                    <Label text="👤" styleClass="user-avatar">
+                        <font>
+                            <Font size="24"/>
+                        </font>
+                    </Label>
+                    <VBox spacing="2">
+                        <Label fx:id="lblUserName" text="Admin User" styleClass="user-name">
+                            <font>
+                                <Font name="System Bold" size="13"/>
+                            </font>
+                        </Label>
+                        <Label fx:id="lblUserRole" text="Administrateur" styleClass="user-role">
+                            <font>
+                                <Font size="11"/>
+                            </font>
+                        </Label>
+                        <Button fx:id="btnProfile" text="Profile" styleClass="btn-secondary"/>
+                        <Button fx:id="btnLogout" text="Logout" styleClass="btn-logout"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- MAIN CONTENT -->
+    <center>
+        <VBox styleClass="main-content">
+            <!-- Header -->
+            <HBox styleClass="header" alignment="CENTER_LEFT" spacing="20">
+                <padding>
+                    <Insets top="20" bottom="20" left="30" right="30"/>
+                </padding>
+                <Label text="🏠" styleClass="breadcrumb-icon">
+                    <font>
+                        <Font size="20"/>
+                    </font>
+                </Label>
+                <Label text="/" styleClass="breadcrumb-separator"/>
+                <Label fx:id="lblTitle" text="GESTION UTILISATEURS" styleClass="page-title">
+                    <font>
+                        <Font name="System Bold" size="18"/>
+                    </font>
+                </Label>
+
+                <!-- Spacer -->
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Right side icons -->
+                <Button text="🔔" styleClass="icon-btn">
+                    <font>
+                        <Font size="18"/>
+                    </font>
+                </Button>
+                <Button text="⚙" styleClass="icon-btn">
+                    <font>
+                        <Font size="18"/>
+                    </font>
+                </Button>
+                <!--<Button text="⛶" styleClass="icon-btn">
+                    <font>
+                        <Font size="18"/>
+                    </font>
+                </Button>-->
+            </HBox>
+
+            <!-- Content Area -->
+            <AnchorPane fx:id="contentArea" styleClass="content-area" VBox.vgrow="ALWAYS">
+                <padding>
+                    <Insets top="10" bottom="20" left="30" right="30"/>
+                </padding>
+            </AnchorPane>
+        </VBox>
+    </center>
+
+</BorderPane>
