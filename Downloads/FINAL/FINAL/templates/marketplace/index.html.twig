@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+{% block title %}Marketplace{% endblock %}
+
+{% block body %}
+<style>#content { padding: 0 !important; background: var(--bc-bg); }</style>
+    {# ── MAIN ── #}
+    <div class="bc-main" style="border-radius: 8px; border: 1px solid var(--bc-border);">
+
+        {# Top bar #}
+        <header class="bc-topbar">
+            <button class="btn-icon" id="sidebar-toggle" style="display:none;">☰</button>
+            <div class="marketplace-header" style="margin:0;flex:1;">
+                <h1 style="font-size:22px;margin:0;">Marketplace</h1>
+                <p style="font-size:12px;color:var(--bc-text-light);margin:0;">Découvrez nos meilleurs produits et formations</p>
+            </div>
+
+            {# Search + filter in top bar #}
+            <div class="marketplace-search" style="max-width:340px;">
+                <span style="color:var(--bc-text-light);">🔍</span>
+                <input type="text" id="searchInput" placeholder="Rechercher un produit..." oninput="filterProducts()">
+                <select id="catFilter" onchange="filterProducts()" style="border:none;background:transparent;outline:none;font-size:13px;cursor:pointer;color:var(--bc-text-mid);border-left:1px solid var(--bc-border);padding-left:10px;margin-left:4px;">
+                    <option value="">Toutes catégories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <a href="{{ path('cart_index') }}" class="btn btn-dark" id="cart-btn" style="position:relative;flex-shrink:0;">
+                🛒 Panier <span id="cart-count-top" style="background:var(--bc-teal);border-radius:12px;padding:1px 8px;font-size:11px;margin-left:4px;">{{ cart_count|default(0) }}</span>
+            </a>
+        </header>
+
+        {# Flash messages #}
+        <div style="padding:0 28px;">
+            {% for msg in app.flashes('success') %}
+                <div class="alert alert-success">✅ {{ msg }} <button class="alert-close">×</button></div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="alert alert-danger">⚠ {{ msg }} <button class="alert-close">×</button></div>
+            {% endfor %}
+        </div>
+
+        {# Content #}
+        <div class="bc-content">
+            {% if products is empty %}
+                <div class="bc-empty">
+                    <div class="bc-empty-icon">📦</div>
+                    <h3>Aucun produit disponible</h3>
+                    <p>Les produits seront affichés ici dès qu'ils seront publiés.</p>
+                </div>
+            {% else %}
+                <div class="products-grid" id="productsGrid">
+                    {% for product in products %}
+                    <div class="product-card"
+                         data-name="{{ product.nomProduit|lower }}"
+                         data-cat="{{ product.categorie|lower }}"
+                         data-desc="{{ product.description|lower }}">
+
+                        <div class="product-card-img">
+                            {% if product.imageUrl %}
+                                <img src="{{ product.imageUrl }}" alt="{{ product.nomProduit }}" loading="lazy">
+                            {% else %}
+                                <div class="no-img">📦</div>
+                            {% endif %}
+                            {% if product.categorie %}
+                                <span class="product-cat-badge">{{ product.categorie }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="product-card-body">
+                            <div class="product-card-header">
+                                <div class="product-card-name">{{ product.nomProduit }}</div>
+                                <div class="product-card-price">{{ product.prix }} €</div>
+                            </div>
+                            <div class="product-card-desc">{{ product.description }}</div>
+                            <div class="product-card-stock">
+                                {% if product.stockDisponible > 0 %}
+                                    <span style="color:var(--bc-teal);">✔</span> {{ product.stockDisponible }} en stock
+                                {% else %}
+                                    <span style="color:var(--bc-danger);">✖</span> Rupture de stock
+                                {% endif %}
+                            </div>
+
+                            {% if product.stockDisponible > 0 %}
+                                <form method="post" action="{{ path('cart_add', {id: product.idProduit}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ product.idProduit) }}">
+                                    <button type="submit" class="btn-add-cart">
+                                        🛒 Ajouter au panier
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button class="btn-add-cart" disabled style="background:#CBD5E1;cursor:not-allowed;">
+                                    Indisponible
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <p id="noResults" style="display:none;text-align:center;padding:40px;color:var(--bc-text-light);">
+                    🔍 Aucun produit trouvé pour cette recherche.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function filterProducts() {
+    var q   = document.getElementById('searchInput').value.toLowerCase().trim();
+    var cat = document.getElementById('catFilter').value.toLowerCase();
+    var cards = document.querySelectorAll('.product-card');
+    var visible = 0;
+
+    cards.forEach(function(card) {
+        var name = card.dataset.name || '';
+        var c    = card.dataset.cat  || '';
+        var desc = card.dataset.desc || '';
+        var matchQ   = !q   || name.includes(q) || desc.includes(q);
+        var matchCat = !cat || c.includes(cat);
+        if (matchQ && matchCat) {
+            card.style.display = '';
+            visible++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    var noRes = document.getElementById('noResults');
+    if (noRes) noRes.style.display = visible === 0 ? 'block' : 'none';
+}
+
+// Update cart badge
+(function() {
+    var count = parseInt('{{ cart_count|default(0) }}');
+    var badge = document.getElementById('cart-count-badge');
+    if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+})();
+</script>
+{% endblock %}

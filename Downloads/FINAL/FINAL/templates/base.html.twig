@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Bizcore{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/css/bizcore.css') }}">
+    {% block stylesheets %}{% endblock %}
+    <style>
+        :root {
+            --sidebar-bg: #1a2332;
+            --sidebar-active: #20c997;
+            --accent: #20c997;
+            --accent-dark: #1ab386;
+            --text-sidebar: #8a9aaf;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ═══ SIDEBAR ═══ */
+        #sidebar {
+            width: 220px;
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .sidebar-logo .logo-icon {
+            width: 50px; height: 50px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .sidebar-logo .logo-text {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+        .sidebar-section {
+            margin-bottom: 4px;
+        }
+        .sidebar-section-label {
+            color: var(--text-sidebar);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 12px 20px 8px;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav a i {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .sidebar-nav a:hover {
+            background: rgba(255,255,255,.05);
+            color: #fff;
+        }
+        .sidebar-nav a.active {
+            background: var(--sidebar-active);
+            color: #fff;
+            border-left-color: var(--sidebar-active);
+        }
+        .sidebar-nav a.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(255,255,255,.08);
+            padding: 16px 0;
+        }
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .sidebar-footer a:hover {
+            color: #ff6b6b;
+        }
+        .sidebar-footer a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .sidebar-user {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .sidebar-user-info .name {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .sidebar-user-info .role {
+            color: var(--text-sidebar);
+            font-size: 11px;
+        }
+
+        /* ═══ MAIN WRAPPER ═══ */
+        #main-wrapper {
+            margin-left: 220px;
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ═══ TOPBAR ═══ */
+        #topbar {
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .breadcrumb-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .breadcrumb-bar a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .breadcrumb-bar span.sep {
+            color: #d1d5db;
+        }
+        .breadcrumb-bar .current {
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+        }
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .topbar-icon-btn:hover {
+            background: #e5e7eb;
+        }
+        .topbar-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* ═══ CONTENT ═══ */
+        #content {
+            flex: 1;
+            padding: 28px;
+        }
+
+        /* ═══ BUTTONS ═══ */
+        .btn-success {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: var(--accent-dark);
+            border-color: var(--accent-dark);
+            color: #fff;
+        }
+        .btn-danger {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* ═══ BADGES ═══ */
+        .badge-disponible {
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-indisponible {
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-domain {
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 12px;
+            padding: 3px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ═══ CARD PANEL ═══ */
+        .card-panel {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* ═══ TABLE ═══ */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .data-table thead tr {
+            background: #f9fafb;
+        }
+        .data-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+        .data-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .data-table a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .data-table a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar-badge-soon {
+            font-size: 9px;
+            margin-left: auto;
+            background: #374151;
+            color: #9ca3af;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+{% block layout %}
+{# SIDEBAR #}
+<nav id="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">B</div>
+        <div class="logo-text">Bizcore</div>
+    </div>
+
+    <div class="sidebar-nav">
+        {% block sidebar_content %}
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">{% block nav_section_label %}NAVIGATION{% endblock %}</div>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('dashboard') }}"
+               class="{{ app.request.attributes.get('_route') starts with 'dashboard' ? 'active' : '' }}">
+                <i class="fas fa-tachometer-alt"></i> DASHBOARD
+            </a>
+            <a href="{{ path('dashboard') }}?view=users"
+               class="">
+                <i class="fas fa-users"></i> UTILISATEURS
+            </a>
+            <a href="{{ path('admin_dashboard') }}"
+               class="{{ app.request.attributes.get('_route') starts with 'admin_dashboard' ? 'active' : '' }}">
+                <i class="fas fa-tasks"></i> GESTION PRODUIT
+            </a>
+            {% else %}
+            <a href="{{ path('marketplace_index') }}"
+               class="{{ app.request.attributes.get('_route') starts with 'marketplace' ? 'active' : '' }}">
+                <i class="fas fa-shopping-cart"></i> MARKETPLACE
+            </a>
+            {% endif %}
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('evenement_index') : path('evenement_front') }}"
+               class="{{ app.request.attributes.get('_route') starts with 'evenement' ? 'active' : '' }}">
+                <i class="fas fa-calendar-alt"></i> ÉVÉNEMENTS
+            </a>
+            {% block sidebar_nav %}
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('admin_coach_index') : path('app_coach_index') }}" 
+               class="{{ app.request.attributes.get('_route') starts with 'admin_coach' or app.request.attributes.get('_route') starts with 'app_coach' ? 'active' : '' }}">
+                <i class="fas fa-user-tie"></i> COACHING
+            </a>
+            {% endblock %}
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('article_index') : path('frontend_blog_index') }}"
+               class="{{ app.request.attributes.get('_route') starts with 'frontend_blog' or app.request.attributes.get('_route') starts with 'article' ? 'active' : '' }}">
+                <i class="fas fa-blog"></i> BLOG
+            </a>
+            <a href="{{ path('profile_index') }}"
+               class="{{ app.request.attributes.get('_route') starts with 'profile' ? 'active' : '' }}">
+                <i class="fas fa-user-circle"></i> PROFIL
+            </a>
+        </div>
+        {% endblock %}
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="{{ path('app_logout') }}">
+            <i class="fas fa-sign-out-alt"></i> DÉCONNEXION
+        </a>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+            {{ app.user ? app.user.email|slice(0,1)|upper : 'U' }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="name">
+                {{ app.user ? (app.user.prenom ?? '') ~ ' ' ~ (app.user.nom ?? app.user.email) : 'Utilisateur' }}
+            </div>
+            <div class="role">
+                {{ app.user and 'ROLE_ADMIN' in app.user.roles ? 'Administrateur' : 'Utilisateur' }}
+            </div>
+        </div>
+    </div>
+</nav>
+
+{# MAIN #}
+<div id="main-wrapper">
+    {# TOPBAR #}
+    <div id="topbar">
+        <div class="breadcrumb-bar">
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('dashboard') : path('app_coach_index') }}"><i class="fas fa-home"></i></a>
+            <span class="sep">/</span>
+            {% block breadcrumb %}
+            <span class="current">{% block page_title %}ACCUEIL{% endblock %}</span>
+            {% endblock %}
+        </div>
+        <div class="topbar-actions">
+            {{ include('components/_notification_bell.html.twig') }}
+            <button class="topbar-icon-btn"><i class="fas fa-cog"></i></button>
+            <div class="topbar-avatar">{{ app.user ? app.user.email|slice(0,1)|upper : 'U' }}</div>
+        </div>
+    </div>
+
+    {# CONTENT #}
+    <div id="content">
+        {% block body %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block javascripts %}{% endblock %}
+
+{{ include('components/_success_popup.html.twig') }}
+{{ include('components/_error_popup.html.twig') }}
+</body>
+</html>

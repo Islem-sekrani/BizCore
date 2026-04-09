@@ -1,0 +1,363 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evenement.title }}{% endblock %}
+{% block page_title %}DÉTAIL ÉVÉNEMENT{% endblock %}
+
+{% block body %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
+
+    .navbar {
+        background: #fff; border-bottom: 1px solid #e2e8f0;
+        padding: 0 40px; height: 64px;
+        display: flex; align-items: center; justify-content: space-between;
+        position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .nav-brand { font-size: 20px; font-weight: 800; color: #0f172a; }
+    .nav-brand span { color: #22c55e; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { font-size: 14px; font-weight: 500; color: #64748b; text-decoration: none; }
+    .nav-links a:hover { color: #0f172a; }
+    .nav-cta { background: #22c55e; color: #fff !important; padding: 8px 18px; border-radius: 8px; font-weight: 600 !important; }
+
+    .breadcrumb-bar {
+        background: #fff; border-bottom: 1px solid #e2e8f0;
+        padding: 12px 40px; display: flex; align-items: center; gap: 8px;
+        font-size: 13px; color: #94a3b8;
+    }
+    .breadcrumb-bar a { color: #64748b; text-decoration: none; }
+    .breadcrumb-bar a:hover { color: #22c55e; }
+    .breadcrumb-bar .current { color: #0f172a; font-weight: 500; }
+
+    .page {
+        max-width: 1100px; margin: 40px auto; padding: 0 24px;
+        display: grid; grid-template-columns: 1fr 360px;
+        gap: 28px; align-items: start;
+    }
+
+    /* LEFT */
+    .detail-card {
+        background: #fff; border-radius: 16px;
+        border: 1px solid #e2e8f0; overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .detail-img { width: 100%; height: 340px; object-fit: cover; display: block; }
+    .detail-img-placeholder {
+        height: 340px; display: flex; align-items: center; justify-content: center;
+        font-size: 72px; background: linear-gradient(135deg, #e0f2fe, #f0fdf4);
+    }
+    .detail-body { padding: 28px; }
+    .detail-tags { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .tag-green { background: #dcfce7; color: #16a34a; }
+    .tag-blue  { background: #dbeafe; color: #1d4ed8; }
+    .detail-title { font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1.25; margin-bottom: 18px; letter-spacing: -0.5px; }
+    .detail-meta {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+        margin-bottom: 24px; padding: 20px;
+        background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;
+    }
+    .meta-box { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .meta-value { font-size: 14px; font-weight: 600; color: #0f172a; }
+    .meta-value.green { color: #16a34a; font-size: 18px; font-weight: 800; }
+    .detail-desc-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+    .detail-desc { font-size: 14px; color: #475569; line-height: 1.8; }
+
+    /* RIGHT */
+    .reserve-card {
+        background: #fff; border-radius: 16px;
+        border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        overflow: hidden; position: sticky; top: 80px;
+    }
+    .reserve-header {
+        background: linear-gradient(135deg, #0f172a, #1e3a5f);
+        padding: 24px; color: #fff; text-align: center;
+    }
+    .reserve-price { font-size: 36px; font-weight: 800; color: #22c55e; margin-bottom: 4px; }
+    .reserve-price-label { font-size: 13px; color: #94a3b8; }
+    .reserve-body { padding: 24px; }
+    .reserve-info { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .info-row {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 13px; color: #475569;
+        padding: 10px 14px; background: #f8fafc;
+        border-radius: 8px; border: 1px solid #e2e8f0;
+    }
+    .info-row .info-icon { font-size: 16px; }
+    .info-row strong { color: #0f172a; }
+
+    /* ===== SYMFONY FORM STYLES ===== */
+    .reserve-form { display: flex; flex-direction: column; gap: 12px; }
+
+    .reserve-form .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .reserve-form label {
+        font-size: 11px; font-weight: 700;
+        color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;
+        display: block;
+    }
+
+    .reserve-form input,
+    .reserve-form select,
+    .reserve-form textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px; color: #0f172a;
+        outline: none; transition: border-color 0.2s; background: #fff;
+    }
+
+    .reserve-form input:focus,
+    .reserve-form select:focus,
+    .reserve-form textarea:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+    }
+
+    .reserve-form .form-error {
+        font-size: 11px; color: #dc2626;
+        background: #fee2e2; border-radius: 4px;
+        padding: 3px 8px; margin-top: 3px; display: block;
+    }
+    .form-error { font-size: 12px; font-weight: 600; color: #dc2626; background: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 7px 11px; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+
+
+    .btn-submit {
+        width: 100%; padding: 14px;
+        background: #22c55e; color: #fff;
+        border: none; border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px; font-weight: 700;
+        cursor: pointer; transition: all 0.2s; margin-top: 4px;
+    }
+    .btn-submit:hover {
+        background: #16a34a; transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(34,197,94,0.3);
+    }
+
+    .reserve-note { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 12px; }
+    .reserve-form input.is-invalid,
+    .reserve-form input.is-invalid,
+    .reserve-form select.is-invalid,
+    .reserve-form textarea.is-invalid {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important;
+    }
+
+    .back-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: #64748b; text-decoration: none;
+        font-size: 13px; font-weight: 500;
+        margin-bottom: 20px; transition: color 0.15s;
+    }
+    .back-link:hover { color: #22c55e; }
+
+    .flash { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .flash-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; }
+    .flash-error   { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+
+    /* MODAL */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(15,23,42,0.6); backdrop-filter: blur(4px);
+        z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+        background: #fff; border-radius: 16px; padding: 36px;
+        max-width: 420px; width: 90%; text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-icon { font-size: 48px; margin-bottom: 14px; }
+    .modal h3 { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+    .modal p  { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.6; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btn {
+        flex: 1; padding: 12px; border-radius: 8px;
+        font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+        cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .modal-cancel  { background: #f1f5f9; color: #475569; }
+    .modal-cancel:hover  { background: #e2e8f0; }
+    .modal-confirm { background: #22c55e; color: #fff; }
+    .modal-confirm:hover { background: #16a34a; }
+
+    .footer { background: #0f172a; color: #64748b; text-align: center; padding: 28px; font-size: 13px; margin-top: 60px; }
+    .footer span { color: #22c55e; }
+
+    @media (max-width: 768px) {
+        .page { grid-template-columns: 1fr; }
+        .reserve-card { position: static; }
+    }
+    /* Add inside your <style> block */
+.reserve-form ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.reserve-form ul li {
+    font-size: 11px;
+    color: #dc2626;
+    background: #fee2e2;
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-top: 3px;
+    display: block;
+}
+</style>
+
+<div class="breadcrumb-bar">
+    <a href="#">Accueil</a> ›
+    <a href="{{ path('evenement_front') }}">Événements</a> ›
+    <span class="current">{{ evenement.title }}</span>
+</div>
+
+<div style="max-width:1100px; margin:0 auto; padding:32px 24px 0;">
+    {% for msg in app.flashes('success') %}
+        <div class="flash flash-success">✅ {{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('error') %}
+        <div class="flash flash-error">❌ {{ msg }}</div>
+    {% endfor %}
+    <a href="{{ path('evenement_front') }}" class="back-link">← Retour aux événements</a>
+</div>
+
+<div class="page">
+
+    <!-- LEFT -->
+    <div>
+        <div class="detail-card">
+            {% if evenement.image %}
+                <img src="{{ asset('uploads/' ~ evenement.image) }}" class="detail-img" alt="{{ evenement.title }}">
+            {% else %}
+                <div class="detail-img-placeholder">📅</div>
+            {% endif %}
+
+            <div class="detail-body">
+                <div class="detail-tags">
+                    <span class="tag tag-green">✓ Disponible</span>
+                    <span class="tag tag-blue">📅 Événement</span>
+                </div>
+
+                <h1 class="detail-title">{{ evenement.title }}</h1>
+
+                <div class="detail-meta">
+                    <div class="meta-box">
+                        <span class="meta-label">Prix</span>
+                        <span class="meta-value green">{{ evenement.price }} DT</span>
+                    </div>
+                    <div class="meta-box">
+                        <span class="meta-label">Capacité</span>
+                        <span class="meta-value">{{ evenement.capacity }} places</span>
+                    </div>
+                    <div class="meta-box">
+                        <span class="meta-label">Date</span>
+                        <span class="meta-value">{{ evenement.date ? evenement.date|date('d/m/Y') : 'À confirmer' }}</span>
+                    </div>
+                    <div class="meta-box">
+                        <span class="meta-label">Heure</span>
+                        <span class="meta-value">{{ evenement.date ? evenement.date|date('H:i') : '-' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-desc-title">À propos de cet événement</div>
+                <div class="detail-desc">{{ evenement.description }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: inline Symfony form -->
+    <div class="reserve-card">
+        <div class="reserve-header">
+            <div class="reserve-price">{{ evenement.price }} DT</div>
+            <div class="reserve-price-label">par personne</div>
+        </div>
+
+        <div class="reserve-body">
+            <div class="reserve-info">
+                <div class="info-row">
+                    <span class="info-icon">📆</span>
+                    <div>
+                        <div style="font-size:11px;color:#94a3b8;font-weight:600;">DATE</div>
+                        <strong>{{ evenement.date ? evenement.date|date('d/m/Y à H:i') : 'À confirmer' }}</strong>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">👥</span>
+                    <div>
+                        <div style="font-size:11px;color:#94a3b8;font-weight:600;">PLACES DISPONIBLES</div>
+                        <strong>{{ evenement.capacity }} places</strong>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Symfony form — pointe vers reservation_new ── #}
+            {{ form_start(form, {
+    'method': 'POST',
+    'attr': {'id': 'reserveForm', 'class': 'reserve-form', 'novalidate': 'novalidate'}
+}) }}
+
+    <div class="form-group">
+        {{ form_label(form.nom) }}
+        {{ form_widget(form.nom, {'attr': {'class': form.nom.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+        {% for error in form.nom.vars.errors %}
+            <div class="form-error">⚠ {{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.email) }}
+        {{ form_widget(form.email, {'attr': {'class': form.email.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+        {% for error in form.email.vars.errors %}
+            <div class="form-error">⚠ {{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.telephone) }}
+        {{ form_widget(form.telephone, {'attr': {'class': form.telephone.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+        {% for error in form.telephone.vars.errors %}
+            <div class="form-error">⚠ {{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.nombrePlaces) }}
+        {{ form_widget(form.nombrePlaces, {'attr': {'class': form.nombrePlaces.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+        {% for error in form.nombrePlaces.vars.errors %}
+            <div class="form-error">⚠ {{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    {{ form_rest(form) }}
+
+    <button type="submit" class="btn-submit">🎟 Réserver maintenant</button>
+
+{{ form_end(form) }}
+
+            <div class="reserve-note">🔒 Réservation sécurisée — Annulation gratuite</div>
+        </div>
+    </div>
+    
+</div>
+    
+
+</div>
+
+
+
+<footer class="footer">
+    © 2026 <span>Bizcore</span> — Tous droits réservés
+</footer>
+
+
+
+{% endblock %}

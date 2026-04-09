@@ -1,0 +1,538 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Événements{% endblock %}
+
+{% block page_title %}GESTION ÉVÉNEMENTS{% endblock %}
+
+{% block body %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'DM Sans', sans-serif;
+        background: #f0f4f8;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: #1a1f2e;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+        padding: 24px 20px 20px;
+        font-size: 22px;
+        font-weight: 700;
+        color: #fff;
+        border-bottom: 1px solid #2a3347;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-section {
+        padding: 16px 16px 6px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 6px 10px; }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.15s;
+        margin-bottom: 2px;
+    }
+
+    .nav-item:hover { background: #242a38; color: #e2e8f0; }
+    .nav-item.active { background: #242a38; color: #fff; }
+    .nav-item .nav-icon { width: 16px; text-align: center; font-size: 14px; }
+
+    .sidebar-footer { padding: 16px; border-top: 1px solid #2a3347; }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+    .user-avatar {
+        width: 34px; height: 34px;
+        background: #22c55e;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: #0f1117; font-weight: 700;
+    }
+
+    .user-name { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+    .user-role { font-size: 11px; color: #64748b; }
+    .footer-btns { display: flex; gap: 6px; }
+
+    .btn-profile, .btn-logout {
+        flex: 1; padding: 6px; border-radius: 6px;
+        font-size: 11px; font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        text-align: center; cursor: pointer;
+        border: none; text-decoration: none; display: block;
+    }
+
+    .btn-profile { background: #242a38; color: #94a3b8; }
+    .btn-logout  { background: #ef4444; color: #fff; }
+
+    /* ===== MAIN ===== */
+    .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; }
+
+    /* ===== TOPBAR (original) ===== */
+    .topbar {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 28px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0; z-index: 50;
+    }
+
+    .topbar-left {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 15px; font-weight: 600; color: #1e293b;
+    }
+
+    .topbar-left .home-icon { color: #22c55e; font-size: 18px; }
+    .topbar-left .separator { color: #cbd5e1; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .topbar-icon {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        display: flex; align-items: center; justify-content: center;
+        color: #64748b; cursor: pointer; font-size: 15px;
+    }
+
+    /* ===== CONTENT ===== */
+    .content { padding: 28px; }
+
+    /* ===== STAT CARDS (above table) ===== */
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 16px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sc-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sc-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sc-icon {
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .sc-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1;
+    }
+
+    .sc-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sc-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 4px;
+    }
+
+    .badge-up   { background: #dcfce7; color: #15803d; }
+    .badge-down { background: #fee2e2; color: #dc2626; }
+
+    .sc-spark {
+        width: 80px;
+        height: 32px;
+    }
+
+    /* ===== ACTION BAR ===== */
+    .action-bar {
+        display: flex; align-items: center;
+        gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+
+    .btn-add {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: #22c55e; color: #fff;
+        font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+        padding: 9px 18px; border-radius: 7px; text-decoration: none; transition: all 0.2s;
+    }
+
+    .btn-add:hover { background: #16a34a; }
+
+    .btn-export {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: #fff; color: #475569;
+        font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+        padding: 9px 18px; border-radius: 7px; text-decoration: none;
+        border: 1px solid #e2e8f0; transition: all 0.2s; cursor: pointer;
+    }
+
+    .btn-export:hover { background: #f8fafc; }
+
+    .spacer { flex: 1; }
+
+    .search-box {
+        display: flex; align-items: center; gap: 8px;
+        background: #fff; border: 1px solid #e2e8f0;
+        border-radius: 7px; padding: 8px 14px; width: 220px;
+    }
+
+    .search-box input {
+        border: none; outline: none;
+        font-family: 'DM Sans', sans-serif; font-size: 13px;
+        color: #475569; width: 100%; background: transparent;
+    }
+
+    .search-box .search-icon { color: #94a3b8; font-size: 13px; }
+
+    /* ===== TABLE ===== */
+    .table-card {
+        background: #fff; border: 1px solid #e2e8f0;
+        border-radius: 12px; overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #1e293b; color: #fff; }
+
+    thead th {
+        padding: 13px 16px; text-align: left;
+        font-weight: 600; font-size: 12px; letter-spacing: 0.3px;
+    }
+
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    td { padding: 13px 16px; color: #475569; vertical-align: middle; }
+    td.title-cell { font-weight: 600; color: #1e293b; }
+
+    td .thumb { width: 40px; height: 40px; border-radius: 7px; object-fit: cover; border: 1px solid #e2e8f0; }
+
+    td .no-image {
+        width: 40px; height: 40px; border-radius: 7px;
+        background: #f1f5f9;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; border: 1px solid #e2e8f0;
+    }
+
+    .price-tag {
+        background: #dcfce7; color: #16a34a;
+        font-weight: 700; font-size: 12px;
+        padding: 3px 9px; border-radius: 20px;
+    }
+
+    .action-btns { display: flex; gap: 6px; }
+
+    .btn-icon {
+        width: 32px; height: 32px; border-radius: 7px; border: none;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        font-size: 13px; text-decoration: none; transition: opacity 0.15s;
+    }
+
+    .btn-icon:hover { opacity: 0.8; }
+    .btn-view-ic { background: #0ea5e9; color: #fff; }
+    .btn-edit-ic { background: #f59e0b; color: #fff; }
+    .btn-del-ic  { background: #ef4444; color: #fff; }
+
+    input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #22c55e; }
+
+    .bottom-bar { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; }
+
+    .btn-delete-all {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: #ef4444; color: #fff;
+        font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+        padding: 9px 18px; border-radius: 7px; border: none; cursor: pointer;
+    }
+
+    .btn-delete-all:hover { background: #dc2626; }
+
+    .flash { padding: 11px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .flash-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; }
+    .flash-error   { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+
+    .empty-row td { text-align: center; padding: 60px; color: #94a3b8; font-size: 15px; }
+</style>
+
+{% set total_events   = evenements|length %}
+{% set total_capacity = 0 %}
+{% set total_revenue  = 0 %}
+{% for ev in evenements %}
+    {% set total_capacity = total_capacity + ev.capacity %}
+    {% set total_revenue  = total_revenue  + ev.price %}
+{% endfor %}
+
+            {% for msg in app.flashes('success') %}
+                <div class="flash flash-success">✅ {{ msg }}</div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="flash flash-error">❌ {{ msg }}</div>
+            {% endfor %}
+
+            <!-- ACTION BAR -->
+            <div class="action-bar">
+                <a href="{{ path('evenement_new') }}" class="btn-add">＋ Ajouter un evenement</a>
+                <button class="btn-export" onclick="window.print()">⬆ EXPORT PDF</button>
+                <div class="spacer"></div>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterTable()">
+                </div>
+                
+            </div>
+
+            <!-- ===== STAT CARDS (juste au-dessus du tableau) ===== -->
+            <div class="stat-row">
+
+                <!-- Événements -->
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Événements</span>
+                        <div class="sc-icon" style="background:#E6F1FB;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                                <rect x="1" y="3" width="14" height="12" rx="2" stroke="#378ADD" stroke-width="1.5"/>
+                                <path d="M5 1v4M11 1v4M1 7h14" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ total_events }}</div>
+                    <div class="sc-bottom">
+                        <span class="sc-badge badge-up">↑ +12% ce mois</span>
+                        <canvas class="sc-spark" id="sk-events"></canvas>
+                    </div>
+                </div>
+
+                <!-- Capacité totale -->
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Capacité totale</span>
+                        <div class="sc-icon" style="background:#EAF3DE;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                                <circle cx="6" cy="5" r="3" stroke="#639922" stroke-width="1.5"/>
+                                <path d="M1 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="#639922" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="12" cy="5" r="2" stroke="#639922" stroke-width="1.2"/>
+                                <path d="M12 10c1.66 0 3 1.34 3 3" stroke="#639922" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ total_capacity }}</div>
+                    <div class="sc-bottom">
+                        <span class="sc-badge badge-up">↑ +8% ce mois</span>
+                        <canvas class="sc-spark" id="sk-capacity"></canvas>
+                    </div>
+                </div>
+
+                <!-- Revenus -->
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Revenus</span>
+                        <div class="sc-icon" style="background:#FAEEDA;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="6.5" stroke="#BA7517" stroke-width="1.5"/>
+                                <path d="M8 4v1.5M8 10.5V12M6 7.5c0-.83.67-1.5 2-1.5s2 .67 2 1.5-.67 1.5-2 1.5-2 .67-2 1.5.67 1.5 2 1.5 2-.67 2-1.5" stroke="#BA7517" stroke-width="1.3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ total_revenue }} DT</div>
+                    <div class="sc-bottom">
+                        <span class="sc-badge badge-down">↓ -3% ce mois</span>
+                        <canvas class="sc-spark" id="sk-revenue"></canvas>
+                    </div>
+                </div>
+
+                <!-- Taux remplissage -->
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Remplissage</span>
+                        <div class="sc-icon" style="background:#EEEDFE;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 12L5 8L8 10L11 5L14 7" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="14" cy="7" r="1.5" fill="#534AB7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">72%</div>
+                    <div class="sc-bottom">
+                        <span class="sc-badge badge-up">↑ +5% ce mois</span>
+                        <canvas class="sc-spark" id="sk-fill"></canvas>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /STAT CARDS -->
+
+            <!-- TABLE -->
+            <div class="table-card">
+                <table id="eventsTable">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Prix</th>
+                            <th>Capacité</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evenement in evenements %}
+                        <tr>
+                            <td><input type="checkbox" class="row-check" value="{{ evenement.id }}"></td>
+                            <td>{{ evenement.id }}</td>
+                            <td>
+                                {% if evenement.image %}
+                                    <img src="{{ asset('uploads/' ~ evenement.image) }}" class="thumb" alt="">
+                                {% else %}
+                                    <div class="no-image">📅</div>
+                                {% endif %}
+                            </td>
+                            <td class="title-cell">{{ evenement.title }}</td>
+                            <td>{{ evenement.description|slice(0, 50) ~ '...' }}</td>
+                            <td><span class="price-tag">{{ evenement.price }} DT</span></td>
+                            <td>{{ evenement.capacity }}</td>
+                            <td>{{ evenement.date ? evenement.date|date('d/m/Y') : '-' }}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <a href="{{ path('evenements_show', {'id': evenement.id}) }}" class="btn-icon btn-view-ic" title="Voir">👁</a>
+                                    <a href="{{ path('evenement_edit', {'id': evenement.id}) }}" class="btn-icon btn-edit-ic" title="Modifier">✏</a>
+                                    <form method="post" action="{{ path('evenement_delete', {'id': evenement.id}) }}" style="display:inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                                        <button class="btn-icon btn-del-ic" title="Supprimer" onclick="return confirm('Supprimer ?')">🗑</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row">
+                            <td colspan="9">📭 Aucun événement trouvé</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bottom-bar">
+                <button class="btn-delete-all" onclick="deleteSelected()">🗑 DELETE SELECTED RECORDS</button>
+                <span style="font-size:13px; color:#94a3b8;">
+                    Résultats : {{ evenements|length }} événement{{ evenements|length != 1 ? 's' : '' }}
+                </span>
+            </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+function sparkline(id, data, color) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: data.map((_, i) => i),
+            datasets: [{
+                data: data,
+                borderColor: color,
+                borderWidth: 1.5,
+                pointRadius: 0,
+                fill: true,
+                backgroundColor: color + '22',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: false,
+            animation: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: { x: { display: false }, y: { display: false } }
+        }
+    });
+}
+
+sparkline('sk-events',   [10, 14, 11, 18, 16, 20, {{ total_events }}],    '#378ADD');
+sparkline('sk-capacity', [800, 950, 900, 1100, 1050, 1150, {{ total_capacity }}], '#639922');
+sparkline('sk-revenue',  [9200, 8800, 9100, 8600, 8900, 8700, {{ total_revenue }}], '#BA7517');
+sparkline('sk-fill',     [55, 60, 65, 68, 70, 69, 72], '#534AB7');
+
+function filterTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#eventsTable tbody tr:not(.empty-row)').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+    });
+}
+
+function toggleAll(checkbox) {
+    document.querySelectorAll('.row-check').forEach(c => c.checked = checkbox.checked);
+}
+
+function deleteSelected() {
+    const checked = [...document.querySelectorAll('.row-check:checked')];
+    if (checked.length === 0) { alert('Sélectionnez au moins un événement.'); return; }
+    if (!confirm('Supprimer ' + checked.length + ' événement(s) ?')) return;
+    checked.forEach(c => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/evenement/' + c.value + '/delete';
+        const token = document.createElement('input');
+        token.type = 'hidden'; token.name = '_token';
+        form.appendChild(token);
+        document.body.appendChild(form);
+        form.submit();
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+{% block title %}Ajouter un Article{% endblock %}
+
+{% block body %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f4f8; display: flex; min-height: 100vh; }
+
+    .sidebar { width: 220px; min-height: 100vh; background: #1a1f2e; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 24px 20px 20px; font-size: 22px; font-weight: 700; color: #fff; border-bottom: 1px solid #2a3347; }
+    .sidebar-nav { flex: 1; padding: 6px 10px; }
+    .sidebar-section { padding: 16px 16px 6px; font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px; }
+    .nav-item:hover, .nav-item.active { background: #242a38; color: #fff; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid #2a3347; }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .user-avatar { width: 34px; height: 34px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #0f1117; font-weight: 700; }
+    .footer-btns { display: flex; gap: 6px; }
+    .btn-profile, .btn-logout { flex: 1; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; text-decoration: none; display: block; }
+    .btn-profile { background: #242a38; color: #94a3b8; }
+    .btn-logout { background: #ef4444; color: #fff; }
+
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-left { font-size: 15px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+    .topbar-left .home-icon { color: #22c55e; }
+    .topbar-left a { color: #64748b; text-decoration: none; font-weight: 500; }
+    .topbar-right { display: flex; gap: 12px; }
+    .topbar-icon { width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 15px; }
+
+    .content { padding: 28px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #64748b; text-decoration: none; font-size: 13px; font-weight: 500; margin-bottom: 20px; transition: color 0.15s; }
+    .back-link:hover { color: #22c55e; }
+
+    .form-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); max-width: 860px; }
+    .form-card-header { background: #1e293b; padding: 18px 28px; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: #f1f5f9; }
+    .form-card-header .icon { width: 32px; height: 32px; background: rgba(34,197,94,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #22c55e; font-size: 16px; }
+    .form-body { padding: 28px; }
+
+    .error-summary { background: #fee2e2; border: 1.5px solid #ef4444; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .error-summary strong { display: block; color: #dc2626; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .error-summary ul { padding-left: 20px; color: #b91c1c; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group textarea, .form-group select {
+        padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+        font-family: 'DM Sans', sans-serif; font-size: 14px; color: #0f172a;
+        outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fff; width: 100%;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+    .form-group input.is-invalid, .form-group textarea.is-invalid, .form-group select.is-invalid { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important; }
+    .form-group textarea { resize: vertical; min-height: 200px; }
+    .form-error { font-size: 12px; font-weight: 600; color: #dc2626; background: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 7px 11px; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+
+    .file-upload-wrapper { position: relative; }
+    .file-upload-wrapper input[type="file"] { opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer; z-index: 2; top: 0; left: 0; }
+    .file-upload-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; transition: border-color 0.2s; cursor: pointer; }
+    .file-upload-box:hover { border-color: #22c55e; background: #f0fdf4; }
+    .file-upload-box p { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .file-name { margin-top: 6px; font-size: 13px; color: #16a34a; font-weight: 600; display: none; }
+
+    .form-actions { padding: 20px 28px; border-top: 1px solid #f1f5f9; background: #f8fafc; display: flex; gap: 12px; justify-content: flex-end; }
+    .btn { padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .btn-success:hover { background: #16a34a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
+    .btn-secondary { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; }
+    .btn-secondary:hover { background: #f8fafc; }
+
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+</style>
+
+<div style="display:flex; min-height:100vh;">
+    <aside class="sidebar">
+        <div class="sidebar-brand">Bizcore</div>
+        <div class="sidebar-nav">
+    <div class="sidebar-section">Gestion</div>
+
+    <a href="#" class="nav-item">
+        <span>⊞</span> Dashboard
+    </a>
+
+    <a href="#" class="nav-item">
+        <span>👤</span> Utilisateurs
+    </a>
+
+    <a href="#" class="nav-item">
+        <span>📅</span> Événements
+    </a>
+
+    <a href="#" class="nav-item">
+        <span>🎯</span> Coaching
+    </a>
+
+    <a href="#" class="nav-item">
+        <span>📝</span> Blog
+    </a>
+
+    <a href="{{ path('article_index') }}" class="nav-item active">
+        <span>📰</span> Articles
+    </a>
+
+    <a href="#" class="nav-item">
+        <span>🛍</span> Produits/Commandes
+    </a>
+</div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">A</div>
+                <div>
+                    <div style="font-size:13px; font-weight:600; color:#f1f5f9;">Admin</div>
+                    <div style="font-size:11px; color:#64748b;">Administrateur</div>
+                </div>
+            </div>
+            <div class="footer-btns">
+                <a href="#" class="btn-profile">Profile</a>
+                <a href="#" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="home-icon">⌂</span> /
+                <a href="{{ path('article_index') }}">ARTICLES</a> /
+                <span>AJOUTER</span>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-icon">🔔</div>
+                <div class="topbar-icon">⚙</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <a href="{{ path('article_index') }}" class="back-link">← Retour à la liste</a>
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data', 'class': 'form-card'}}) }}
+
+                <div class="form-card-header">
+                    <div class="icon">📋</div>
+                    Ajouter un nouvel article
+                </div>
+
+                <div class="form-body">
+
+                    {% set hasErrors = false %}
+                    {% for field in form %}{% if field.vars.errors|length > 0 %}{% set hasErrors = true %}{% endif %}{% endfor %}
+                    {% if hasErrors %}
+                    <div class="error-summary">
+                        <strong>⚠️ Veuillez corriger les erreurs suivantes :</strong>
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.vars.errors %}
+                                    <li>{{ field.vars.label }} : {{ error.message }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-grid">
+
+                        <div class="form-group full">
+                            {{ form_label(form.titre) }}
+                            {{ form_widget(form.titre, {'attr': {'class': form.titre.vars.errors|length > 0 ? 'is-invalid' : '', 'placeholder': "Titre de l'article"}}) }}
+                            {% for error in form.titre.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.categorie) }}
+                            {{ form_widget(form.categorie, {'attr': {'class': form.categorie.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+                            {% for error in form.categorie.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.statut) }}
+                            {{ form_widget(form.statut, {'attr': {'class': form.statut.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+                            {% for error in form.statut.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.nombre_vues) }}
+                            {{ form_widget(form.nombre_vues, {'attr': {'class': form.nombre_vues.vars.errors|length > 0 ? 'is-invalid' : '', 'min': 0}}) }}
+                            {% for error in form.nombre_vues.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.image_principale) }}
+                            <div class="file-upload-wrapper">
+                                {{ form_widget(form.image_principale) }}
+                                <div class="file-upload-box">
+                                    <div style="font-size:28px; color:#cbd5e1; margin-bottom:6px;">📎</div>
+                                    <p>Cliquez pour choisir une image</p>
+                                    <p>JPEG, PNG, GIF, WEBP — max 2 Mo</p>
+                                    <div class="file-name" id="file-name-display"></div>
+                                </div>
+                            </div>
+                            {% for error in form.image_principale.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+                        </div>
+
+                        <div class="form-group full">
+                            {{ form_label(form.contenu) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': form.contenu.vars.errors|length > 0 ? 'is-invalid' : '', 'rows': 12, 'placeholder': "Rédigez le contenu de l'article ici..."}}) }}
+                            {% for error in form.contenu.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ path('article_index') }}" class="btn btn-secondary">✕ Annuler</a>
+                    <button type="submit" class="btn btn-success">＋ Publier l'article</button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<script>
+    const fi = document.querySelector('input[type="file"]');
+    const dn = document.getElementById('file-name-display');
+    if (fi && dn) {
+        fi.addEventListener('change', function () {
+            if (this.files && this.files[0]) { dn.textContent = '✅ ' + this.files[0].name; dn.style.display = 'block'; }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+{% block title %}Export PDF — Produits{% endblock %}
+
+{% block stylesheets %}
+<style>
+    @media print {
+        .bc-sidebar, .bc-topbar, .no-print { display: none !important; }
+        .bc-main { margin-left: 0 !important; }
+        .bc-content { padding: 0 !important; }
+        body { background: white !important; }
+        .bc-card { box-shadow: none !important; border: 1px solid #ddd; }
+        table { width: 100% !important; }
+    }
+    .export-header { text-align: center; margin-bottom: 32px; }
+    .export-header h1 { font-size: 28px; font-weight: 800; color: #1A2332; }
+    .export-header p  { color: #7F8C8D; font-size: 14px; margin-top: 4px; }
+    .export-meta { display: flex; gap: 24px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+    .export-meta-item { text-align: center; }
+    .export-meta-item .val { font-size: 24px; font-weight: 800; }
+    .export-meta-item .lbl { font-size: 11px; color: #94A3B8; }
+    .teal { color: #2ECC9B; }
+    .blue { color: #3498DB; }
+    .orange { color: #E67E22; }
+</style>
+{% endblock %}
+
+{% block body %}
+<style>#content { padding: 0 !important; background: var(--bc-bg); }</style>
+    <div class="bc-main">
+        <header class="bc-topbar no-print">
+            <a href="{{ path('admin_dashboard') }}" class="btn-icon" title="Retour" style="font-size:18px;margin-right:4px;">←</a>
+            <span class="bc-topbar-title">📤 Export PDF — Liste des Produits</span>
+            <button onclick="window.print()" class="btn btn-primary btn-sm">🖨 Imprimer / PDF</button>
+        </header>
+
+        <div class="bc-content">
+            <div class="bc-card">
+
+                {# En-tête rapport #}
+                <div class="export-header">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:12px;">
+                        <div class="bc-logo-circle" style="width:52px;height:52px;font-size:22px;">B</div>
+                        <div>
+                            <div style="font-size:22px;font-weight:800;color:#1A2332;">BizCore</div>
+                            <div style="font-size:12px;color:#94A3B8;">Rapport de Gestion Produits</div>
+                        </div>
+                    </div>
+                    <h1>Liste Complète des Produits</h1>
+                    <p>Généré le {{ "now"|date("d/m/Y à H:i") }}</p>
+                </div>
+
+                {# Stats #}
+                {% set totalStock = 0 %}
+                {% set cats = [] %}
+                {% for p in products %}
+                    {% set totalStock = totalStock + p.stockDisponible %}
+                    {% if p.categorie and p.categorie not in cats %}
+                        {% set cats = cats|merge([p.categorie]) %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="export-meta">
+                    <div class="export-meta-item">
+                        <div class="val blue">{{ products|length }}</div>
+                        <div class="lbl">Produits Total</div>
+                    </div>
+                    <div class="export-meta-item">
+                        <div class="val teal">{{ totalStock }}</div>
+                        <div class="lbl">Unités en Stock</div>
+                    </div>
+                    <div class="export-meta-item">
+                        <div class="val orange">{{ cats|length }}</div>
+                        <div class="lbl">Catégories</div>
+                    </div>
+                </div>
+
+                {# Table #}
+                <div class="bc-table-wrap">
+                    <table class="bc-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nom du Produit</th>
+                                <th>Catégorie</th>
+                                <th>Prix</th>
+                                <th>Stock</th>
+                                <th>Statut</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td style="color:var(--bc-text-light);font-size:12px;">{{ loop.index }}</td>
+                                <td><strong>{{ product.nomProduit }}</strong></td>
+                                <td>
+                                    {% if product.categorie %}
+                                        <span class="badge badge-info">{{ product.categorie }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td class="text-teal text-bold">{{ product.prix }} €</td>
+                                <td>
+                                    {% if product.stockDisponible > 10 %}
+                                        <span style="color:var(--bc-green);font-weight:600;">{{ product.stockDisponible }}</span>
+                                    {% elseif product.stockDisponible > 0 %}
+                                        <span style="color:var(--bc-orange);font-weight:600;">{{ product.stockDisponible }}</span>
+                                    {% else %}
+                                        <span style="color:var(--bc-danger);font-weight:600;">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set s = product.statut|lower %}
+                                    {% if s == 'disponible' %}<span class="badge badge-success">{{ product.statut }}</span>
+                                    {% elseif s == 'rupture' %}<span class="badge badge-danger">{{ product.statut }}</span>
+                                    {% elseif s == 'en commande' %}<span class="badge badge-info">{{ product.statut }}</span>
+                                    {% else %}<span class="badge badge-muted">{{ product.statut }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="max-width:260px;font-size:12px;color:var(--bc-text-mid);">
+                                    {{ product.description|slice(0, 80) }}{% if product.description|length > 80 %}…{% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align:center;padding:32px;color:var(--bc-text-light);">
+                                    Aucun produit à exporter.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--bc-border);display:flex;justify-content:space-between;font-size:12px;color:var(--bc-text-light);">
+                    <span>BizCore — Rapport automatique</span>
+                    <span>{{ "now"|date("d/m/Y") }}</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

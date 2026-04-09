@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+{% block title %}Commande Confirmée{% endblock %}
+
+{% block body %}
+<style>#content { padding: 0 !important; background: var(--bc-bg); }</style>
+    <div class="bc-main">
+        <div class="bc-content" style="display:flex;align-items:center;justify-content:center;min-height:80vh;">
+            <div class="bc-card" style="text-align:center;max-width:520px;padding:52px 40px;">
+
+                {% if payment_status == 'paid' %}
+                    <div style="font-size:72px;margin-bottom:20px;animation:bounce .6s ease;">✅</div>
+                    <h2 style="font-size:28px;font-weight:800;color:#1E293B;margin-bottom:8px;">Paiement réussi !</h2>
+                    <p style="color:var(--bc-text-light);margin-bottom:28px;font-size:15px;">
+                        Votre commande de <strong style="color:var(--bc-teal);">{{ amount|number_format(2, '.', '') }} €</strong> a été confirmée.<br>
+                        Merci pour votre achat !
+                    </p>
+                {% else %}
+                    <div style="font-size:72px;margin-bottom:20px;">⏳</div>
+                    <h2 style="font-size:28px;font-weight:800;color:#F59E0B;margin-bottom:8px;">Paiement en attente</h2>
+                    <p style="color:var(--bc-text-light);margin-bottom:28px;font-size:15px;">
+                        Votre paiement de <strong>{{ amount|number_format(2, '.', '') }} €</strong> est en cours de traitement.
+                    </p>
+                {% endif %}
+
+                {# Order details #}
+                <div style="background:var(--bc-bg);border-radius:var(--radius-sm);padding:20px;margin-bottom:28px;font-size:13px;color:var(--bc-text-mid);text-align:left;line-height:2;">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Numéro de commande</span>
+                        <strong style="color:var(--bc-text);">#{{ order_id }}</strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Montant réglé</span>
+                        <strong style="color:var(--bc-teal);">{{ amount|number_format(2, '.', '') }} €</strong>
+                    </div>
+                    {% if customer_email %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Email de confirmation</span>
+                        <strong>{{ customer_email }}</strong>
+                    </div>
+                    {% endif %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Statut Stripe</span>
+                        <strong style="color:{% if payment_status == 'paid' %}#10B981{% else %}#F59E0B{% endif %};">
+                            {{ payment_status == 'paid' ? '✅ Payé' : '⏳ ' ~ payment_status }}
+                        </strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                        <span>Réf. Stripe</span>
+                        <code style="font-size:11px;color:var(--bc-text-light);">{{ stripe_session }}</code>
+                    </div>
+                </div>
+
+                <a href="{{ path('marketplace_index') }}" class="btn btn-primary" style="padding:13px 32px;font-size:14px;">
+                    🛍 Continuer mes achats
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+@keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+</style>
+{% endblock %}

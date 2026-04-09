@@ -1,0 +1,557 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'coachForm'}}) }}
+
+{# ── Dynamic validation alert ── #}
+<div id="validationAlert" role="alert"
+     style="display:none; margin-bottom:18px; padding:14px 18px; border-radius:10px;
+            border-left:5px solid #dc3545; background:#fff5f5; color:#b91c1c;
+            animation: slideIn 0.3s ease-out;">
+    <div style="display:flex; align-items:flex-start; gap:10px;">
+        <i class="fas fa-exclamation-circle" style="font-size:20px; margin-top:2px; flex-shrink:0;"></i>
+        <div>
+            <strong id="validationAlertTitle" style="font-size:14px;">Les champs sont vides</strong>
+            <ul id="validationErrors" style="margin:6px 0 0; padding-left:18px; font-size:13px; line-height:1.6;"></ul>
+        </div>
+        <button type="button" onclick="document.getElementById('validationAlert').style.display='none'"
+                style="margin-left:auto; background:none; border:none; color:#b91c1c; font-size:20px; cursor:pointer; line-height:1; padding:0;">×</button>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+
+    {# Nom and Prénom side by side #}
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Nom</label>
+        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Nom du coach'}}) }}
+        <div class="field-hint" data-field="coach[nom]" style="display:none;color:#dc3545;font-size:11px;margin-top:3px;"></div>
+        {{ form_errors(form.nom) }}
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Prénom</label>
+        {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Prénom du coach'}}) }}
+        <div class="field-hint" data-field="coach[prenom]" style="display:none;color:#dc3545;font-size:11px;margin-top:3px;"></div>
+        {{ form_errors(form.prenom) }}
+    </div>
+
+    {# Biographie full width #}
+    <div class="col-12">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Biographie</label>
+        {{ form_widget(form.biographie, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Description du coach (min 10 caractères)...'}}) }}
+        <div style="display:flex;justify-content:space-between;margin-top:3px;">
+            <div class="field-hint" data-field="coach[biographie]" style="display:none;color:#dc3545;font-size:11px;"></div>
+            <span id="bioCounter" style="font-size:11px;color:#9ca3af;margin-left:auto;">0 / 2000 caractères</span>
+        </div>
+        {{ form_errors(form.biographie) }}
+    </div>
+
+    {# Expérience and Tarif side by side #}
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Expérience (années)</label>
+        {{ form_widget(form.experienceAnnees, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 5'}}) }}
+        <div class="field-hint" data-field="coach[experienceAnnees]" style="display:none;color:#dc3545;font-size:11px;margin-top:3px;"></div>
+        {{ form_errors(form.experienceAnnees) }}
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Tarif (DT/H)</label>
+        {{ form_widget(form.tarifHoraire, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 45,00 DT'}}) }}
+        <div class="field-hint" data-field="coach[tarifHoraire]" style="display:none;color:#dc3545;font-size:11px;margin-top:3px;"></div>
+        {{ form_errors(form.tarifHoraire) }}
+    </div>
+
+    {# Disponibilité #}
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Disponibilité</label>
+        {{ form_widget(form.disponibilite, {'attr': {'class': 'form-select'}}) }}
+        <div class="field-hint" data-field="coach[disponibilite]" style="display:none;color:#dc3545;font-size:11px;margin-top:3px;"></div>
+        {{ form_errors(form.disponibilite) }}
+    </div>
+
+    {# ═══════════════════════════════════════════════════════════
+       DYNAMIC PHONE WIDGET — IP/VPN-aware country detection
+       ═══════════════════════════════════════════════════════════ #}
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Numéro de téléphone</label>
+
+        {# Hidden Symfony field — stores full E.164 value: prefix + local digits #}
+        <div style="display:none;">
+            {{ form_widget(form.numTel, {'id': 'phone-hidden-field'}) }}
+        </div>
+
+        {# Visible composite phone widget #}
+        <div class="input-group" id="phone-widget-group">
+            <span class="input-group-text" id="phone-prefix-box"
+                  style="background:#fff; border-color:#d1d5db; display:flex; align-items:center; gap:8px; padding:6px 12px; min-width:110px;">
+                <img id="phone-flag" src="https://flagcdn.com/w40/tn.png" alt="flag"
+                     style="width:24px; height:16px; border-radius:2px; object-fit:cover;">
+                <span id="phone-prefix" style="color:#374151; font-size:13px; font-weight:600;">+216</span>
+                <i class="fas fa-spinner fa-spin" id="phone-loading"
+                   style="font-size:11px; color:#9ca3af; display:none;"></i>
+            </span>
+            <input type="text" id="phone-local-input" class="form-control"
+                   placeholder="ex: 12345678" maxlength="8"
+                   autocomplete="off"
+                   style="font-size:14px;">
+        </div>
+
+        {# Digit counter #}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <div class="field-hint" data-field="coach[numTel]" style="display:none;color:#dc3545;font-size:11px;"></div>
+            <span id="phone-digit-counter" style="font-size:11px; font-weight:600; color:#9ca3af; margin-left:auto;">
+                0/8
+            </span>
+        </div>
+
+        {# Detection status #}
+        <div id="phone-detection-status" style="font-size:10px; color:#9ca3af; margin-top:2px;">
+            <i class="fas fa-globe" style="margin-right:3px;"></i>
+            Détection du pays...
+        </div>
+
+        {{ form_errors(form.numTel) }}
+    </div>
+
+    {# Domaine #}
+    <div class="col-md-6">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Domaine</label>
+        {{ form_widget(form.domaine, {'attr': {'class': 'form-select'}}) }}
+        <div class="field-hint" data-field="coach[domaine]" style="display:none;color:#dc3545;font-size:11px;margin-top:3px;"></div>
+        {{ form_errors(form.domaine) }}
+    </div>
+
+    {# Certification if exists #}
+    {% if form.certification is defined %}
+    <div class="col-12">
+        <label class="form-label" style="font-size:13px;font-weight:600;color:#374151;">Certification</label>
+        {{ form_widget(form.certification, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.certification) }}
+    </div>
+    {% endif %}
+
+</div>
+
+{# Submit / Cancel buttons #}
+<div class="d-flex gap-2">
+    <button type="submit" class="btn btn-success" id="submitBtn">
+        <i class="fas fa-check"></i> Valider
+    </button>
+    <a href="{{ path('admin_coach_index') }}" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Annuler
+    </a>
+</div>
+
+{{ form_end(form) }}
+
+{# ── Styles ── #}
+<style>
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-5px); }
+    75%      { transform: translateX(5px); }
+}
+.is-invalid-custom {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.2) !important;
+    animation: shake 0.3s ease-in-out;
+}
+.is-valid-custom {
+    border-color: #20c997 !important;
+    box-shadow: 0 0 0 0.2rem rgba(32,201,151,.15) !important;
+}
+/* Phone widget border states */
+#phone-local-input.phone-valid {
+    border-color: #20c997 !important;
+    box-shadow: 0 0 0 0.2rem rgba(32,201,151,.15) !important;
+}
+#phone-local-input.phone-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.2) !important;
+}
+</style>
+
+{# ══════════════════════════════════════════════════════════════════════
+   CLIENT-SIDE: Phone widget + form validation
+   ══════════════════════════════════════════════════════════════════════ #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    var form       = document.getElementById('coachForm');
+    var alertBox   = document.getElementById('validationAlert');
+    var alertTitle = document.getElementById('validationAlertTitle');
+    var errorList  = document.getElementById('validationErrors');
+    var submitBtn  = document.getElementById('submitBtn');
+
+    /* ═══════════════════════════════════════════════
+       PHONE WIDGET — dynamic IP/VPN-aware detection
+       ═══════════════════════════════════════════════ */
+    var phoneState = {
+        countryCode: 'TN',
+        callingCode: '+216',
+        digits: 8,
+        example: '12345678',
+        flagUrl: 'https://flagcdn.com/w40/tn.png',
+        initialized: false
+    };
+
+    var phoneLocalInput  = document.getElementById('phone-local-input');
+    var phoneHiddenField = document.getElementById('phone-hidden-field');
+    var phoneFlag        = document.getElementById('phone-flag');
+    var phonePrefix      = document.getElementById('phone-prefix');
+    var phoneCounter     = document.getElementById('phone-digit-counter');
+    var phoneLoading     = document.getElementById('phone-loading');
+    var phoneStatus      = document.getElementById('phone-detection-status');
+
+    /* Parse existing full number for edit mode */
+    function parseExistingNumber() {
+        var existing = phoneHiddenField ? phoneHiddenField.value : '';
+        if (!existing || !existing.startsWith('+')) return '';
+
+        // Try to strip the detected prefix
+        if (existing.startsWith(phoneState.callingCode)) {
+            return existing.substring(phoneState.callingCode.length);
+        }
+        // Fallback: return everything after the +, stripping calling code by trying common lengths
+        return existing.replace(/^\+\d{1,4}/, '');
+    }
+
+    /* Update the widget visuals from phoneState */
+    function applyPhoneState(preserveInput) {
+        phoneFlag.src = phoneState.flagUrl;
+        phoneFlag.alt = phoneState.countryCode;
+        phonePrefix.textContent = phoneState.callingCode;
+        phoneLocalInput.maxLength = phoneState.digits;
+        phoneLocalInput.placeholder = 'ex: ' + phoneState.example;
+
+        if (!preserveInput) {
+            // In edit mode on first load, try to parse existing number
+            if (!phoneState.initialized) {
+                var localPart = parseExistingNumber();
+                if (localPart) {
+                    phoneLocalInput.value = localPart.slice(0, phoneState.digits);
+                }
+                phoneState.initialized = true;
+            }
+        }
+
+        // Truncate if current input exceeds new max digits
+        if (phoneLocalInput.value.length > phoneState.digits) {
+            phoneLocalInput.value = phoneLocalInput.value.slice(0, phoneState.digits);
+        }
+
+        updatePhoneValidation();
+    }
+
+    /* Update phone validation state (border color + counter) */
+    function updatePhoneValidation() {
+        var val = phoneLocalInput.value;
+        var count = val.length;
+        var required = phoneState.digits;
+        var isValid = (count === required);
+
+        phoneCounter.textContent = count + '/' + required;
+
+        phoneLocalInput.classList.remove('phone-valid', 'phone-invalid');
+
+        if (count === 0) {
+            phoneCounter.style.color = '#9ca3af';
+        } else if (isValid) {
+            phoneCounter.style.color = '#20c997';
+            phoneLocalInput.classList.add('phone-valid');
+        } else {
+            phoneCounter.style.color = '#dc3545';
+            phoneLocalInput.classList.add('phone-invalid');
+        }
+
+        // Compose full E.164 number into hidden field
+        if (count > 0) {
+            phoneHiddenField.value = phoneState.callingCode + val;
+        } else {
+            phoneHiddenField.value = '';
+        }
+    }
+
+    /* Restrict input to digits only */
+    phoneLocalInput.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, phoneState.digits);
+        updatePhoneValidation();
+    });
+
+    /* Prevent non-digit paste */
+    phoneLocalInput.addEventListener('paste', function (e) {
+        var self = this;
+        setTimeout(function () {
+            self.value = self.value.replace(/\D/g, '').slice(0, phoneState.digits);
+            updatePhoneValidation();
+        }, 10);
+    });
+
+    /* Fetch phone country detection from server */
+    var lastDetectedCountry = null;
+    var detectionPollTimer = null;
+    var cachedPublicIp = null;
+
+    function fetchPublicIp() {
+        return fetch('https://api.ipify.org?format=json')
+            .then(function (resp) { return resp.json(); })
+            .then(function (data) {
+                cachedPublicIp = data.ip;
+                return data.ip;
+            })
+            .catch(function () {
+                return cachedPublicIp || null; // use cached if ipify fails
+            });
+    }
+
+    function fetchPhoneDetection() {
+        phoneLoading.style.display = 'inline';
+
+        fetchPublicIp().then(function (publicIp) {
+            var url = '{{ path("admin_coach_phone_detection") }}';
+            if (publicIp) {
+                url += '?ip=' + encodeURIComponent(publicIp);
+            }
+
+            return fetch(url);
+        })
+            .then(function (resp) { return resp.json(); })
+            .then(function (data) {
+                phoneLoading.style.display = 'none';
+
+                if (data && data.countryCode && data.callingCode) {
+                    var countryChanged = (lastDetectedCountry !== null && lastDetectedCountry !== data.countryCode);
+
+                    lastDetectedCountry = data.countryCode;
+                    phoneState.countryCode = data.countryCode;
+                    phoneState.callingCode = data.callingCode;
+                    phoneState.digits      = data.digits;
+                    phoneState.example     = data.example;
+                    phoneState.flagUrl     = data.flagUrl;
+
+                    if (countryChanged) {
+                        // VPN changed — clear stale input
+                        phoneLocalInput.value = '';
+                        phoneStatus.innerHTML = '<i class="fas fa-exchange-alt" style="margin-right:3px;color:#f59e0b;"></i> Pays changé : <strong>' + data.countryCode + '</strong> (' + data.callingCode + ')';
+                    } else {
+                        phoneStatus.innerHTML = '<i class="fas fa-check-circle" style="margin-right:3px;color:#20c997;"></i> Pays détecté : <strong>' + data.countryCode + '</strong> (' + data.callingCode + ')' + (cachedPublicIp ? ' — IP: ' + cachedPublicIp : '');
+                    }
+
+                    applyPhoneState(!countryChanged);
+                }
+            })
+            .catch(function (err) {
+                phoneLoading.style.display = 'none';
+                phoneStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:3px;color:#f59e0b;"></i> Détection échouée — défaut : Tunisie';
+                applyPhoneState(true);
+            });
+    }
+
+    /* Initial detection */
+    fetchPhoneDetection();
+
+    /* Poll every 10 seconds for VPN changes */
+    detectionPollTimer = setInterval(fetchPhoneDetection, 10000);
+
+    /* Stop polling when page is hidden */
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            clearInterval(detectionPollTimer);
+        } else {
+            fetchPhoneDetection();
+            detectionPollTimer = setInterval(fetchPhoneDetection, 10000);
+        }
+    });
+
+
+    /* ═══════════════════════════════════════════════
+       BIO COUNTER
+       ═══════════════════════════════════════════════ */
+    var bioField = form.querySelector('[name="coach[biographie]"]');
+    var bioCtrl  = document.getElementById('bioCounter');
+    if (bioField && bioCtrl) {
+        function updateBio() {
+            var len = bioField.value.length;
+            bioCtrl.textContent = len + ' / 2000 caractères';
+            bioCtrl.style.color = len > 1800 ? '#dc3545' : '#9ca3af';
+        }
+        bioField.addEventListener('input', updateBio);
+        updateBio();
+    }
+
+
+    /* ═══════════════════════════════════════════════
+       FIELD VALIDATION RULES
+       ═══════════════════════════════════════════════ */
+    var fields = {
+        'coach[nom]':              { label: 'Nom',                  minLen: 2,  maxLen: 20,  pattern: /^[a-zA-ZÀ-ÿ\s\-]+$/,   msg: 'Entre 2 et 20 lettres uniquement' },
+        'coach[prenom]':           { label: 'Prénom',               minLen: 2,  maxLen: 20,  pattern: /^[a-zA-ZÀ-ÿ\s\-]+$/,   msg: 'Entre 2 et 20 lettres uniquement' },
+        'coach[biographie]':       { label: 'Biographie',           minLen: 10, maxLen: 2000,                                  msg: 'Au moins 10 caractères (max 2000)' },
+        'coach[experienceAnnees]': { label: "Années d'expérience",  numeric: true, min: 0,   max: 60,                          msg: 'Nombre entre 0 et 60' },
+        'coach[tarifHoraire]':     { label: 'Tarif (DT/H)',         numeric: true, min: 0.01, max: 9999.99,                    msg: 'Nombre positif ≤ 9999.99' },
+        'coach[disponibilite]':    { label: 'Disponibilité',        select: true,                                              msg: 'Veuillez sélectionner une option' },
+        'coach[domaine]':          { label: 'Domaine',              select: true,                                              msg: 'Veuillez sélectionner un domaine' }
+    };
+
+    /* Phone is validated separately via the widget */
+
+    /* ── Helpers ── */
+    function setFieldState(el, valid) {
+        el.classList.remove('is-invalid-custom', 'is-valid-custom');
+        if (valid)  el.classList.add('is-valid-custom');
+        else        el.classList.add('is-invalid-custom');
+    }
+
+    function setHint(fieldName, msg) {
+        var hint = form.querySelector('.field-hint[data-field="' + fieldName + '"]');
+        if (!hint) return;
+        if (msg) { hint.textContent = '⚠ ' + msg; hint.style.display = 'block'; }
+        else     { hint.textContent = '';          hint.style.display = 'none';  }
+    }
+
+    function validateOne(fieldName, rule) {
+        var el = form.querySelector('[name="' + fieldName + '"]');
+        if (!el) return { ok: true };
+        var val = el.value.trim();
+
+        if (!val) return { ok: false, msg: 'Ce champ est obligatoire' };
+        if (rule.minLen  && val.length < rule.minLen)  return { ok: false, msg: rule.msg };
+        if (rule.maxLen  && val.length > rule.maxLen)  return { ok: false, msg: rule.msg };
+        if (rule.pattern && !rule.pattern.test(val))   return { ok: false, msg: rule.msg };
+
+        if (rule.numeric) {
+            var n = parseFloat(val);
+            if (isNaN(n))                                    return { ok: false, msg: rule.msg };
+            if (rule.min !== undefined && n < rule.min)      return { ok: false, msg: rule.msg };
+            if (rule.max !== undefined && n > rule.max)      return { ok: false, msg: rule.msg };
+        }
+        return { ok: true };
+    }
+
+    /* Validate the phone widget */
+    function validatePhone() {
+        var localVal = phoneLocalInput.value;
+        if (!localVal) return { ok: false, msg: 'Ce champ est obligatoire' };
+        if (localVal.length !== phoneState.digits) {
+            return { ok: false, msg: 'Exactement ' + phoneState.digits + ' chiffres requis (' + localVal.length + '/' + phoneState.digits + ')' };
+        }
+        return { ok: true };
+    }
+
+    /* ── Real-time validation on blur / input ── */
+    Object.keys(fields).forEach(function(name) {
+        var rule = fields[name];
+        var el   = form.querySelector('[name="' + name + '"]');
+        if (!el) return;
+
+        el.addEventListener('blur', function() {
+            var res = validateOne(name, rule);
+            setFieldState(el, res.ok);
+            setHint(name, res.ok ? null : res.msg);
+        });
+
+        el.addEventListener('input', function() {
+            if (el.classList.contains('is-invalid-custom')) {
+                var res = validateOne(name, rule);
+                setFieldState(el, res.ok);
+                setHint(name, res.ok ? null : res.msg);
+            }
+        });
+    });
+
+    /* Phone blur validation */
+    phoneLocalInput.addEventListener('blur', function () {
+        var res = validatePhone();
+        setHint('coach[numTel]', res.ok ? null : res.msg);
+    });
+
+
+    /* ══════════════════════════════════════
+       UNIFIED SUBMIT HANDLER
+       ══════════════════════════════════════ */
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var emptyLabels  = [];
+        var invalidLines = [];
+        var firstBad     = null;
+
+        /* Validate regular fields */
+        Object.keys(fields).forEach(function(name) {
+            var rule = fields[name];
+            var el   = form.querySelector('[name="' + name + '"]');
+            if (!el) return;
+
+            var val = el.value.trim();
+
+            if (!val) {
+                emptyLabels.push(rule.label);
+                setFieldState(el, false);
+                setHint(name, 'Ce champ est obligatoire');
+                if (!firstBad) firstBad = el;
+                return;
+            }
+
+            var res = validateOne(name, rule);
+            setFieldState(el, res.ok);
+            setHint(name, res.ok ? null : res.msg);
+            if (!res.ok) {
+                invalidLines.push('<strong>' + rule.label + ' :</strong> ' + res.msg);
+                if (!firstBad) firstBad = el;
+            }
+        });
+
+        /* Validate phone widget */
+        var phoneRes = validatePhone();
+        if (phoneLocalInput.value.trim() === '') {
+            emptyLabels.push('Numéro de téléphone');
+            phoneLocalInput.classList.add('phone-invalid');
+            setHint('coach[numTel]', 'Ce champ est obligatoire');
+            if (!firstBad) firstBad = phoneLocalInput;
+        } else if (!phoneRes.ok) {
+            invalidLines.push('<strong>Numéro de téléphone :</strong> ' + phoneRes.msg);
+            phoneLocalInput.classList.add('phone-invalid');
+            setHint('coach[numTel]', phoneRes.msg);
+            if (!firstBad) firstBad = phoneLocalInput;
+        } else {
+            phoneLocalInput.classList.remove('phone-invalid');
+            phoneLocalInput.classList.add('phone-valid');
+            setHint('coach[numTel]', null);
+        }
+
+        /* Ensure hidden field is composed before submit */
+        updatePhoneValidation();
+
+        /* Build final message list */
+        var lines = [];
+        if (emptyLabels.length > 0) {
+            lines.push('Les champs suivants sont vides : <strong>' + emptyLabels.join(', ') + '</strong>');
+        }
+        invalidLines.forEach(function(l) { lines.push(l); });
+
+        if (lines.length > 0) {
+            alertTitle.textContent = emptyLabels.length > 0
+                ? '⚠️ Les champs sont vides'
+                : '⚠️ Erreurs de validation';
+
+            errorList.innerHTML = lines.map(function(l) { return '<li>' + l + '</li>'; }).join('');
+            alertBox.style.display  = 'block';
+            alertBox.style.animation = 'none';
+            void alertBox.offsetWidth;
+            alertBox.style.animation = 'slideIn 0.3s ease-out';
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            if (firstBad) firstBad.focus();
+
+            clearTimeout(alertBox._timer);
+            alertBox._timer = setTimeout(function() { alertBox.style.display = 'none'; }, 8000);
+
+        } else {
+            /* All valid — submit */
+            alertBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+            form.submit();
+        }
+    });
+});
+</script>

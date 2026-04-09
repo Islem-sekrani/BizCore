@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ mode == 'add' ? 'Ajouter un produit' : 'Modifier ' ~ product.nomProduit }}{% endblock %}
+
+{% block body %}
+<style>#content { padding: 0 !important; background: var(--bc-bg); }</style>
+    {# MAIN #}
+    <div class="bc-main">
+        <header class="bc-topbar">
+            <a href="{{ path('admin_dashboard') }}" class="btn-icon" title="Retour" style="font-size:18px;margin-right:4px;">←</a>
+            <span class="bc-topbar-title">
+                {{ mode == 'add' ? '➕ Ajouter un produit' : '✏️ Modifier le produit' }}
+            </span>
+        </header>
+
+        <div class="bc-content" style="max-width:760px;">
+
+            {% for msg in app.flashes('success') %}
+                <div class="alert alert-success">✅ {{ msg }} <button class="alert-close">×</button></div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="alert alert-danger">⚠ {{ msg }} <button class="alert-close">×</button></div>
+            {% endfor %}
+
+            <div class="bc-card">
+                <div class="bc-card-title">
+                    {{ mode == 'add' ? 'Nouveau Produit' : 'Modifier : ' ~ product.nomProduit }}
+                </div>
+                <div class="bc-card-sub">
+                    {{ mode == 'add' ? 'Remplissez les informations du nouveau produit.' : 'Mettez à jour les informations du produit.' }}
+                </div>
+
+                <form method="post"
+                      action="{{ mode == 'add' ? path('product_add') : path('product_edit', {id: product.idProduit}) }}"
+                      enctype="multipart/form-data"
+                      novalidate
+                      id="productForm">
+
+                    {# Image actuelle #}
+                    {% if mode == 'edit' and product.imageUrl %}
+                    <div style="margin-bottom:20px;text-align:center;">
+                        <img src="{{ product.imageUrl }}" alt="{{ product.nomProduit }}"
+                             style="max-height:140px;border-radius:var(--radius-md);border:2px solid var(--bc-border);object-fit:cover;">
+                        <p style="font-size:12px;color:var(--bc-text-light);margin-top:6px;">Image actuelle</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="nomProduit">Nom du produit *</label>
+                            <input class="form-control" type="text" id="nomProduit" name="nomProduit"
+                                   placeholder="Ex: Formation Python"
+                                   value="{{ mode == 'edit' ? product.nomProduit : '' }}"
+                                   required>
+                            <small style="color:var(--bc-text-light);font-size:11px;">Commence par une majuscule</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="prix">Prix (€) *</label>
+                            <input class="form-control" type="text" id="prix" name="prix"
+                                   placeholder="Ex: 29.99"
+                                   value="{{ mode == 'edit' ? product.prix : '' }}"
+                                   required>
+                            <small style="color:var(--bc-text-light);font-size:11px;">Format : XX.XX (ex: 25.00)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Description *</label>
+                        <textarea class="form-control" id="description" name="description"
+                                  placeholder="Décrivez le produit (minimum 25 caractères)..."
+                                  rows="4" required>{{ mode == 'edit' ? product.description : '' }}</textarea>
+                        <small style="color:var(--bc-text-light);font-size:11px;">Minimum 25 caractères</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="categorie">Catégorie *</label>
+                            <select class="form-control" id="categorie" name="categorie" required>
+                                <option value="">-- Sélectionner --</option>
+                                {% for cat in cats %}
+                                    <option value="{{ cat }}"
+                                        {% if mode == 'edit' and product.categorie == cat %}selected{% endif %}>
+                                        {{ cat }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="statut">Statut *</label>
+                            <select class="form-control" id="statut" name="statut" required>
+                                <option value="">-- Sélectionner --</option>
+                                {% for s in statuts %}
+                                    <option value="{{ s }}"
+                                        {% if mode == 'edit' and product.statut == s %}selected{% endif %}>
+                                        {{ s }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="stockDisponible">Stock disponible</label>
+                        <input class="form-control" type="number" id="stockDisponible" name="stockDisponible"
+                               min="0" placeholder="0"
+                               value="{{ mode == 'edit' ? product.stockDisponible : '0' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="imageFile">
+                            Image du produit {{ mode == 'add' ? '*' : '(laisser vide pour conserver)' }}
+                        </label>
+                        <input class="form-control" type="file" id="imageFile" name="imageFile"
+                               accept="image/*"
+                               {{ mode == 'add' ? 'required' : '' }}
+                               onchange="previewImage(this)">
+                        <div id="imgPreview" style="margin-top:10px;display:none;">
+                            <img id="previewImg" src="" alt="Aperçu"
+                                 style="max-height:120px;border-radius:var(--radius-sm);border:2px dashed var(--bc-teal);object-fit:cover;">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-12 mt-24">
+                        <button type="submit" class="btn btn-primary" style="padding:12px 32px;">
+                            {{ mode == 'add' ? '✅ Ajouter le produit' : '💾 Enregistrer les modifications' }}
+                        </button>
+                        <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary" style="padding:12px 32px;">
+                            Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('imgPreview').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+/* Client-side validation */
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    var nom    = document.getElementById('nomProduit').value.trim();
+    var desc   = document.getElementById('description').value.trim();
+    var prix   = document.getElementById('prix').value.trim();
+    var errors = [];
+
+    if (!/^[A-ZÀÂÇÉÈÊËÎÏÔÙÛÜŸÆŒ]/.test(nom) || nom.length < 2)
+        errors.push('Le nom doit commencer par une majuscule.');
+    if (desc.length < 25)
+        errors.push('La description doit contenir au moins 25 caractères (actuellement ' + desc.length + ').');
+    if (!/^\d+\.\d{2}$/.test(prix) || parseFloat(prix) <= 0)
+        errors.push('Le prix doit être au format XX.XX (ex: 25.00).');
+
+    if (errors.length > 0) {
+        e.preventDefault();
+        var alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger';
+        alertDiv.innerHTML = errors.map(function(err) { return '⚠ ' + err; }).join('<br>') +
+                             ' <button class="alert-close" onclick="this.parentElement.remove()">×</button>';
+        document.querySelector('.bc-card').prepend(alertDiv);
+        window.scrollTo(0, 0);
+    }
+});
+</script>
+{% endblock %}

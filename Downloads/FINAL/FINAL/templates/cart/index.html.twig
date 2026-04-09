@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Panier{% endblock %}
+
+{% block body %}
+<style>#content { padding: 0 !important; background: var(--bc-bg); }</style>
+    {# MAIN #}
+    <div class="bc-main">
+        <header class="bc-topbar">
+            <a href="{{ path('marketplace_index') }}" class="btn-icon" title="Continuer les achats" style="font-size:18px;margin-right:4px;">←</a>
+            <span class="bc-topbar-title">🛒 Mon Panier</span>
+            {% if items is not empty %}
+                <span style="font-size:13px;color:var(--bc-text-light);">{{ items|length }} article(s)</span>
+            {% endif %}
+        </header>
+
+        <div class="bc-content">
+
+            {% for msg in app.flashes('success') %}
+                <div class="alert alert-success">✅ {{ msg }} <button class="alert-close">×</button></div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="alert alert-danger">⚠ {{ msg }} <button class="alert-close">×</button></div>
+            {% endfor %}
+
+            {% if items is empty %}
+                <div class="bc-card">
+                    <div class="bc-empty">
+                        <div class="bc-empty-icon">🛒</div>
+                        <h3>Votre panier est vide</h3>
+                        <p>Parcourez la marketplace pour ajouter des produits à votre panier.</p>
+                        <a href="{{ path('marketplace_index') }}" class="btn btn-primary" style="margin-top:16px;">
+                            🛍 Découvrir les produits
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+            <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;">
+
+                {# ITEMS LIST #}
+                <div class="bc-card" style="padding:0;">
+                    <div style="padding:20px 24px;border-bottom:1px solid var(--bc-border);">
+                        <div class="bc-card-title" style="margin:0;">Articles du panier</div>
+                    </div>
+
+                    {% for item in items %}
+                    <div class="cart-item" style="padding:16px 24px;">
+                        {# Image #}
+                        {% if item.imageUrl %}
+                            <img src="{{ item.imageUrl }}" alt="{{ item.nomProduit }}" class="cart-item-img">
+                        {% else %}
+                            <div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;font-size:32px;">📦</div>
+                        {% endif %}
+
+                        {# Info #}
+                        <div class="cart-item-info" style="flex:1;">
+                            <div class="cart-item-name">{{ item.nomProduit }}</div>
+                            {% if item.categorie %}
+                                <div class="cart-item-cat">{{ item.categorie }}</div>
+                            {% endif %}
+                            <div style="font-size:12px;color:var(--bc-text-light);margin-top:4px;">
+                                {{ item.prix }} € / unité
+                            </div>
+                        </div>
+
+                        {# Quantity controls #}
+                        <div class="cart-item-qty">
+                            <form method="post" action="{{ path('cart_update', {id: item.productId}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cart_update_' ~ item.productId) }}">
+                                <input type="hidden" name="qty" value="{{ item.quantity - 1 }}">
+                                <button type="submit" class="qty-btn" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
+                            </form>
+                            <span class="qty-val">{{ item.quantity }}</span>
+                            <form method="post" action="{{ path('cart_update', {id: item.productId}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cart_update_' ~ item.productId) }}">
+                                <input type="hidden" name="qty" value="{{ item.quantity + 1 }}">
+                                <button type="submit" class="qty-btn">+</button>
+                            </form>
+                        </div>
+
+                        {# Subtotal #}
+                        <div class="cart-item-price">
+                            {{ (item.prix * item.quantity)|number_format(2, '.', ' ') }} €
+                        </div>
+
+                        {# Remove #}
+                        <form method="post" action="{{ path('cart_remove', {id: item.productId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cart_remove_' ~ item.productId) }}">
+                            <button type="submit" class="cart-item-remove" title="Retirer">✕</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+
+                    <div style="padding:16px 24px;border-top:1px solid var(--bc-border);">
+                        <form method="post" action="{{ path('cart_clear') }}" onsubmit="return confirm('Vider le panier ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cart_clear') }}">
+                            <button type="submit" class="btn" style="background:transparent;color:var(--bc-danger);font-size:13px;padding:0;gap:6px;">
+                                🗑 Vider le panier
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {# ORDER SUMMARY #}
+                <div class="cart-summary" style="position:sticky;top:80px;">
+                    <div class="bc-card-title" style="margin-bottom:16px;">Récapitulatif</div>
+
+                    <div class="cart-total-row">
+                        <span>Sous-total</span>
+                        <span>{{ subtotal|number_format(2, '.', ' ') }} €</span>
+                    </div>
+                    <div class="cart-total-row">
+                        <span>Livraison</span>
+                        <span style="color:var(--bc-green);">Gratuite</span>
+                    </div>
+                    <div class="cart-total-row">
+                        <span>Total</span>
+                        <span class="total-val">{{ subtotal|number_format(2, '.', ' ') }} €</span>
+                    </div>
+
+                    <a href="{{ path('payment_index', {total: subtotal}) }}"
+                       class="btn btn-primary w-100"
+                       style="justify-content:center;padding:14px;margin-top:20px;font-size:14px;">
+                        💳 Passer au paiement
+                    </a>
+                    <a href="{{ path('marketplace_index') }}"
+                       class="btn btn-secondary w-100"
+                       style="justify-content:center;padding:12px;margin-top:10px;">
+                        ← Continuer les achats
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    </div>
+
+{% endblock %}

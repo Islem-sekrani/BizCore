@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des Réservations{% endblock %}
+
+{% block body %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f4f8; display: flex; min-height: 100vh; }
+
+    .sidebar { width: 220px; min-height: 100vh; background: #1a1f2e; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 24px 20px 20px; font-size: 22px; font-weight: 700; color: #fff; border-bottom: 1px solid #2a3347; }
+    .sidebar-section { padding: 16px 16px 6px; font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-nav { flex: 1; padding: 6px 10px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px; }
+    .nav-item:hover, .nav-item.active { background: #242a38; color: #fff; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid #2a3347; }
+    .user-avatar { width: 34px; height: 34px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #0f1117; font-weight: 700; }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .footer-btns { display: flex; gap: 6px; }
+    .btn-profile, .btn-logout { flex: 1; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; text-decoration: none; display: block; }
+    .btn-profile { background: #242a38; color: #94a3b8; }
+    .btn-logout { background: #ef4444; color: #fff; }
+
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-left { font-size: 15px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+    .topbar-left .home-icon { color: #22c55e; }
+    .topbar-right { display: flex; gap: 12px; }
+    .topbar-icon { width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 15px; }
+
+    .content { padding: 28px; }
+
+    .action-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .spacer { flex: 1; }
+    .search-box { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 14px; width: 220px; }
+    .search-box input { border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: #475569; width: 100%; background: transparent; }
+
+    .table-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #1e293b; color: #fff; }
+    thead th { padding: 13px 16px; text-align: left; font-weight: 600; font-size: 12px; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    td { padding: 13px 16px; color: #475569; vertical-align: middle; }
+    td.bold { font-weight: 600; color: #1e293b; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-green { background: #dcfce7; color: #16a34a; }
+    .badge-red { background: #fee2e2; color: #dc2626; }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn-icon { width: 32px; height: 32px; border-radius: 7px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; text-decoration: none; transition: opacity 0.15s; }
+    .btn-icon:hover { opacity: 0.8; }
+    .btn-edit-ic { background: #f59e0b; color: #fff; }
+    .btn-del-ic { background: #ef4444; color: #fff; }
+
+    .bottom-bar { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; }
+    .btn-delete-all { display: inline-flex; align-items: center; gap: 7px; background: #ef4444; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 7px; border: none; cursor: pointer; }
+
+    .flash { padding: 11px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .flash-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; }
+    .flash-error { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+
+    input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #22c55e; }
+</style>
+
+<div style="display:flex; min-height:100vh;">
+    <aside class="sidebar">
+        <div class="sidebar-brand">Bizcore</div>
+        <div class="sidebar-nav">
+            <div class="sidebar-section">Gestion</div>
+            <a href="#" class="nav-item">⊞ Dashboard</a>
+            <a href="#" class="nav-item">👤 Utilisateurs</a>
+            <a href="{{ path('evenement_index') }}" class="nav-item">📅 Événements</a>
+            <a href="{{ path('reservation_index') }}" class="nav-item active">🎟 Réservations</a>
+            <a href="#" class="nav-item">🎯 Coaching</a>
+            <a href="#" class="nav-item">📝 Blog</a>
+            <a href="#" class="nav-item">🛍 Produits/Commandes</a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">A</div>
+                <div>
+                    <div style="font-size:13px; font-weight:600; color:#f1f5f9;">Admin</div>
+                    <div style="font-size:11px; color:#64748b;">Administrateur</div>
+                </div>
+            </div>
+            <div class="footer-btns">
+                <a href="#" class="btn-profile">Profile</a>
+                <a href="#" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="home-icon">⌂</span> / GESTION RÉSERVATIONS
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-icon">🔔</div>
+                <div class="topbar-icon">⚙</div>
+            </div>
+        </div>
+
+        <div class="content">
+            {% for msg in app.flashes('success') %}
+                <div class="flash flash-success">✅ {{ msg }}</div>
+            {% endfor %}
+
+            <div class="action-bar">
+                <div class="spacer"></div>
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" placeholder="Rechercher..." onkeyup="filterTable()">
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table id="resTable">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                            <th>ID</th>
+                            <th>Événement</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Places</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reservations %}
+                        <tr>
+                            <td><input type="checkbox" class="row-check" value="{{ r.id }}"></td>
+                            <td>{{ r.id }}</td>
+                            <td class="bold">{{ r.evenement.title }}</td>
+                            <td class="bold">{{ r.nom }}</td>
+                            <td>{{ r.email }}</td>
+                            <td>{{ r.telephone }}</td>
+                            <td>{{ r.nombrePlaces }}</td>
+                            <td>
+                                <span class="badge {{ r.statut == 'confirmé' ? 'badge-green' : 'badge-red' }}">
+                                    {{ r.statut|capitalize }}
+                                </span>
+                            </td>
+                            <td>{{ r.dateReservation ? r.dateReservation|date('d/m/Y H:i') : '-' }}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <a href="{{ path('reservation_edit', {'id': r.id}) }}" class="btn-icon btn-edit-ic" title="Modifier">✏</a>
+                                    <form method="post" action="{{ path('reservation_admin_delete', {'id': r.id}) }}" style="display:inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ r.id) }}">
+                                        <button class="btn-icon btn-del-ic" onclick="return confirm('Supprimer ?')" title="Supprimer">🗑</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="10" style="text-align:center; padding:50px; color:#94a3b8;">📭 Aucune réservation</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bottom-bar">
+                <button class="btn-delete-all" onclick="deleteSelected()">🗑 DELETE SELECTED RECORDS</button>
+                <span style="font-size:13px; color:#94a3b8;">{{ reservations|length }} réservation{{ reservations|length != 1 ? 's' : '' }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const val = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#resTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+    });
+}
+function toggleAll(cb) { document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked); }
+function deleteSelected() {
+    const checked = [...document.querySelectorAll('.row-check:checked')];
+    if (!checked.length) { alert('Sélectionnez au moins une réservation.'); return; }
+    if (!confirm('Supprimer ' + checked.length + ' réservation(s) ?')) return;
+    checked.forEach(c => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/reservation/' + c.value + '/admin-delete';
+        const t = document.createElement('input');
+        t.type = 'hidden'; t.name = '_token'; t.value = '';
+        form.appendChild(t);
+        document.body.appendChild(form);
+        form.submit();
+    });
+}
+</script>
+{% endblock %}

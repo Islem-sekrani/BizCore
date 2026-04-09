@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques Coachs - Bizcore{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-graph-up me-2"></i>Statistiques des Coachs
+        </h2>
+        <a href="{{ path('admin_coach_index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill text-primary fs-1 mb-2"></i>
+                    <h3 class="mb-0">{{ stats.total }}</h3>
+                    <p class="text-muted mb-0">Total Coachs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle-fill text-success fs-1 mb-2"></i>
+                    <h3 class="mb-0">{{ stats.disponibles }}</h3>
+                    <p class="text-muted mb-0">Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-x-circle-fill text-danger fs-1 mb-2"></i>
+                    <h3 class="mb-0">{{ stats.indisponibles }}</h3>
+                    <p class="text-muted mb-0">Indisponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-star-fill text-warning fs-1 mb-2"></i>
+                    <h3 class="mb-0">{{ stats.note_moyenne }}/5</h3>
+                    <p class="text-muted mb-0">Note Moyenne</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="row g-3">
+        <!-- Répartition par Domaine -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-0">
+                        <i class="bi bi-briefcase text-primary me-2"></i>Répartition par Domaine
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Domaine</th>
+                                <th class="text-end">Nombre</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for domaine, count in stats.par_domaine %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-info">{{ domaine }}</span>
+                                </td>
+                                <td class="text-end">{{ count }}</td>
+                                <td class="text-end">
+                                    {{ ((count / stats.total) * 100)|round(1) }}%
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Répartition par Expérience -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-0">
+                        <i class="bi bi-award text-success me-2"></i>Répartition par Expérience
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Expérience</th>
+                                <th class="text-end">Nombre</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for range, count in stats.par_experience %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">{{ range }}</span>
+                                </td>
+                                <td class="text-end">{{ count }}</td>
+                                <td class="text-end">
+                                    {{ ((count / stats.total) * 100)|round(1) }}%
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarif Moyen -->
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-dollar text-success fs-1 mb-2"></i>
+                    <h3 class="mb-0">{{ stats.tarif_moyen }} DT/H</h3>
+                    <p class="text-muted mb-0">Tarif Horaire Moyen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

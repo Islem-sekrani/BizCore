@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier — {{ coach.prenom }} {{ coach.nom }}{% endblock %}
+{% block page_title %}Modifier Coach{% endblock %}
+{% block nav_section_label %}Front Office{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ path('app_coach_index') }}" class="{{ app.request.attributes.get('_route') starts with 'app_coach' ? 'active' : '' }}">
+    <i class="fas fa-users"></i> Coachs
+</a>
+<a href="{{ path('admin_coach_index') }}" class=""><i class="fas fa-lock"></i> Administration</a>
+{% endblock %}
+
+{% block body %}
+<div style="max-width:820px;">
+
+    <div style="margin-bottom:20px;">
+        <a href="{{ path('app_coach_show', {'id': coach.idCoach}) }}" style="color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;">
+            <i class="fas fa-arrow-left"></i> Retour au profil
+        </a>
+    </div>
+
+    <div class="card-panel">
+        <div style="border-bottom:1px solid #f1f5f9;padding-bottom:16px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+            <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;">
+                <i class="fas fa-pen"></i>
+            </div>
+            <div>
+                <h2 style="font-size:17px;font-weight:700;color:#111827;margin:0;">Modifier : {{ coach.prenom }} {{ coach.nom }}</h2>
+                <p style="font-size:12px;color:#6b7280;margin:2px 0 0;">Coach #{{ coach.idCoach }}</p>
+            </div>
+        </div>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label-custom">Nom <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.nom) }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-custom">Prénom <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.prenom, {'attr': {'class': 'form-control-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.prenom) }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-custom">Domaine <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.domaine, {'attr': {'class': 'form-select-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.domaine) }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-custom">Disponibilité <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.disponibilite, {'attr': {'class': 'form-select-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.disponibilite) }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-custom">Années d'expérience <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.experienceAnnees, {'attr': {'class': 'form-control-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.experienceAnnees) }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-custom">Tarif horaire (TND) <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.tarifHoraire, {'attr': {'class': 'form-control-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.tarifHoraire) }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-custom">Numéro de téléphone <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.numTel, {'attr': {'class': 'form-control-custom'}}) }}
+                <div class="field-error">{{ form_errors(form.numTel) }}</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label-custom">Biographie <span style="color:#ef4444;">*</span></label>
+                {{ form_widget(form.biographie, {'attr': {'class': 'form-control-custom', 'id': 'biographie'}}) }}
+                <div style="display:flex;justify-content:space-between;margin-top:3px;">
+                    <div class="field-error">{{ form_errors(form.biographie) }}</div>
+                    <span style="font-size:11px;color:#9ca3af;" id="bioCounter">0 / 2000 caractères</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid #f1f5f9;display:flex;gap:10px;">
+            <button type="submit" class="btn-teal" style="padding:10px 24px;">
+                <i class="fas fa-check"></i> Enregistrer les modifications
+            </button>
+            <a href="{{ path('app_coach_show', {'id': coach.idCoach}) }}" class="btn-outline-teal" style="padding:10px 20px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const b = document.getElementById('biographie'), c = document.getElementById('bioCounter');
+if (b && c) { const u = () => { const l = b.value.length; c.textContent = `${l} / 2000 caractères`; c.style.color = l > 1800 ? '#ef4444' : '#9ca3af'; }; b.addEventListener('input', u); u(); }
+</script>
+{% endblock %}

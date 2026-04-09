@@ -1,0 +1,70 @@
+{# Shared form fields for Article — included by new.html.twig and edit.html.twig #}
+
+{% set hasErrors = false %}
+{% for field in form %}{% if field.vars.errors|length > 0 %}{% set hasErrors = true %}{% endif %}{% endfor %}
+{% if hasErrors %}
+<div class="error-summary">
+    <strong>⚠️ Veuillez corriger les erreurs suivantes :</strong>
+    <ul>
+        {% for field in form %}
+            {% for error in field.vars.errors %}
+                <li>{{ field.vars.label }} : {{ error.message }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="form-grid">
+
+    <div class="form-group full">
+        {{ form_label(form.titre) }}
+        {{ form_widget(form.titre, {'attr': {'class': form.titre.vars.errors|length > 0 ? 'is-invalid' : '', 'placeholder': "Titre de l'article"}}) }}
+        {% for error in form.titre.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.categorie) }}
+        {{ form_widget(form.categorie, {'attr': {'class': form.categorie.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+        {% for error in form.categorie.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.statut) }}
+        {{ form_widget(form.statut, {'attr': {'class': form.statut.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+        {% for error in form.statut.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.nombre_vues) }}
+        {{ form_widget(form.nombre_vues, {'attr': {'class': form.nombre_vues.vars.errors|length > 0 ? 'is-invalid' : '', 'min': 0}}) }}
+        {% for error in form.nombre_vues.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.image_principale) }}
+        {% if article.imagePrincipale is defined and article.imagePrincipale %}
+            <div class="current-image">
+                <img src="{{ asset('uploads/' ~ article.imagePrincipale) }}" alt="Image actuelle">
+                <span>Image actuelle — choisissez-en une nouvelle pour remplacer</span>
+            </div>
+        {% endif %}
+        <div class="file-upload-wrapper">
+            {{ form_widget(form.image_principale) }}
+            <div class="file-upload-box">
+                <div style="font-size:28px;color:#cbd5e1;margin-bottom:6px;">📎</div>
+                <p>Cliquez pour choisir une image</p>
+                <p>JPEG, PNG, GIF, WEBP — max 2 Mo</p>
+                <div class="file-name" id="file-name-display"></div>
+            </div>
+        </div>
+        {% for error in form.image_principale.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group full">
+        {{ form_label(form.contenu) }}
+        {{ form_widget(form.contenu, {'attr': {'class': form.contenu.vars.errors|length > 0 ? 'is-invalid' : '', 'rows': 12, 'placeholder': "Rédigez le contenu de l'article..."}}) }}
+        {% for error in form.contenu.vars.errors %}<div class="form-error">⚠ {{ error.message }}</div>{% endfor %}
+    </div>
+
+</div>

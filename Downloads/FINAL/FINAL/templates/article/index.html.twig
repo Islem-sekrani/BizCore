@@ -1,0 +1,331 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ mode == 'admin' ? 'Gestion des Articles' : 'Blog' }}{% endblock %}
+
+{% block page_title %}{{ mode == 'admin' ? 'GESTION ARTICLES' : 'BLOG' }}{% endblock %}
+
+{% block body %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f4f8; display: flex; min-height: 100vh; }
+
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: #1a1f2e;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+.sidebar-brand { padding: 24px 20px 20px; font-size: 22px; font-weight: 700; color: #fff; border-bottom: 1px solid #2a3347; letter-spacing: 0.5px; }
+    .sidebar-section { padding: 16px 16px 6px; font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-nav { flex: 1; padding: 6px 10px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px; }
+    .nav-item:hover { background: #242a38; color: #e2e8f0; }
+    .nav-item.active { background: #242a38; color: #fff; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid #2a3347; }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .user-avatar { width: 34px; height: 34px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #0f1117; font-weight: 700; }
+    .user-name { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+    .user-role { font-size: 11px; color: #64748b; }
+    .footer-btns { display: flex; gap: 6px; }
+    .btn-profile, .btn-logout { flex: 1; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif; text-align: center; cursor: pointer; border: none; text-decoration: none; display: block; }
+    .btn-profile { background: #242a38; color: #94a3b8; }
+    .btn-logout  { background: #ef4444; color: #fff; }
+
+    .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; min-width: 0; }
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-left { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: #1e293b; }
+    .topbar-left .home-icon { color: #22c55e; font-size: 18px; }
+    .topbar-left .separator { color: #cbd5e1; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-icon { width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; font-size: 15px; }
+
+    .content { padding: 28px; }
+
+    .stat-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px 10px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+    .sc-top { display: flex; align-items: center; justify-content: space-between; }
+    .sc-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sc-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .sc-value { font-size: 22px; font-weight: 700; color: #1e293b; line-height: 1; }
+    .sc-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .sc-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+    .badge-up   { background: #dcfce7; color: #15803d; }
+    .badge-grey { background: #f1f5f9; color: #64748b; }
+    .sc-spark { width: 80px; height: 32px; }
+
+    .action-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .btn-add { display: inline-flex; align-items: center; gap: 7px; background: #22c55e; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; padding: 9px 18px; border-radius: 7px; text-decoration: none; transition: all 0.2s; }
+    .btn-add:hover { background: #16a34a; }
+    .btn-export { display: inline-flex; align-items: center; gap: 7px; background: #fff; color: #475569; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 7px; text-decoration: none; border: 1px solid #e2e8f0; transition: all 0.2s; cursor: pointer; }
+    .btn-export:hover { background: #f8fafc; }
+    .spacer { flex: 1; }
+    .search-box { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 14px; width: 220px; }
+    .search-box input { border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: #475569; width: 100%; background: transparent; }
+    .search-box .search-icon { color: #94a3b8; font-size: 13px; }
+
+    .table-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #1e293b; color: #fff; }
+    thead th { padding: 13px 16px; text-align: left; font-weight: 600; font-size: 12px; letter-spacing: 0.3px; }
+    thead th a { color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    thead th a:hover { color: #22c55e; }
+    thead th a.sort-active { color: #22c55e; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    td { padding: 13px 16px; color: #475569; vertical-align: middle; }
+    td.title-cell { font-weight: 600; color: #1e293b; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .thumb { width: 40px; height: 40px; border-radius: 7px; object-fit: cover; border: 1px solid #e2e8f0; }
+    .no-image { width: 40px; height: 40px; border-radius: 7px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid #e2e8f0; }
+
+    .cat-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #dbeafe; color: #1d4ed8; }
+    .status-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .status-publié    { background: #dcfce7; color: #16a34a; }
+    .status-brouillon { background: #fef9c3; color: #a16207; }
+    .status-archivé   { background: #f1f5f9; color: #64748b; }
+
+    .views-tag { font-size: 12px; font-weight: 600; color: #64748b; }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn-icon { width: 32px; height: 32px; border-radius: 7px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; text-decoration: none; transition: opacity 0.15s; }
+    .btn-icon:hover { opacity: 0.8; }
+    .btn-view-ic { background: #0ea5e9; color: #fff; }
+    .btn-edit-ic { background: #f59e0b; color: #fff; }
+    .btn-del-ic  { background: #ef4444; color: #fff; }
+
+    input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #22c55e; }
+
+    .bottom-bar { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; }
+    .btn-delete-all { display: inline-flex; align-items: center; gap: 7px; background: #ef4444; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 7px; border: none; cursor: pointer; }
+    .btn-delete-all:hover { background: #dc2626; }
+
+    .flash { padding: 11px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .flash-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; }
+    .flash-error   { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+
+    .empty-row td { text-align: center; padding: 60px; color: #94a3b8; font-size: 15px; }
+    .excerpt { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
+
+    .user-mode-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; font-size: 13px; color: #1d4ed8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+</style>
+
+{% set total       = articles|length %}
+{% set published   = articles|filter(a => a.statut == 'publié')|length %}
+{% set drafts      = articles|filter(a => a.statut == 'brouillon')|length %}
+{% set total_views = 0 %}
+{% for a in articles %}{% set total_views = total_views + a.nombreVues %}{% endfor %}
+
+{% macro sort_link(label, field, currentSortBy, currentSortDir, routeName) %}
+    {% set newDir = (currentSortBy == field and currentSortDir == 'ASC') ? 'DESC' : 'ASC' %}
+    {% set arrow = '' %}
+    {% if currentSortBy == field %}
+        {% set arrow = currentSortDir == 'ASC' ? ' ▲' : ' ▼' %}
+    {% endif %}
+    <a href="{{ path(routeName, {sortBy: field, sortDir: newDir}) }}"
+       class="{{ currentSortBy == field ? 'sort-active' : '' }}">
+        {{ label }}{{ arrow }}
+    </a>
+{% endmacro %}
+
+{% set indexRoute = (mode == 'admin') ? 'article_index' : 'frontend_blog_index' %}
+
+<div style="display:flex; min-height:100vh; width:100vw;">
+
+   
+    <div class="main">
+
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="home-icon">⌂</span>
+                <span class="separator">/</span>
+                <span>{{ mode == 'admin' ? 'GESTION BLOG' : 'BLOG PUBLIC' }}</span>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-icon">🔔</div>
+                {% if mode == 'admin' %}<div class="topbar-icon">⚙</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="content">
+
+            {% for msg in app.flashes('success') %}
+                <div class="flash flash-success">✅ {{ msg }}</div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="flash flash-error">❌ {{ msg }}</div>
+            {% endfor %}
+
+            {% if mode == 'user' %}
+                <div class="user-mode-banner">
+                    🌐 <strong>Mode lecture</strong> — Vue publique du blog. Les actions d'administration sont désactivées.
+                    &nbsp;<a href="{{ path('article_index') }}" style="color:#1d4ed8; font-weight:600;">Accéder à l'admin →</a>
+                </div>
+            {% endif %}
+
+            <div class="action-bar">
+                {% if mode == 'admin' %}
+                    <a href="{{ path('article_new') }}" class="btn-add">＋ ADD NEW</a>
+                    <button class="btn-export" onclick="window.print()">⬆ EXPORT PDF</button>
+                {% endif %}
+                <div class="spacer"></div>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterTable()">
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Total articles</span>
+                        <div class="sc-icon" style="background:#E6F1FB;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#378ADD" stroke-width="1.5"/><path d="M5 6h6M5 9h4" stroke="#378ADD" stroke-width="1.3" stroke-linecap="round"/></svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ total }}</div>
+                    <div class="sc-bottom"><span class="sc-badge badge-up">↑ {{ total }} total</span><canvas class="sc-spark" id="sk1"></canvas></div>
+                </div>
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Publiés</span>
+                        <div class="sc-icon" style="background:#EAF3DE;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#639922" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="#639922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ published }}</div>
+                    <div class="sc-bottom"><span class="sc-badge badge-up">actifs</span><canvas class="sc-spark" id="sk2"></canvas></div>
+                </div>
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Brouillons</span>
+                        <div class="sc-icon" style="background:#FEF9C3;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 12L10 5l2 2-7 7H3v-2z" stroke="#BA7517" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ drafts }}</div>
+                    <div class="sc-bottom"><span class="sc-badge badge-grey">en attente</span><canvas class="sc-spark" id="sk3"></canvas></div>
+                </div>
+                <div class="stat-card">
+                    <div class="sc-top">
+                        <span class="sc-label">Total vues</span>
+                        <div class="sc-icon" style="background:#EEEDFE;">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="7" ry="4.5" stroke="#534AB7" stroke-width="1.5"/><circle cx="8" cy="8" r="2" stroke="#534AB7" stroke-width="1.3"/></svg>
+                        </div>
+                    </div>
+                    <div class="sc-value">{{ total_views }}</div>
+                    <div class="sc-bottom"><span class="sc-badge badge-up">↑ cumulées</span><canvas class="sc-spark" id="sk4"></canvas></div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table id="articleTable">
+                    <thead>
+                        <tr>
+                            {% if mode == 'admin' %}
+                                <th style="width:40px;"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                            {% endif %}
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>{{ _self.sort_link('Titre', 'titre', sortBy, sortDir, indexRoute) }}</th>
+                            <th>{{ _self.sort_link('Catégorie', 'categorie', sortBy, sortDir, indexRoute) }}</th>
+                            <th>Statut</th>
+                            <th>{{ _self.sort_link('Vues', 'nombre_vues', sortBy, sortDir, indexRoute) }}</th>
+                            <th>Contenu</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for article in articles %}
+                        <tr>
+                            {% if mode == 'admin' %}
+                                <td><input type="checkbox" class="row-check" value="{{ article.idArticle }}"></td>
+                            {% endif %}
+                            <td>{{ article.idArticle }}</td>
+                            <td>
+                                {% if article.imagePrincipale %}
+                                    <img src="{{ asset('uploads/' ~ article.imagePrincipale) }}" class="thumb" alt="">
+                                {% else %}
+                                    <div class="no-image">📰</div>
+                                {% endif %}
+                            </td>
+                            <td class="title-cell">{{ article.titre }}</td>
+                            <td>
+                                {% if article.categorie %}<span class="cat-badge">{{ article.categorie }}</span>{% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if article.statut %}<span class="status-badge status-{{ article.statut }}">{{ article.statut|capitalize }}</span>{% else %}—{% endif %}
+                            </td>
+                            <td><span class="views-tag">👁 {{ article.nombreVues }}</span></td>
+                            <td><span class="excerpt">{{ article.contenu|slice(0, 70) ~ '…' }}</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    {% if mode == 'admin' %}
+                                        <a href="{{ path('article_show', {'id': article.idArticle}) }}" class="btn-icon btn-view-ic" title="Voir">👁</a>
+                                        <a href="{{ path('article_edit', {'id': article.idArticle}) }}" class="btn-icon btn-edit-ic" title="Modifier">✏</a>
+                                        <form method="post" action="{{ path('article_delete', {'id': article.idArticle}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.idArticle) }}">
+                                            <button class="btn-icon btn-del-ic" title="Supprimer" onclick="return confirm('Supprimer cet article ?')">🗑</button>
+                                        </form>
+                                    {% else %}
+                                        <a href="{{ path('frontend_blog_show', {'id': article.idArticle}) }}" class="btn-icon btn-view-ic" title="Lire">👁</a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row">
+                            <td colspan="{{ mode == 'admin' ? 9 : 8 }}">📭 Aucun article trouvé</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bottom-bar">
+                {% if mode == 'admin' %}
+                    <button class="btn-delete-all" onclick="deleteSelected()">🗑 DELETE SELECTED RECORDS</button>
+                {% else %}
+                    <span></span>
+                {% endif %}
+                <span style="font-size:13px; color:#94a3b8;">Résultats : {{ articles|length }} article{{ articles|length != 1 ? 's' : '' }}</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+function sparkline(id, data, color) {
+    const c = document.getElementById(id); if (!c) return;
+    new Chart(c, { type:'line', data:{ labels:data.map((_,i)=>i), datasets:[{data, borderColor:color, borderWidth:1.5, pointRadius:0, fill:true, backgroundColor:color+'22', tension:0.4}] }, options:{responsive:false, animation:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}}} });
+}
+sparkline('sk1',[2,4,3,6,5,8,{{ total }}],'#378ADD');
+sparkline('sk2',[1,2,2,4,3,5,{{ published }}],'#639922');
+sparkline('sk3',[1,1,2,1,2,1,{{ drafts }}],'#BA7517');
+sparkline('sk4',[100,200,150,300,250,400,{{ total_views }}],'#534AB7');
+
+function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#articleTable tbody tr:not(.empty-row)').forEach(r => { r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+}
+{% if mode == 'admin' %}
+function toggleAll(cb) { document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked); }
+function deleteSelected() {
+    const checked = [...document.querySelectorAll('.row-check:checked')];
+    if (!checked.length) { alert('Sélectionnez au moins un article.'); return; }
+    if (!confirm('Supprimer ' + checked.length + ' article(s) ?')) return;
+    checked.forEach(c => {
+        const f = document.createElement('form'); f.method='POST'; f.action='/article/'+c.value+'/delete';
+        const t = document.createElement('input'); t.type='hidden'; t.name='_token';
+        f.appendChild(t); document.body.appendChild(f); f.submit();
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

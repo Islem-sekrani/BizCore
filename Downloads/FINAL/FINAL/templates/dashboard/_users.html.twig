@@ -1,0 +1,89 @@
+<style>
+.sort-head {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    color: #333;
+    border-radius: 4px;
+    transition: all 0.15s ease-in-out;
+}
+
+.sort-head:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+}
+
+.sort-head:active {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.sort-head:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+</style>
+
+<div class="users-table-wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
+        <h2 style="margin:0;">Users</h2>
+        <button type="button" class="page-btn" onclick="openUserCreateModal()">Add user</button>
+    </div>
+
+    <div class="users-toolbar">
+        <form class="users-search-form users-search">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search users..." autocomplete="off">
+        </form>
+    </div>
+
+    {% if users is empty %}
+        <p style="text-align:center; color:#777; margin-top:20px;">No users found.</p>
+    {% else %}
+        <table class="users-table">
+            <thead>
+    <tr>
+        <th><button type="button" class="sort-head" data-sort="id">ID</button></th>
+        <th><button type="button" class="sort-head" data-sort="nom">Name</button></th>
+        <th><button type="button" class="sort-head" data-sort="email">Email</button></th>
+        <th><button type="button" class="sort-head" data-sort="telephone">Phone</button></th>
+        <th><button type="button" class="sort-head" data-sort="statut">Status</button></th>
+        <th><button type="button" class="sort-head" data-sort="date_inscription">Registered</button></th>
+        <th>Actions</th>
+    </tr>
+</thead>
+
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id_user }}</td>
+                    <td>{{ user.nom }} {{ user.prenom }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.telephone ?: '-' }}</td>
+                    <td><span class="users-badge">{{ user.statut ?: 'N/A' }}</span></td>
+                    <td>{{ user.date_inscription ? user.date_inscription|date('Y-m-d') : '-' }}</td>
+                    <td>
+                        <button type="button" class="page-btn" onclick='openUserEditModal({{ user|json_encode(constant("JSON_HEX_TAG") b-or constant("JSON_HEX_APOS") b-or constant("JSON_HEX_QUOT") b-or constant("JSON_HEX_AMP"))|raw }})'>Edit</button>
+                        <button type="button" class="page-btn" onclick="deleteUser({{ user.id_user }})">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <button type="button" class="page-btn" data-page="1">First</button>
+            <button type="button" class="page-btn" data-page="{{ page > 1 ? page - 1 : 1 }}">Prev</button>
+
+            <form class="users-page-form" style="display:flex; align-items:center; gap:8px;">
+                <input class="page-input" type="number" name="page" value="{{ page }}" min="1" max="{{ totalPages }}">
+                <span>/ {{ totalPages }}</span>
+                <button type="submit" class="page-btn">Go</button>
+            </form>
+
+            <button type="button" class="page-btn" data-page="{{ page < totalPages ? page + 1 : totalPages }}">Next</button>
+            <button type="button" class="page-btn" data-page="{{ totalPages }}">Last</button>
+        </div>
+    {% endif %}
+</div>

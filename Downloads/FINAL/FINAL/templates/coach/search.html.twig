@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+{% block title %}Recherche de Coachs — GestionCoach{% endblock %}
+{% block page_title %}Recherche{% endblock %}
+{% block nav_section_label %}Front Office{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ path('app_coach_index') }}" class="{{ app.request.attributes.get('_route') starts with 'app_coach' ? 'active' : '' }}">
+    <i class="fas fa-users"></i> Coachs
+</a>
+<a href="{{ path('admin_coach_index') }}" class=""><i class="fas fa-lock"></i> Administration</a>
+{% endblock %}
+
+{% block body %}
+
+{# ── HEADER ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0;">
+            <i class="fas fa-search" style="color:var(--accent);"></i> Recherche de Coachs
+        </h2>
+        {% if coaches is defined %}
+        <p style="font-size:12px;color:#6b7280;margin:4px 0 0;">
+            {{ coaches|length }} résultat{{ coaches|length > 1 ? 's' : '' }} trouvé{{ coaches|length > 1 ? 's' : '' }}
+        </p>
+        {% endif %}
+    </div>
+    <a href="{{ path('app_coach_index') }}" style="font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+
+{# ── SEARCH FORM ── #}
+<div class="card-panel" style="padding:20px;margin-bottom:22px;">
+    <form method="GET" action="{{ path('app_coach_search') }}" class="d-flex flex-wrap gap-3 align-items-end">
+        <div style="min-width:200px;flex:1;">
+            <label style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Domaine</label>
+            <select name="domaine" class="form-select"
+                    style="font-size:13px;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:7px;width:100%;">
+                <option value="">Tous les domaines</option>
+                <option value="BRANDING"   {{ domaine == 'BRANDING'   ? 'selected' : '' }}>🎨 Branding</option>
+                <option value="E_COMMERCE" {{ domaine == 'E_COMMERCE' ? 'selected' : '' }}>🛒 E-Commerce</option>
+                <option value="LEADERSHIP" {{ domaine == 'LEADERSHIP' ? 'selected' : '' }}>🏆 Leadership</option>
+                <option value="FINANCE"    {{ domaine == 'FINANCE'    ? 'selected' : '' }}>💰 Finance</option>
+                <option value="FUNDING"    {{ domaine == 'FUNDING'    ? 'selected' : '' }}>🚀 Financement</option>
+            </select>
+        </div>
+        <div style="min-width:160px;">
+            <label style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Tarif max (TND)</label>
+            <input type="number" name="maxTarif" min="0" step="10"
+                   value="{{ maxTarif ?? '' }}"
+                   placeholder="ex: 150"
+                   style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:7px;font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding-bottom:2px;">
+            <input type="checkbox" name="onlyAvailable" value="1" id="onlyAvail"
+                   {{ onlyAvailable ? 'checked' : '' }}
+                   style="width:15px;height:15px;accent-color:var(--accent);">
+            <label for="onlyAvail" style="font-size:13px;color:#374151;font-weight:500;cursor:pointer;margin:0;">
+                Disponibles uniquement
+            </label>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button type="submit" class="btn-teal" style="padding:8px 18px;border-radius:6px;">
+                <i class="fas fa-search"></i> Chercher
+            </button>
+            <a href="{{ path('app_coach_search') }}"
+               style="padding:8px 16px;border-radius:6px;background:#f3f4f6;color:#374151;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-redo"></i> Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+{# ── RESULTS ── #}
+{% if coaches is not defined or coaches is empty %}
+<div style="text-align:center;padding:56px 20px;color:#9ca3af;">
+    <i class="fas fa-search" style="font-size:40px;display:block;margin-bottom:16px;opacity:.4;"></i>
+    <h3 style="font-size:16px;font-weight:600;color:#6b7280;margin:0 0 8px;">
+        {% if coaches is defined %}Aucun coach trouvé pour ces critères.{% else %}Utilisez les filtres ci-dessus pour rechercher.{% endif %}
+    </h3>
+    <a href="{{ path('app_coach_index') }}" style="color:var(--accent);font-size:13px;font-weight:600;text-decoration:none;">
+        Voir tous les coachs →
+    </a>
+</div>
+{% else %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;">
+    {% for coach in coaches %}
+    <div style="background:#fff;border:1px solid #e8ecf0;border-radius:12px;overflow:hidden;transition:box-shadow .2s,transform .2s;"
+         onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.1)';this.style.transform='translateY(-2px)';"
+         onmouseout="this.style.boxShadow='none';this.style.transform='none';">
+
+        <div style="background:linear-gradient(135deg,#1C2B3A,#243447);padding:18px;display:flex;align-items:center;gap:12px;">
+            <div style="width:48px;height:48px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;flex-shrink:0;">
+                {{ coach.prenom|slice(0,1)|upper }}{{ coach.nom|slice(0,1)|upper }}
+            </div>
+            <div>
+                <div style="color:#fff;font-size:14px;font-weight:700;">{{ coach.prenom }} {{ coach.nom }}</div>
+                {% if coach.domaine %}
+                <span style="background:rgba(255,255,255,.12);color:#cbd5e1;border-radius:20px;padding:2px 9px;font-size:10.5px;font-weight:600;margin-top:4px;display:inline-block;">
+                    {% if coach.domaine == 'BRANDING' %}🎨 Branding
+                    {% elseif coach.domaine == 'E_COMMERCE' %}🛒 E-Commerce
+                    {% elseif coach.domaine == 'LEADERSHIP' %}🏆 Leadership
+                    {% elseif coach.domaine == 'FINANCE' %}💰 Finance
+                    {% elseif coach.domaine == 'FUNDING' %}🚀 Financement
+                    {% else %}{{ coach.domaine }}{% endif %}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #f1f5f9;">
+            <div style="padding:10px 0;text-align:center;border-right:1px solid #f1f5f9;">
+                <div style="font-size:13px;font-weight:700;color:#111827;">{{ coach.experienceAnnees ?? '—' }}</div>
+                <div style="font-size:9.5px;color:#9ca3af;">ans</div>
+            </div>
+            <div style="padding:10px 0;text-align:center;border-right:1px solid #f1f5f9;">
+                <div style="font-size:12px;font-weight:700;color:var(--accent);">{{ coach.tarifHoraire ? coach.tarifHoraire|number_format(0,'','') ~ ' TND' : '—' }}</div>
+                <div style="font-size:9.5px;color:#9ca3af;">/heure</div>
+            </div>
+            <div style="padding:10px 0;text-align:center;">
+                {% if coach.noteMoyenne %}
+                <div style="font-size:13px;font-weight:700;color:#f59e0b;">{{ coach.noteMoyenne }}</div>
+                <div style="font-size:9.5px;color:#9ca3af;"><i class="fas fa-star" style="font-size:8px;color:#f59e0b;"></i> /5</div>
+                {% else %}
+                <div style="font-size:12px;color:#9ca3af;">—</div>
+                <div style="font-size:9.5px;color:#d1d5db;">note</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+            {% if coach.disponibilite == 'Disponible' %}
+                <span class="badge-disponible"><i class="fas fa-circle" style="font-size:7px;margin-right:4px;"></i>Disponible</span>
+            {% else %}
+                <span class="badge-indisponible"><i class="fas fa-circle" style="font-size:7px;margin-right:4px;"></i>Indisponible</span>
+            {% endif %}
+            <a href="{{ path('app_coach_show', {'id': coach.idCoach}) }}"
+               style="font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;">
+                Profil <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

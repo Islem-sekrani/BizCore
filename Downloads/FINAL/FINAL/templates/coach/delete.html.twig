@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+{% block title %}Supprimer — {{ coach.prenom }} {{ coach.nom }}{% endblock %}
+{% block page_title %}Supprimer Coach{% endblock %}
+
+{% block body %}
+<div style="max-width:520px;margin:0 auto;">
+
+    <div class="card-panel" style="padding:0;overflow:hidden;">
+        <div style="background:#fee2e2;padding:24px;text-align:center;">
+            <div style="width:60px;height:60px;border-radius:50%;background:#fca5a5;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px;color:#dc2626;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 style="font-size:18px;font-weight:700;color:#991b1b;margin:0 0 6px;">Confirmer la suppression</h2>
+            <p style="font-size:13px;color:#b91c1c;margin:0;">Cette action est irréversible.</p>
+        </div>
+
+        <div style="padding:24px;text-align:center;">
+            <div style="width:56px;height:56px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;margin:0 auto 12px;">
+                {{ coach.prenom|slice(0,1)|upper }}{{ coach.nom|slice(0,1)|upper }}
+            </div>
+            <h3 style="font-size:17px;font-weight:700;color:#111827;margin:0 0 4px;">{{ coach.prenom }} {{ coach.nom }}</h3>
+            {% if coach.domaine %}
+            <p style="font-size:13px;color:#6b7280;margin:0 0 4px;">
+                {% if coach.domaine == 'BRANDING' %}🎨 Branding
+                {% elseif coach.domaine == 'E_COMMERCE' %}🛒 E-Commerce
+                {% elseif coach.domaine == 'LEADERSHIP' %}🏆 Leadership
+                {% elseif coach.domaine == 'FINANCE' %}💰 Finance
+                {% elseif coach.domaine == 'FUNDING' %}🚀 Financement
+                {% else %}{{ coach.domaine }}{% endif %}
+            </p>
+            {% endif %}
+            <p style="font-size:13px;color:#9ca3af;margin:0;">{{ coach.experienceAnnees ?? '—' }} ans d'expérience · {{ coach.tarifHoraire ? coach.tarifHoraire ~ ' TND/h' : '' }}</p>
+
+            <div style="margin:20px 0;padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf0;">
+                <p style="font-size:13px;color:#374151;margin:0;">
+                    <i class="fas fa-info-circle" style="color:#f59e0b;margin-right:6px;"></i>
+                    Toutes les données associées à ce coach (disponibilités, réservations, avis) seront également supprimées.
+                </p>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:4px;">
+                <form method="post" action="{{ path('app_coach_delete', {'id': coach.idCoach}) }}" style="margin:0;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ coach.idCoach) }}">
+                    <button type="submit" style="background:#dc2626;color:#fff;border:none;border-radius:7px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-trash"></i> Oui, supprimer
+                    </button>
+                </form>
+                <a href="{{ path('app_coach_show', {'id': coach.idCoach}) }}" class="btn-outline-teal" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:7px;font-size:13px;">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

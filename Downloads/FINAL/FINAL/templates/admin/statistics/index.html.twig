@@ -1,0 +1,319 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques des Coachs - Admin{% endblock %}
+
+{% block page_title %}STATISTIQUES DES COACHS{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h1 class="display-4 fw-bold text-dark">
+                <i class="fas fa-chart-line text-primary me-3"></i>Statistiques des Coachs
+            </h1>
+            <p class="lead text-muted">Classement global, KPI et analyse de performance</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="alert alert-info py-3">
+                <strong>{{ totalCoaches }}</strong> coachs analysés
+            </div>
+        </div>
+    </div>
+
+    <!-- Highlights: Top & Bottom Coaches -->
+    {% if topCoach and bottomCoach %}
+    <div class="row mb-5">
+        <!-- Top Coach (Best Performer) -->
+        <div class="col-md-6">
+            <div class="card border-success shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy me-2"></i>Meilleur Coach
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">{{ topCoach.fullName }}</h4>
+                            <small class="text-muted">Classement : <strong>#{{ topCoach.rang }}</strong></small>
+                        </div>
+                        <div class="text-end">
+                            <div class="display-6 text-success fw-bold">{{ topCoach.scoreGlobal }}/100</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <small class="text-muted">Occupation</small><br>
+                            <strong>{{ topCoach.tauxOccupation }}%</strong>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <small class="text-muted">Fidélité</small><br>
+                            <strong>{{ topCoach.fidelite }}%</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Note</small><br>
+                            <strong>{{ topCoach.notePonderee }}/100</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Tendance</small><br>
+                            <strong>{{ topCoach.tendance }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Coach (Needs Improvement) -->
+        <div class="col-md-6">
+            <div class="card border-warning shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>À Améliorer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">{{ bottomCoach.fullName }}</h4>
+                            <small class="text-muted">Classement : <strong>#{{ bottomCoach.rang }}</strong></small>
+                        </div>
+                        <div class="text-end">
+                            <div class="display-6 text-warning fw-bold">{{ bottomCoach.scoreGlobal }}/100</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <small class="text-muted">Occupation</small><br>
+                            <strong>{{ bottomCoach.tauxOccupation }}%</strong>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <small class="text-muted">Fidélité</small><br>
+                            <strong>{{ bottomCoach.fidelite }}%</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Note</small><br>
+                            <strong>{{ bottomCoach.notePonderee }}/100</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Tendance</small><br>
+                            <strong>{{ bottomCoach.tendance }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Classement Complet -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list-ol me-2"></i>Classement Complet des Coachs
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 20%;">Coach</th>
+                            <th style="width: 12%;">Domaine</th>
+                            <th style="width: 13%;">Score Global</th>
+                            <th style="width: 12%;">Occupation</th>
+                            <th style="width: 12%;">Fidélité</th>
+                            <th style="width: 13%;">Note</th>
+                            <th style="width: 13%;">Tendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in coachesStatistics %}
+                        <tr class="align-middle">
+                            <!-- Rang -->
+                            <td>
+                                <span class="badge bg-primary fs-6">{{ stat.rang }}</span>
+                            </td>
+
+                            <!-- Nom Coach -->
+                            <td>
+                                <strong class="text-dark">{{ stat.fullName }}</strong><br>
+                                <small class="text-muted">{{ stat.experienceAnnees }} ans exp.</small>
+                            </td>
+
+                            <!-- Domaine -->
+                            <td>
+                                {% set domaineBadgeClass = {
+                                    'BRANDING': 'warning',
+                                    'E_COMMERCE': 'info',
+                                    'LEADERSHIP': 'success',
+                                    'FINANCE': 'danger',
+                                    'FUNDING': 'primary'
+                                }[stat.domaine] ?? 'secondary' %}
+                                <span class="badge bg-{{ domaineBadgeClass }}">{{ stat.domaine }}</span>
+                            </td>
+
+                            <!-- Score Global -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <strong class="fs-5 text-dark me-2">{{ stat.scoreGlobal }}</strong>
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        {% set scoreColor = stat.scoreGlobal >= 70 ? 'success' : (stat.scoreGlobal >= 50 ? 'warning' : 'danger') %}
+                                        <div class="progress-bar bg-{{ scoreColor }}" 
+                                             role="progressbar" 
+                                             style="width: {{ stat.scoreGlobal }}%;" 
+                                             aria-valuenow="{{ stat.scoreGlobal }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Taux d'Occupation (35%) -->
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-info" 
+                                         role="progressbar" 
+                                         style="width: {{ stat.tauxOccupation }}%;"
+                                         title="Taux d'occupation: {{ stat.tauxOccupation }}%">
+                                        <small>{{ stat.tauxOccupation }}%</small>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-1">35% du score</small>
+                            </td>
+
+                            <!-- Fidélité Client (20%) -->
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" 
+                                         role="progressbar" 
+                                         style="width: {{ stat.fidelite }}%;"
+                                         title="Fidélité: {{ stat.fidelite }}%">
+                                        <small>{{ stat.fidelite }}%</small>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-1">20% du score</small>
+                            </td>
+
+                            <!-- Note Pondérée (35%) -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% set noteInt = stat.notePonderee | round(0) %}
+                                    <strong class="me-2">{{ noteInt }}/100</strong>
+                                    {% for i in range(1, 5) %}
+                                        {% if i <= (noteInt / 20) %}
+                                            <i class="fas fa-star text-warning fs-6"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-muted fs-6"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted d-block mt-1">35% du score</small>
+                            </td>
+
+                            <!-- Tendance (10%) -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if stat.tendance > 100 %}
+                                        <i class="fas fa-arrow-up text-success me-2"></i>
+                                        <span class="text-success fw-bold">{{ (stat.tendance - 100) | round(0) }}%</span>
+                                    {% elseif stat.tendance < 100 %}
+                                        <i class="fas fa-arrow-down text-danger me-2"></i>
+                                        <span class="text-danger fw-bold">{{ (100 - stat.tendance) | round(0) }}%</span>
+                                    {% else %}
+                                        <i class="fas fa-minus text-muted me-2"></i>
+                                        <span class="text-muted">Stable</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted d-block mt-1">10% du score</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Légende et Explication des KPI -->
+    <div class="row mt-5">
+        <div class="col-lg-12">
+            <div class="card bg-light border-0">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Explications des KPI
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-info">
+                                <i class="fas fa-chart-pie text-info me-2"></i>Taux d'Occupation (35%)
+                            </h6>
+                            <p class="text-muted small">Pourcentage de créneaux réservés par rapport aux créneaux disponibles. Un coach très occupé a un taux élevé.</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-success">
+                                <i class="fas fa-star text-success me-2"></i>Note Pondérée (35%)
+                            </h6>
+                            <p class="text-muted small">Note moyenne ajustée selon le nombre d'avis. Une note avec peu d'avis compte moins qu'une note établie.</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-success">
+                                <i class="fas fa-handshake text-success me-2"></i>Fidélité Client (20%)
+                            </h6>
+                            <p class="text-muted small">Pourcentage de clients qui reviennent réserver plusieurs fois avec le même coach. Indicateur de satisfaction.</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-warning">
+                                <i class="fas fa-chart-line text-warning me-2"></i>Tendance (10%)
+                            </h6>
+                            <p class="text-muted small">Comparaison des réservations du mois courant vs mois précédent. Montre l'évolution de la demande.</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="text-muted small mb-0">
+                        <strong>Score Global :</strong> Calcul pondéré des 4 KPI (35% + 35% + 20% + 10% = 100%). 
+                        Les coachs sont classés du score le plus élevé au plus bas.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <a href="{{ path('admin_coach_index') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la Gestion des Coachs
+            </a>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ path('admin_statistics_detailed') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-chart-bar me-2"></i>Vue Détaillée
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .progress-bar {
+        transition: width 0.6s ease;
+    }
+</style>
+{% endblock %}
